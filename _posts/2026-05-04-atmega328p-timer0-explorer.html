@@ -1,0 +1,913 @@
+---
+layout: post
+title: "ATmega328P Timer0 Explorer"
+date: 2026-05-04 19:23:00 +0000
+description: "ATmega328P / Timer/Counter0 Explorer 8-bit timer / CTC / PWM / Normal / Fast PWM / 16 MHz Click blocks to explore Block diagram Click any block to see its"
+---
+
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+
+  .wrap{display:flex;gap:0;min-height:600px;border:1px solid #2d2d2d;border-radius:10px;overflow:hidden;max-width:1100px;margin:0 auto;}
+  .left{flex:1;min-width:0;display:flex;flex-direction:column;border-right:1px solid #2d2d2d;}
+  .hdr{padding:10px 14px;background:#161b22;border-bottom:1px solid #2d2d2d;display:flex;align-items:center;justify-content:space-between;}
+  .hdr-title{font-size:13px;font-weight:700;color:#e0e0e0;}
+  .hdr-sub{font-size:11px;color:#888;}
+  .diagram-area{flex:1;padding:12px;background:#0D1117;overflow-y:auto;}
+
+  .right{width:330px;flex-shrink:0;display:flex;flex-direction:column;background:#0f1318;}
+  .panel-hdr{padding:10px 14px;border-bottom:1px solid #2d2d2d;display:flex;align-items:center;gap:8px;background:#161b22;}
+  .panel-hdr-title{font-size:13px;font-weight:700;color:#e0e0e0;}
+  .dot{width:7px;height:7px;border-radius:50%;background:#4da6ff;flex-shrink:0;animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+
+  .reg-scroll{flex:1;overflow-y:auto;padding:10px;scrollbar-width:thin;scrollbar-color:#2d2d2d transparent;}
+  .reg-scroll::-webkit-scrollbar{width:4px;}
+  .reg-scroll::-webkit-scrollbar-thumb{background:#2d2d2d;}
+
+  .reg-block{border:1px solid #2d2d2d;border-radius:6px;overflow:hidden;margin-bottom:10px;transition:outline .15s;}
+  .reg-hdr{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:#161b22;border-bottom:1px solid #2d2d2d;}
+  .reg-name{font-size:12px;font-weight:700;color:#4da6ff;}
+  .reg-addr{font-size:10px;color:#555;}
+
+  .reg-bits{display:grid;grid-template-columns:repeat(8,1fr);border-bottom:1px solid #2d2d2d;}
+  .bit-cell{border-right:1px solid #2d2d2d;padding:3px 2px;text-align:center;}
+  .bit-cell:last-child{border-right:none;}
+  .bit-num{font-size:9px;color:#444;display:block;}
+  .bit-name{font-size:9px;color:#666;display:block;white-space:nowrap;overflow:hidden;}
+  .bit-val{font-size:11px;font-weight:700;color:#9cdcfe;display:block;cursor:pointer;padding:2px 0;}
+  .bit-val:hover{color:#4da6ff;}
+  .bit-val.active{color:#4da6ff;}
+
+  .reg-hex{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;font-size:11px;color:#666;}
+  .reg-hex span{font-weight:700;color:#9cdcfe;}
+
+  .field-row{padding:5px 10px;border-top:1px solid #1d2330;}
+  .field-label{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+  .field-sel{width:100%;font-size:11px;padding:4px 6px;border:1px solid #2d2d2d;border-radius:4px;background:#0D1117;color:#d0d0d0;font-family:inherit;cursor:pointer;}
+  .field-sel:focus{outline:1px solid #4da6ff;}
+
+  .info-box{margin:10px;padding:8px 10px;border-radius:6px;border:1px solid #2d2d2d;font-size:11px;color:#888;line-height:1.6;background:#161b22;}
+  .info-box strong{color:#e0e0e0;font-weight:700;}
+
+  .section-hdr{font-size:10px;font-weight:700;color:#4da6ff;letter-spacing:.1em;text-transform:uppercase;border-top:1px solid #2d2d2d;padding-top:10px;margin-bottom:8px;}
+  .waveform-area{padding:0;overflow-x:auto;}
+  .timing-canvas{width:100%;border-radius:4px;}
+
+  .metric-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;}
+  .metric{background:#161b22;border:1px solid #2d2d2d;border-radius:6px;padding:8px;text-align:center;}
+  .metric-val{font-size:16px;font-weight:700;color:#4da6ff;display:block;}
+  .metric-lbl{font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.08em;}
+
+  canvas{display:block;}
+
+  .guide-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+  .guide-card{background:#161b22;border:1px solid #2d2d2d;border-radius:6px;padding:10px 12px;font-size:11px;color:#888;line-height:1.6;}
+  .guide-card-title{font-size:11px;font-weight:700;color:#4da6ff;margin-bottom:5px;}
+  .guide-card p{margin:0;}
+  .guide-card strong{color:#d0d0d0;}
+  .guide-table{width:100%;border-collapse:collapse;margin-top:6px;font-size:10px;}
+  .guide-table th{color:#555;text-align:left;padding:2px 4px;border-bottom:1px solid #2d2d2d;font-weight:600;}
+  .guide-table td{color:#888;padding:2px 4px;border-bottom:1px solid #1a1f28;}
+  .guide-table tr:last-child td{border-bottom:none;}
+</style>
+
+<div class="wrap">
+  <!-- LEFT PANEL -->
+  <div class="left">
+    <div class="hdr">
+      <div>
+        <div class="hdr-title">ATmega328P  /  Timer/Counter0 Explorer</div>
+        <div class="hdr-sub">8-bit timer / CTC / PWM / Normal / Fast PWM / 16 MHz</div>
+      </div>
+      <div style="font-size:11px;color:#444;">Click blocks to explore</div>
+    </div>
+
+    <div class="diagram-area">
+      <!-- Block diagram -->
+      <div class="section-hdr">Block diagram</div>
+      <canvas id="blockCanvas" class="timing-canvas" width="640" height="430"></canvas>
+      <div id="block-info" class="info-box" style="margin:8px 0 0;">
+        <strong>Click any block</strong> to see its description and have the associated register highlighted on the right panel.
+      </div>
+
+      <!-- Timing diagram -->
+      <div class="section-hdr" style="margin-top:18px;">Timing diagram</div>
+      <div class="metric-row" style="padding:8px 0;">
+        <div class="metric"><span class="metric-val" id="m-freq">--</span><span class="metric-lbl">OC0A freq</span></div>
+        <div class="metric"><span class="metric-val" id="m-period">--</span><span class="metric-lbl">Period</span></div>
+        <div class="metric"><span class="metric-val" id="m-duty">--</span><span class="metric-lbl">Duty cycle</span></div>
+      </div>
+      <canvas id="timingCanvas" width="640" height="300" style="width:100%;border-radius:4px;border:1px solid #2d2d2d;"></canvas>
+      <div class="info-box" style="margin:8px 0 4px;">
+        <strong>Timing diagram</strong> updates live as you change registers on the right. Adjust WGM mode, prescaler, and OCR0A/B values to see the effect on the waveforms.
+      </div>
+
+      <!-- User Guide -->
+      <div class="section-hdr" style="margin-top:18px;">User guide</div>
+      <div class="guide-grid">
+
+        <div class="guide-card">
+          <div class="guide-card-title">1. Block diagram</div>
+          <p>Click any coloured block in the block diagram to highlight it and read its description. The corresponding register on the right panel scrolls into view and is outlined in blue.</p>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-title">2. Register panel</div>
+          <p>Each register shows all 8 bits with their names and current values. Use the dropdown menus below each register to change bit fields. The hex value updates instantly.</p>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-title">3. WGM / Timer mode</div>
+          <p>WGM0[2:0] spans two registers. Set WGM0[1:0] in TCCR0A and WGM02 in TCCR0B together to pick the mode:</p>
+          <table class="guide-table">
+            <tr><th>WGM[2:0]</th><th>Mode</th><th>TOP</th></tr>
+            <tr><td>000</td><td>Normal</td><td>0xFF</td></tr>
+            <tr><td>001</td><td>Phase-correct PWM</td><td>0xFF</td></tr>
+            <tr><td>010</td><td>CTC</td><td>OCR0A</td></tr>
+            <tr><td>011</td><td>Fast PWM</td><td>0xFF</td></tr>
+            <tr><td>101</td><td>Phase-correct PWM</td><td>OCR0A</td></tr>
+            <tr><td>111</td><td>Fast PWM</td><td>OCR0A</td></tr>
+          </table>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-title">4. Prescaler (CS0[2:0])</div>
+          <p>Controls how fast the counter ticks relative to clkIO (16 MHz). A higher prescaler gives a lower output frequency and longer period.</p>
+          <table class="guide-table">
+            <tr><th>CS0[2:0]</th><th>Divisor</th><th>Tick period</th></tr>
+            <tr><td>001</td><td>/1</td><td>62.5 ns</td></tr>
+            <tr><td>010</td><td>/8</td><td>500 ns</td></tr>
+            <tr><td>011</td><td>/64</td><td>4 us</td></tr>
+            <tr><td>100</td><td>/256</td><td>16 us</td></tr>
+            <tr><td>101</td><td>/1024</td><td>64 us</td></tr>
+          </table>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-title">5. OCR0A and OCR0B</div>
+          <p>These 8-bit registers set the compare thresholds. In Fast PWM and Phase-correct PWM modes, the duty cycle of OC0A is OCR0A/TOP and OC0B is OCR0B/TOP. In CTC mode, OCR0A defines the TOP value and therefore the output frequency.</p>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-title">6. COM0A / COM0B</div>
+          <p>Controls what happens to the OC0A (PD6) and OC0B (PD5) output pins on a compare match. Set to <strong>00</strong> to disconnect, <strong>10</strong> for non-inverting PWM (clear on match, set at BOTTOM), or <strong>11</strong> for inverting PWM.</p>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-title">7. Interrupts (TIMSK0)</div>
+          <p>Enable up to three interrupt sources. <strong>TOIE0</strong> fires on counter overflow (TOV0 flag). <strong>OCIE0A</strong> fires when TCNT0 matches OCR0A (OCF0A flag). <strong>OCIE0B</strong> fires when TCNT0 matches OCR0B (OCF0B flag). Flags are in TIFR0 and cleared by writing 1.</p>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-title">8. Timing diagram channels</div>
+          <p><strong style="color:#4da6ff;">TCNT0</strong> shows the raw counter ramp. Dashed lines mark the OCR0A and OCR0B compare levels. <strong style="color:#FF6B4A;">OC0A</strong> and <strong style="color:#C8860A;">OC0B</strong> show the waveform output pins. <strong style="color:#5BB450;">TOVn</strong> pulses high at each overflow event.</p>
+        </div>
+
+        <div class="guide-card">
+          <div class="guide-card-title">9. Frequency formula</div>
+          <p>Fast PWM:&nbsp;&nbsp;&nbsp;&nbsp; f = clkIO / (N x (TOP + 1))<br>
+             CTC:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; f = clkIO / (2 x N x (OCR0A + 1))<br>
+             Phase-correct: f = clkIO / (2 x N x TOP)<br>
+             <em>where N = prescaler divisor, clkIO = 16 MHz</em></p>
+        </div>
+
+      </div><!-- end guide-grid -->
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right">
+    <div class="panel-hdr">
+      <div class="dot"></div>
+      <div class="panel-hdr-title">Register Configuration</div>
+    </div>
+    <div class="reg-scroll">
+
+      <!-- TCCR0A -->
+      <div class="reg-block" id="reg-tccr0a">
+        <div class="reg-hdr">
+          <span class="reg-name">TCCR0A</span>
+          <span class="reg-addr">0x44 (I/O: 0x24)</span>
+        </div>
+        <div class="reg-bits" id="bits-tccr0a"></div>
+        <div class="reg-hex">Hex: <span id="hex-tccr0a">0x00</span></div>
+        <div class="field-row">
+          <div class="field-label">COM0A[1:0]  /  OC0A output mode</div>
+          <select class="field-sel" id="sel-com0a" onchange="applyField('com0a',this.value)">
+            <option value="0">00  /  Normal port, OC0A disconnected</option>
+            <option value="1">01  /  Toggle OC0A on compare match</option>
+            <option value="2" selected>10  /  Clear OC0A on compare (non-inv)</option>
+            <option value="3">11  /  Set OC0A on compare (inverting)</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field-label">COM0B[1:0]  /  OC0B output mode</div>
+          <select class="field-sel" id="sel-com0b" onchange="applyField('com0b',this.value)">
+            <option value="0">00  /  Normal port, OC0B disconnected</option>
+            <option value="1">01  /  Toggle OC0B on compare match</option>
+            <option value="2" selected>10  /  Clear OC0B on compare (non-inv)</option>
+            <option value="3">11  /  Set OC0B on compare (inverting)</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field-label">WGM0[1:0]  /  Waveform gen. mode (bits 1:0)</div>
+          <select class="field-sel" id="sel-wgm-a" onchange="applyWGM()">
+            <option value="0">WGM0[1:0] = 00</option>
+            <option value="1">WGM0[1:0] = 01</option>
+            <option value="2">WGM0[1:0] = 10</option>
+            <option value="3" selected>WGM0[1:0] = 11</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TCCR0B -->
+      <div class="reg-block" id="reg-tccr0b">
+        <div class="reg-hdr">
+          <span class="reg-name">TCCR0B</span>
+          <span class="reg-addr">0x45 (I/O: 0x25)</span>
+        </div>
+        <div class="reg-bits" id="bits-tccr0b"></div>
+        <div class="reg-hex">Hex: <span id="hex-tccr0b">0x00</span></div>
+        <div class="field-row">
+          <div class="field-label">WGM02  /  Waveform gen. mode (bit 2)</div>
+          <select class="field-sel" id="sel-wgm-b" onchange="applyWGM()">
+            <option value="0" selected>WGM02 = 0</option>
+            <option value="1">WGM02 = 1</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field-label">CS0[2:0]  /  Clock select / prescaler</div>
+          <select class="field-sel" id="sel-cs" onchange="applyField('cs',this.value)">
+            <option value="0">000  /  No clock (timer stopped)</option>
+            <option value="1" selected>001  /  clkIO/1 (no prescaling)</option>
+            <option value="2">010  /  clkIO/8</option>
+            <option value="3">011  /  clkIO/64</option>
+            <option value="4">100  /  clkIO/256</option>
+            <option value="5">101  /  clkIO/1024</option>
+            <option value="6">110  /  External T0 pin, falling edge</option>
+            <option value="7">111  /  External T0 pin, rising edge</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <div class="field-label">FOC0A / FOC0B  /  Force output compare</div>
+          <select class="field-sel" id="sel-foc" onchange="applyField('foc',this.value)">
+            <option value="0">00  /  No force</option>
+            <option value="1">01  /  Force OC0A</option>
+            <option value="2">10  /  Force OC0B</option>
+            <option value="3">11  /  Force both</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TCNT0 -->
+      <div class="reg-block" id="reg-tcnt0">
+        <div class="reg-hdr">
+          <span class="reg-name">TCNT0</span>
+          <span class="reg-addr">0x46 (I/O: 0x26)</span>
+        </div>
+        <div class="reg-bits" id="bits-tcnt0"></div>
+        <div class="reg-hex">Hex: <span id="hex-tcnt0">0x00</span></div>
+        <div class="field-row">
+          <div class="field-label">TCNT0[7:0]  /  Counter value (read/write)</div>
+          <select class="field-sel" id="sel-tcnt0" onchange="applyField('tcnt0',this.value)">
+            <option value="0" selected>0x00  /  Start from 0</option>
+            <option value="128">0x80  /  Preload 128</option>
+            <option value="192">0xC0  /  Preload 192</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- OCR0A -->
+      <div class="reg-block" id="reg-ocr0a">
+        <div class="reg-hdr">
+          <span class="reg-name">OCR0A</span>
+          <span class="reg-addr">0x47 (I/O: 0x27)</span>
+        </div>
+        <div class="reg-bits" id="bits-ocr0a"></div>
+        <div class="reg-hex">Hex: <span id="hex-ocr0a">0x00</span></div>
+        <div class="field-row">
+          <div class="field-label">OCR0A[7:0]  /  Output compare register A</div>
+          <select class="field-sel" id="sel-ocr0a" onchange="applyField('ocr0a',this.value)">
+            <option value="0">0x00 = 0</option>
+            <option value="63">0x3F = 63</option>
+            <option value="127" selected>0x7F = 127</option>
+            <option value="191">0xBF = 191</option>
+            <option value="255">0xFF = 255</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- OCR0B -->
+      <div class="reg-block" id="reg-ocr0b">
+        <div class="reg-hdr">
+          <span class="reg-name">OCR0B</span>
+          <span class="reg-addr">0x48 (I/O: 0x28)</span>
+        </div>
+        <div class="reg-bits" id="bits-ocr0b"></div>
+        <div class="reg-hex">Hex: <span id="hex-ocr0b">0x00</span></div>
+        <div class="field-row">
+          <div class="field-label">OCR0B[7:0]  /  Output compare register B</div>
+          <select class="field-sel" id="sel-ocr0b" onchange="applyField('ocr0b',this.value)">
+            <option value="0">0x00 = 0</option>
+            <option value="63">0x3F = 63</option>
+            <option value="191" selected>0xBF = 191</option>
+            <option value="255">0xFF = 255</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TIMSK0 -->
+      <div class="reg-block" id="reg-timsk0">
+        <div class="reg-hdr">
+          <span class="reg-name">TIMSK0</span>
+          <span class="reg-addr">0x6E</span>
+        </div>
+        <div class="reg-bits" id="bits-timsk0"></div>
+        <div class="reg-hex">Hex: <span id="hex-timsk0">0x00</span></div>
+        <div class="field-row">
+          <div class="field-label">Interrupt enables</div>
+          <select class="field-sel" id="sel-timsk" onchange="applyField('timsk',this.value)">
+            <option value="0">000  /  All disabled</option>
+            <option value="1">001  /  TOIE0 (overflow interrupt)</option>
+            <option value="2">010  /  OCIE0A (compare A match)</option>
+            <option value="4">100  /  OCIE0B (compare B match)</option>
+            <option value="6">110  /  OCIE0A + OCIE0B</option>
+            <option value="7">111  /  All enabled</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- TIFR0 -->
+      <div class="reg-block" id="reg-tifr0">
+        <div class="reg-hdr">
+          <span class="reg-name">TIFR0</span>
+          <span class="reg-addr">0x35 (I/O: 0x15)</span>
+        </div>
+        <div class="reg-bits" id="bits-tifr0"></div>
+        <div class="reg-hex">Hex: <span id="hex-tifr0">0x00</span></div>
+        <div class="field-row">
+          <div class="field-label">Interrupt flags (write 1 to clear)</div>
+          <select class="field-sel" id="sel-tifr" onchange="applyField('tifr',this.value)">
+            <option value="0">000  /  No flags set</option>
+            <option value="1">001  /  TOV0 set (overflow)</option>
+            <option value="2">010  /  OCF0A set (compare A)</option>
+            <option value="4">100  /  OCF0B set (compare B)</option>
+          </select>
+        </div>
+      </div>
+
+    </div><!-- end reg-scroll -->
+  </div><!-- end right -->
+</div><!-- end wrap -->
+
+<script>
+// =============================================================================
+// STATE
+// =============================================================================
+const F_CPU = 16e6;
+const PRESCALERS = [0,1,8,64,256,1024,0,0];
+
+const state = {
+  com0a: 2,   // COM0A[1:0]
+  com0b: 2,   // COM0B[1:0]
+  wgm:   3,   // WGM0[2:0]  (Fast PWM = 3)
+  cs:    1,   // CS0[2:0]
+  foc:   0,
+  tcnt0: 0,
+  ocr0a: 127,
+  ocr0b: 191,
+  timsk: 0,
+  tifr:  0
+};
+
+// =============================================================================
+// REGISTER DEFINITIONS
+// =============================================================================
+const REGS = {
+  tccr0a: {
+    bits: ['COM0A1','COM0A0','COM0B1','COM0B0','-','-','WGM01','WGM00'],
+    get() {
+      return (state.com0a & 3) << 6
+           | (state.com0b & 3) << 4
+           | ((state.wgm >> 1) & 1) << 1
+           | (state.wgm & 1);
+    }
+  },
+  tccr0b: {
+    bits: ['FOC0A','FOC0B','-','WGM02','CS02','CS01','CS00','-'],
+    get() {
+      const wgm2 = (state.wgm >> 2) & 1;
+      const cs   = state.cs & 7;
+      return ((state.foc >> 1) & 1) << 7
+           |  (state.foc & 1)       << 6
+           |  wgm2                  << 3
+           | ((cs >> 2) & 1)        << 2
+           | ((cs >> 1) & 1)        << 1
+           |  (cs & 1);
+    }
+  },
+  tcnt0:  { bits: ['TC7','TC6','TC5','TC4','TC3','TC2','TC1','TC0'],  get() { return state.tcnt0 & 0xFF; } },
+  ocr0a:  { bits: ['OCA7','OCA6','OCA5','OCA4','OCA3','OCA2','OCA1','OCA0'], get() { return state.ocr0a & 0xFF; } },
+  ocr0b:  { bits: ['OCB7','OCB6','OCB5','OCB4','OCB3','OCB2','OCB1','OCB0'], get() { return state.ocr0b & 0xFF; } },
+  timsk0: { bits: ['-','-','-','-','-','OCIE0B','OCIE0A','TOIE0'], get() { return state.timsk & 7; } },
+  tifr0:  { bits: ['-','-','-','-','-','OCF0B','OCF0A','TOV0'],   get() { return state.tifr  & 7; } }
+};
+
+// =============================================================================
+// BUILD BIT CELLS
+// =============================================================================
+function buildRegBits() {
+  Object.keys(REGS).forEach(rk => {
+    const reg = REGS[rk];
+    const container = document.getElementById('bits-' + rk);
+    container.innerHTML = '';
+    for (let i = 7; i >= 0; i--) {
+      const cell = document.createElement('div');
+      cell.className = 'bit-cell';
+      cell.id = 'bit-' + rk + '-' + i;
+      cell.innerHTML =
+        `<span class="bit-num">${i}</span>` +
+        `<span class="bit-name">${reg.bits[7 - i]}</span>` +
+        `<span class="bit-val" id="bv-${rk}-${i}">0</span>`;
+      container.appendChild(cell);
+    }
+  });
+}
+
+function updateRegDisplay() {
+  Object.keys(REGS).forEach(rk => {
+    const v = REGS[rk].get();
+    document.getElementById('hex-' + rk).textContent =
+      '0x' + v.toString(16).toUpperCase().padStart(2, '0');
+    for (let i = 0; i < 8; i++) {
+      const bv = document.getElementById('bv-' + rk + '-' + i);
+      if (bv) bv.textContent = (v >> i) & 1;
+    }
+  });
+}
+
+// =============================================================================
+// FIELD APPLY
+// =============================================================================
+function applyField(field, val) {
+  val = parseInt(val);
+  if      (field === 'com0a')  state.com0a  = val;
+  else if (field === 'com0b')  state.com0b  = val;
+  else if (field === 'cs')     state.cs     = val;
+  else if (field === 'foc')    state.foc    = val;
+  else if (field === 'tcnt0')  state.tcnt0  = val;
+  else if (field === 'ocr0a')  state.ocr0a  = val;
+  else if (field === 'ocr0b')  state.ocr0b  = val;
+  else if (field === 'timsk')  state.timsk  = val;
+  else if (field === 'tifr')   state.tifr   = val;
+  refresh();
+}
+
+function applyWGM() {
+  const a = parseInt(document.getElementById('sel-wgm-a').value);
+  const b = parseInt(document.getElementById('sel-wgm-b').value);
+  state.wgm = (b << 2) | a;
+  refresh();
+}
+
+function refresh() {
+  updateRegDisplay();
+  drawBlockDiagram();
+  drawTimingDiagram();
+  updateMetrics();
+}
+
+// =============================================================================
+// HELPER: MODE / TOP
+// =============================================================================
+function getWGMName() {
+  const modes = ['Normal','Phase-correct PWM','CTC','Fast PWM',
+                 '/','Phase-correct PWM (OCR0A)','/','Fast PWM (OCR0A)'];
+  return modes[state.wgm] || '/';
+}
+
+function getPrescalerVal() { return PRESCALERS[state.cs & 7] || 0; }
+
+function getTopVal() {
+  if (state.wgm === 2 || state.wgm === 7) return state.ocr0a;
+  return 0xFF;
+}
+
+// =============================================================================
+// METRICS
+// =============================================================================
+function updateMetrics() {
+  const ps  = getPrescalerVal();
+  const top = getTopVal();
+  const mf  = document.getElementById('m-freq');
+  const mp  = document.getElementById('m-period');
+  const md  = document.getElementById('m-duty');
+  if (!ps || state.cs === 0) {
+    mf.textContent = 'stopped'; mp.textContent = '/'; md.textContent = '/'; return;
+  }
+  let freq, period;
+  if (state.wgm === 2) {
+    freq   = F_CPU / (2 * ps * (1 + top));
+    period = 1 / freq;
+    md.textContent = '50%';
+  } else if (state.wgm === 3) {
+    freq   = F_CPU / (ps * (1 + top));
+    period = 1 / freq;
+    md.textContent = state.com0a >= 2 ? Math.round(state.ocr0a / top * 100) + '%' : '/';
+  } else if (state.wgm === 1 || state.wgm === 5) {
+    freq   = F_CPU / (510 * ps);
+    period = 1 / freq;
+    md.textContent = Math.round(state.ocr0a / 0xFF * 100) + '%';
+  } else {
+    freq   = F_CPU / (256 * ps);
+    period = 1 / freq;
+    md.textContent = '/';
+  }
+  mf.textContent = freq >= 1000
+    ? (Math.round(freq / 10) / 100) + ' kHz'
+    : Math.round(freq) + ' Hz';
+  mp.textContent = period < 1e-3
+    ? (period * 1e6).toFixed(1) + ' µs'
+    : (period * 1e3).toFixed(2) + ' ms';
+}
+
+// =============================================================================
+// BLOCK DIAGRAM
+// =============================================================================
+const BLOCKS = [
+  { id:'prescaler', x:30,  y:50,  w:105, h:44, label:'Prescaler',     sub:'clk/N select',       color:'#0F6E56', reg:'tccr0b',
+    desc:'The prescaler divides the system clock (clkIO) by a factor set by CS0[2:0] in TCCR0B. Options: /1, /8, /64, /256, /1024 or external pin T0.' },
+  { id:'counter',   x:185, y:50,  w:120, h:44, label:'TCNTn',         sub:'8-bit counter',       color:'#185FA5', reg:'tcnt0',
+    desc:'8-bit counter register. Counts from BOTTOM (0x00) to TOP. Can be preloaded by writing directly. Generates TOV interrupt on overflow.' },
+  { id:'ctrl',      x:185, y:175, w:110, h:130, label:'Control logic', sub:'WGM / COM',          color:'#534AB7', reg:'tccr0a',
+    desc:'Interprets WGM0[2:0] and COM0A/B[1:0] to determine counting direction, TOP value, and OC0A/B pin behavior. Central hub of the timer.' },
+  { id:'ocra',      x:30,  y:175, w:105, h:44, label:'OCR0A',         sub:'compare A',           color:'#854F0B', reg:'ocr0a',
+    desc:'Output Compare Register A. Continuously compared to TCNT0. On match: OC0A toggled/set/cleared per COM0A. Can define TOP in CTC/Fast PWM (OCR0A) modes.' },
+  { id:'ocrb',      x:30,  y:260, w:105, h:44, label:'OCR0B',         sub:'compare B',           color:'#854F0B', reg:'ocr0b',
+    desc:'Output Compare Register B. Continuously compared to TCNT0. On match: OC0B toggled/set/cleared per COM0B bits in TCCR0A.' },
+  { id:'wgma',      x:355, y:140, w:115, h:44, label:'Waveform gen.', sub:'OC0A -> PD6',          color:'#993C1D', reg:'tccr0a',
+    desc:'Waveform generation unit for OC0A (pin PD6/pin 6). Controlled by COM0A[1:0] and WGM0[2:0]. Modes: Normal, CTC, Fast PWM, Phase-Correct PWM.' },
+  { id:'wgmb',      x:355, y:240, w:115, h:44, label:'Waveform gen.', sub:'OC0B -> PD5',          color:'#993C1D', reg:'tccr0a',
+    desc:'Waveform generation unit for OC0B (pin PD5/pin 5). Shares waveform mode with OC0A but uses independent OCR0B compare value.' },
+  { id:'irq',       x:355, y:340, w:115, h:44, label:'Interrupt req.', sub:'TOV / OCF0A / OCF0B', color:'#3B6D11', reg:'timsk0',
+    desc:'Three interrupt sources: TOV0 (overflow), OCF0A (compare match A), OCF0B (compare match B). Enabled in TIMSK0. Flags in TIFR0  /  write 1 to clear.' },
+];
+
+let activeBlock = null;
+
+function drawBlockDiagram() {
+  const c   = document.getElementById('blockCanvas');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  ctx.clearRect(0, 0, W, H);
+
+  const textSec = '#666';
+  const linePri = '#333';
+
+  // background
+  ctx.fillStyle = '#0D1117';
+  ctx.beginPath(); ctx.roundRect(0, 0, W, H, 8); ctx.fill();
+
+  // subtle grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  function arrow(x1,y1,x2,y2,color,dashed) {
+    ctx.save();
+    ctx.strokeStyle = color || linePri;
+    ctx.lineWidth   = 1;
+    if (dashed) ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    ctx.setLineDash([]);
+    const angle = Math.atan2(y2-y1, x2-x1);
+    ctx.beginPath();
+    ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-7*Math.cos(angle-0.4), y2-7*Math.sin(angle-0.4));
+    ctx.lineTo(x2-7*Math.cos(angle+0.4), y2-7*Math.sin(angle+0.4));
+    ctx.closePath();
+    ctx.fillStyle = color || linePri;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function lbl(text,x,y,color,size) {
+    ctx.save();
+    ctx.font = (size||9)+'px monospace';
+    ctx.fillStyle = color || textSec;
+    ctx.textAlign = 'center';
+    ctx.fillText(text, x, y);
+    ctx.restore();
+  }
+
+  // ---- Connections ----
+  // clkIO -> prescaler
+  arrow(0, 72, 30, 72, '#0F6E56');
+  lbl('clkIO', 15, 67, '#0F6E56');
+
+  // T0 external pin (dashed)
+  ctx.save(); ctx.strokeStyle='#444'; ctx.lineWidth=0.7; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(40,28); ctx.lineTo(82,28); ctx.lineTo(82,50); ctx.stroke();
+  ctx.setLineDash([]); ctx.restore();
+  lbl('T0 pin', 52, 23, '#555');
+
+  // prescaler -> counter
+  arrow(135, 72, 185, 72, '#185FA5');
+  lbl('clkTn', 160, 67, '#185FA5');
+
+  // counter -> right (overflow)
+  arrow(305, 72, 350, 72, '#3B6D11');
+  ctx.save(); ctx.font='9px monospace'; ctx.fillStyle='#3B6D11'; ctx.textAlign='left';
+  ctx.fillText('TOV↑', 352, 76); ctx.restore();
+
+  // counter -> ctrl (vertical)
+  arrow(245, 94, 245, 175, '#534AB7');
+
+  // OCR0A -> ctrl
+  arrow(135, 197, 185, 220, '#854F0B'+'cc');
+
+  // OCR0B -> ctrl
+  arrow(135, 282, 185, 258, '#854F0B'+'cc');
+
+  // ctrl -> waveform A
+  ctx.save(); ctx.strokeStyle='#993C1Daa'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(295,210); ctx.lineTo(320,210); ctx.lineTo(320,162); ctx.lineTo(355,162); ctx.stroke();
+  ctx.restore();
+  arrow(354,162,355,162,'#993C1D');
+
+  // ctrl -> waveform B
+  ctx.save(); ctx.strokeStyle='#993C1Daa'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(295,248); ctx.lineTo(330,248); ctx.lineTo(330,262); ctx.lineTo(355,262); ctx.stroke();
+  ctx.restore();
+  arrow(354,262,355,262,'#993C1D');
+
+  // ctrl -> irq
+  ctx.save(); ctx.strokeStyle='#3B6D11aa'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(295,280); ctx.lineTo(340,280); ctx.lineTo(340,362); ctx.lineTo(355,362); ctx.stroke();
+  ctx.restore();
+  arrow(354,362,355,362,'#3B6D11');
+
+  // OC0A output pin
+  ctx.save(); ctx.strokeStyle='#993C1D'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(470,162); ctx.lineTo(500,162); ctx.stroke();
+  ctx.font='bold 10px monospace'; ctx.fillStyle='#993C1D'; ctx.textAlign='left';
+  ctx.fillText('OC0A (PD6)', 503, 166); ctx.restore();
+
+  // OC0B output pin
+  ctx.save(); ctx.strokeStyle='#854F0B'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(470,262); ctx.lineTo(500,262); ctx.stroke();
+  ctx.font='bold 10px monospace'; ctx.fillStyle='#854F0B'; ctx.textAlign='left';
+  ctx.fillText('OC0B (PD5)', 503, 266); ctx.restore();
+
+  // IRQ -> CPU
+  ctx.save(); ctx.strokeStyle='#3B6D11'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(470,362); ctx.lineTo(500,362); ctx.stroke();
+  ctx.font='bold 10px monospace'; ctx.fillStyle='#3B6D11'; ctx.textAlign='left';
+  ctx.fillText('-> CPU IRQ', 503, 366); ctx.restore();
+
+  // DATA BUS vertical bar
+  ctx.save(); ctx.strokeStyle='#222'; ctx.lineWidth=4;
+  ctx.beginPath(); ctx.moveTo(14,140); ctx.lineTo(14,410); ctx.stroke();
+  ctx.save(); ctx.translate(7,275); ctx.rotate(-Math.PI/2);
+  ctx.font='9px monospace'; ctx.fillStyle='#444'; ctx.textAlign='center';
+  ctx.fillText('DATA BUS', 0, 0); ctx.restore(); ctx.restore();
+
+  // Data bus taps (dashed)
+  [185,275,330,372].forEach(y => {
+    ctx.save(); ctx.strokeStyle='#2a2a2a'; ctx.lineWidth=1; ctx.setLineDash([2,2]);
+    ctx.beginPath(); ctx.moveTo(14,y); ctx.lineTo(30,y); ctx.stroke();
+    ctx.setLineDash([]); ctx.restore();
+  });
+
+  // WGM / prescaler status footer
+  ctx.save();
+  ctx.font='bold 10px monospace'; ctx.fillStyle='#4da6ff'; ctx.textAlign='left';
+  ctx.fillText('Mode: ' + getWGMName(), 14, H-14);
+  const ps = getPrescalerVal();
+  ctx.fillStyle='#555'; ctx.textAlign='right';
+  ctx.fillText(ps ? 'Prescaler: /' + ps : 'Timer: STOPPED', W-14, H-14);
+  ctx.restore();
+
+  // ---- Draw blocks ----
+  BLOCKS.forEach(b => {
+    const hl = activeBlock === b.id;
+    ctx.save();
+    ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 7);
+    ctx.fillStyle   = b.color + '28'; ctx.fill();
+    ctx.strokeStyle = hl ? '#4da6ff' : b.color + 'cc';
+    ctx.lineWidth   = hl ? 2 : 0.8;
+    ctx.stroke();
+
+    ctx.fillStyle = hl ? '#4da6ff' : b.color;
+    ctx.font      = 'bold 11px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(b.label, b.x + b.w/2, b.y + b.h/2 - 4);
+
+    ctx.fillStyle = '#666';
+    ctx.font      = '9px monospace';
+    ctx.fillText(b.sub, b.x + b.w/2, b.y + b.h/2 + 9);
+    ctx.restore();
+
+    if (hl) {
+      ctx.save();
+      ctx.strokeStyle='#4da6ff44'; ctx.lineWidth=6;
+      ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 7); ctx.stroke();
+      ctx.restore();
+    }
+  });
+}
+
+// Block click
+document.getElementById('blockCanvas').addEventListener('click', function(e) {
+  const rect   = this.getBoundingClientRect();
+  const scaleX = this.width  / rect.width;
+  const scaleY = this.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top)  * scaleY;
+  let hit = null;
+  BLOCKS.forEach(b => { if (mx>=b.x && mx<=b.x+b.w && my>=b.y && my<=b.y+b.h) hit=b; });
+  document.querySelectorAll('.reg-block').forEach(el => el.style.outline='none');
+  if (hit) {
+    activeBlock = hit.id;
+    document.getElementById('block-info').innerHTML =
+      `<strong>${hit.label} (${hit.sub})</strong><br>${hit.desc}`;
+    const target = document.getElementById('reg-' + hit.reg);
+    if (target) {
+      target.style.outline = '1.5px solid #4da6ff';
+      target.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    }
+  } else {
+    activeBlock = null;
+    document.getElementById('block-info').innerHTML =
+      '<strong>Click any block</strong> to see its description and have the associated register highlighted on the right panel.';
+  }
+  drawBlockDiagram();
+});
+
+// =============================================================================
+// TIMING DIAGRAM
+// =============================================================================
+function drawTimingDiagram() {
+  const c   = document.getElementById('timingCanvas');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  ctx.clearRect(0,0,W,H);
+
+  ctx.fillStyle = '#0D1117'; ctx.fillRect(0,0,W,H);
+
+  const wgm   = state.wgm;
+  const top   = getTopVal();
+  const ocr0a = Math.min(state.ocr0a, top);
+  const ocr0b = Math.min(state.ocr0b, top);
+
+  const PAD = { l:52, r:14, t:14, b:34 };
+  const drawW = W - PAD.l - PAD.r;
+
+  const channels = [
+    { label:'TCNT0', y:PAD.t,      h:64, color:'#4da6ff' },
+    { label:'OC0A',  y:PAD.t+74,   h:38, color:'#993C1D' },
+    { label:'OC0B',  y:PAD.t+122,  h:38, color:'#854F0B' },
+    { label:'TOVn',  y:PAD.t+170,  h:38, color:'#3B6D11' },
+  ];
+
+  // channel backgrounds
+  channels.forEach(ch => {
+    ctx.fillStyle   = '#111418';
+    ctx.strokeStyle = '#1e2530';
+    ctx.lineWidth   = 0.5;
+    ctx.beginPath(); ctx.roundRect(PAD.l, ch.y, drawW, ch.h, 3); ctx.fill(); ctx.stroke();
+    ctx.fillStyle   = ch.color;
+    ctx.font        = '10px monospace';
+    ctx.textAlign   = 'right';
+    ctx.fillText(ch.label, PAD.l-4, (ch.y*2+ch.h)/2+3);
+  });
+
+  // Build count sequence
+  let N, countSeq=[];
+  if (wgm===1||wgm===5) {
+    N=Math.min(4*top+4,512);
+    let v=0,dir=1;
+    for(let i=0;i<N;i++){countSeq.push(v);v+=dir;if(v>top){dir=-1;v=top-1;}else if(v<0){dir=1;v=1;}}
+  } else if (wgm===2||wgm===6) {
+    N=Math.min(3*(top+1),512);
+    for(let i=0;i<N;i++) countSeq.push(i%(top+1));
+  } else if (wgm===3||wgm===7) {
+    N=Math.min(3*(top+1),512);
+    for(let i=0;i<N;i++) countSeq.push(i%(top+1));
+  } else {
+    N=512; for(let i=0;i<N;i++) countSeq.push(i%256);
+  }
+
+  const xStep = drawW / N;
+  const ch0   = channels[0];
+  const countH= ch0.h - 10;
+  const countY0 = ch0.y + ch0.h - 5;
+
+  // TCNT0 waveform
+  ctx.save(); ctx.strokeStyle='#4da6ff'; ctx.lineWidth=1.5; ctx.beginPath();
+  for(let i=0;i<N;i++){
+    const x = PAD.l + i*xStep;
+    const y = countY0 - (countSeq[i]/255)*countH;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke(); ctx.restore();
+
+  // OCR0A dashed reference
+  const ocraY = countY0 - (ocr0a/255)*countH;
+  ctx.save(); ctx.strokeStyle='#854F0B88'; ctx.lineWidth=0.8; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(PAD.l,ocraY); ctx.lineTo(PAD.l+drawW,ocraY); ctx.stroke();
+  ctx.setLineDash([]); ctx.fillStyle='#854F0B'; ctx.font='8px monospace'; ctx.textAlign='right';
+  ctx.fillText('A='+ocr0a, PAD.l-2, ocraY+3); ctx.restore();
+
+  // OCR0B dashed reference
+  if (ocr0b !== ocr0a) {
+    const ocrbY = countY0 - (ocr0b/255)*countH;
+    ctx.save(); ctx.strokeStyle='#0F6E5688'; ctx.lineWidth=0.8; ctx.setLineDash([2,4]);
+    ctx.beginPath(); ctx.moveTo(PAD.l,ocrbY); ctx.lineTo(PAD.l+drawW,ocrbY); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle='#0F6E56'; ctx.font='8px monospace'; ctx.textAlign='right';
+    ctx.fillText('B='+ocr0b, PAD.l-2, ocrbY+3); ctx.restore();
+  }
+
+  // OC0A waveform
+  const oca = channels[1];
+  if (state.com0a >= 2) {
+    ctx.save(); ctx.strokeStyle='#FF6B4A'; ctx.lineWidth=1.5; ctx.beginPath();
+    let hi=false;
+    for(let i=0;i<N;i++){
+      const x=PAD.l+i*xStep;
+      const v=countSeq[i]||0, pv=countSeq[i-1]||0;
+      if(wgm===3||wgm===7){ if(v===0&&pv!==0) hi=true; if(v===top&&pv===top-1) hi=false; }
+      if(v===ocr0a&&pv!==ocr0a&&v!==0){
+        if(wgm===2||wgm===6) hi=false;
+        else hi = (state.com0a===3);
+      }
+      const y=hi?oca.y+5:oca.y+oca.h-5;
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.stroke(); ctx.restore();
+  } else {
+    ctx.save(); ctx.strokeStyle='#993C1D44'; ctx.lineWidth=0.7; ctx.setLineDash([2,4]);
+    ctx.beginPath(); ctx.moveTo(PAD.l,oca.y+oca.h/2); ctx.lineTo(PAD.l+drawW,oca.y+oca.h/2); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle='#993C1D88'; ctx.font='9px monospace'; ctx.textAlign='center';
+    ctx.fillText('OC0A disconnected', PAD.l+drawW/2, oca.y+oca.h/2+3); ctx.restore();
+  }
+
+  // OC0B waveform
+  const ocb = channels[2];
+  if (state.com0b >= 2) {
+    ctx.save(); ctx.strokeStyle='#C8860A'; ctx.lineWidth=1.5; ctx.beginPath();
+    let hi=false;
+    for(let i=0;i<N;i++){
+      const x=PAD.l+i*xStep;
+      const v=countSeq[i]||0, pv=countSeq[i-1]||0;
+      if(wgm===3||wgm===7){ if(v===0&&pv!==0) hi=true; if(v===top&&pv===top-1) hi=false; }
+      if(v===ocr0b&&pv!==ocr0b&&v!==0){
+        if(wgm===2||wgm===6) hi=false;
+        else hi = (state.com0b===3);
+      }
+      const y=hi?ocb.y+5:ocb.y+ocb.h-5;
+      if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.stroke(); ctx.restore();
+  } else {
+    ctx.save(); ctx.strokeStyle='#854F0B44'; ctx.lineWidth=0.7; ctx.setLineDash([2,4]);
+    ctx.beginPath(); ctx.moveTo(PAD.l,ocb.y+ocb.h/2); ctx.lineTo(PAD.l+drawW,ocb.y+ocb.h/2); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle='#854F0B88'; ctx.font='9px monospace'; ctx.textAlign='center';
+    ctx.fillText('OC0B disconnected', PAD.l+drawW/2, ocb.y+ocb.h/2+3); ctx.restore();
+  }
+
+  // TOVn pulses
+  const tov = channels[3];
+  ctx.save(); ctx.strokeStyle='#5BB450'; ctx.lineWidth=1.5; ctx.beginPath();
+  for(let i=0;i<N;i++){
+    const x  = PAD.l+i*xStep;
+    const v  = countSeq[i]||0;
+    const pv = countSeq[Math.max(0,i-1)]||0;
+    const isTOV = (wgm===1||wgm===5) ? (v===0&&pv===1) : (v===0&&pv>0);
+    const y  = isTOV ? tov.y+5 : tov.y+tov.h-5;
+    if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.stroke(); ctx.restore();
+
+  // Bottom axis & mode label
+  ctx.save();
+  ctx.strokeStyle='#2d2d2d'; ctx.lineWidth=0.5;
+  ctx.beginPath(); ctx.moveTo(PAD.l,H-PAD.b+4); ctx.lineTo(PAD.l+drawW,H-PAD.b+4); ctx.stroke();
+  ctx.fillStyle='#555'; ctx.font='9px monospace'; ctx.textAlign='center';
+  ctx.fillText('<< '+N+' clock cycles shown  /  WGM: '+getWGMName(), PAD.l+drawW/2, H-PAD.b+18);
+  ctx.restore();
+}
+
+// =============================================================================
+// INIT
+// =============================================================================
+buildRegBits();
+updateRegDisplay();
+drawBlockDiagram();
+drawTimingDiagram();
+updateMetrics();
+</script>
+

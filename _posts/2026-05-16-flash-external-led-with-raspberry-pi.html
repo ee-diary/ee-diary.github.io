@@ -1,0 +1,58 @@
+---
+layout: post
+title: "Flash an External LED with Raspberry Pi Pico: A Quick Guide"
+date: 2026-05-16 19:29:32 +0000
+description: "The Raspberry Pi Pico is an incredibly versatile microcontroller, perfect for diving into embedded electronics. One of the most fundamental and rewarding"
+---
+<p>The Raspberry Pi Pico is an incredibly versatile microcontroller, perfect for diving into embedded electronics. One of the most fundamental and rewarding projects for any beginner is making an LED flash. This tutorial will guide you through connecting an external LED to your Pico and programming it with MicroPython to create a simple, rhythmic blink.</p>
+
+<h2>Understanding LED Connections and Resistors</h2>
+<p>Before we light up our LED, it is crucial to understand how to connect it safely. LEDs are current-sensitive devices and require a current-limiting resistor to prevent damage. There are two common ways to connect an LED to a microcontroller pin:</p>
+<ul>
+<li><strong>Current-Sourcing Mode:</strong> The LED turns ON when the port pin outputs a logic HIGH signal (e.g., +3.3V). The current flows from the pin, through the resistor, through the LED, and to ground.</li><div class="separator" style="clear: both; text-align: center;"><a href="https://blogger.googleusercontent.com/img/a/AVvXsEjDdvn2qPrQH3qLTT4NLmm0LeOUjxvpAbJ1h0oYerAsvM0hl_oDA41pLf2KyVLbFw9dvI0IrO29LbO6Y1UmJODZdRZGB4Ia8tjENJ-odE6STndu25zx-RWMBMcglriXIS8qWKbuHXBTakExcVigAMOy_RAObY5qvQKA92BZDppHkRcNS0JfmGdW3feO7skN" style="margin-left: 1em; margin-right: 1em;"><img alt="LED Current-Sourcing Mode" data-original-height="473" data-original-width="406" src="https://blogger.googleusercontent.com/img/a/AVvXsEjDdvn2qPrQH3qLTT4NLmm0LeOUjxvpAbJ1h0oYerAsvM0hl_oDA41pLf2KyVLbFw9dvI0IrO29LbO6Y1UmJODZdRZGB4Ia8tjENJ-odE6STndu25zx-RWMBMcglriXIS8qWKbuHXBTakExcVigAMOy_RAObY5qvQKA92BZDppHkRcNS0JfmGdW3feO7skN=s16000" title="LED Current-Sourcing Mode" /></a></div><br />
+<li><strong>Current-Sinking Mode:</strong> The LED turns ON when the port pin outputs a logic LOW signal (e.g., 0V). In this setup, the LED is connected to the positive supply rail, and the current flows from the supply, through the LED, through the resistor, and then sinks into the port pin when it's low.</li></ul><div><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span><span>&nbsp;&nbsp; &nbsp;</span><div class="separator" style="clear: both; text-align: center;"><a href="https://blogger.googleusercontent.com/img/a/AVvXsEhetBFGZJotzp4NMptGQWXpRTGLw_eoVIvM3mR8QTrDZftGaM6qzUV9EIydteCZmGjbNPee1Ud0C_dF2EX0mtwPlTyLFiIuWnGL4frBwlsuTEPSi-hCGv3wHnC6-ge3HoLa9022MMAhKd7pkM0s43YVIXOqiBsZKfaBaVa0LY54l7XahOg94a7_NBbJxpY1" style="margin-left: 1em; margin-right: 1em;"><img alt="LED Current-Sinking Mode" data-original-height="484" data-original-width="410" src="https://blogger.googleusercontent.com/img/a/AVvXsEhetBFGZJotzp4NMptGQWXpRTGLw_eoVIvM3mR8QTrDZftGaM6qzUV9EIydteCZmGjbNPee1Ud0C_dF2EX0mtwPlTyLFiIuWnGL4frBwlsuTEPSi-hCGv3wHnC6-ge3HoLa9022MMAhKd7pkM0s43YVIXOqiBsZKfaBaVa0LY54l7XahOg94a7_NBbJxpY1=s16000" title="Current-Sinking Mode" /></a></div><br />For this project, we'll use the current-sourcing method, which is often simpler for initial setups. The diagram below illustrates an LED connected in current-sourcing mode.</div>
+
+<h3>Calculating the Current-Limiting Resistor</h3><p>To determine the appropriate resistor value, we need to consider the Pico's output voltage, the LED's forward voltage drop, and the desired current through the LED. For a typical red LED, the forward voltage drop is around 2V, and a safe operating current is about 3mA. The Raspberry Pi Pico's GPIO pins operate at 3.3V.</p>
+<p>Using Ohm's Law (R = V/I), the resistor value can be calculated as follows:</p>
+<p><code>R = (Pico Output Voltage - LED Forward Voltage) / Desired LED Current</code><br />
+<code>R = (3.3V - 2V) / 0.003A</code><br />
+<code>R = 1.3V / 0.003A</code><br />
+<code>R = 433 ohms</code></p>
+<p>The closest standard resistor value is <strong>470 ohms</strong>, which we will use for our circuit.</p>
+
+<h2>Hardware Setup: Connecting the LED to Raspberry Pi Pico</h2>
+<p>Our project will connect an external LED to General Purpose Input/Output (GPIO) pin 0 (GP0), which is physical pin 1 on the Pico board. The connection will be as follows:</p>
+<ol>
+<li>Connect one leg of the 470-ohm resistor to GP2 on the Raspberry Pi Pico.</li>
+<li>Connect the other leg of the 470-ohm resistor to the anode (longer leg, positive) of the LED.</li>
+<li>Connect the cathode (shorter leg, negative) of the LED to a GND (ground) pin on the Raspberry Pi Pico.</li></ol><p>The circuit diagram below provides a visual representation of the Raspberry Pi Pico and the external LED you'll be connecting.</p><div class="separator" style="clear: both; text-align: center;"><a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhWJML_aQXlIajkd7AMDiNsBquKs_eeYZdp3sfMXFIP5jPcAtW0UZRzX3gEcBVsrC-v12aLQzDzPUjQIItR2dfKyjuBIGxnSPD4zs6tWzS8U0MADVW66xio7oNbLJCM9lmpiM_AOozPt61eqd_02aRu4S23H4blyVMxvMJyIyzUYIjK4Fk6vIFgMcZKxGb7/s492/Raspberry%20Pi%20Pico%202%20LED%20blink.gif" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img alt="Raspberry Pi Pico 2 LED blink" border="0" data-original-height="492" data-original-width="488" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhWJML_aQXlIajkd7AMDiNsBquKs_eeYZdp3sfMXFIP5jPcAtW0UZRzX3gEcBVsrC-v12aLQzDzPUjQIItR2dfKyjuBIGxnSPD4zs6tWzS8U0MADVW66xio7oNbLJCM9lmpiM_AOozPt61eqd_02aRu4S23H4blyVMxvMJyIyzUYIjK4Fk6vIFgMcZKxGb7/s16000/Raspberry%20Pi%20Pico%202%20LED%20blink.gif" title="Raspberry Pi Pico 2 LED blink" /></a></div>
+
+<h2>Programming the Pico: Flashing with MicroPython</h2>
+<p>With the hardware connected, it's time to program our Raspberry Pi Pico using MicroPython. This code will toggle the LED on and off every second.</p>
+<p>I used the following code, which is straightforward and effective:</p><pre lang="cpp"><code>from machine import Pin
+import utime
+LED = Pin(2, Pin.OUT)               # LED at GP2
+
+while True:                         # DO FOREVER
+    LED.value(1)                    # LED ON
+    utime.sleep(1)                  # Wait 1 second
+    LED.value(0)                    # LED OFF
+    utime.sleep(1)                  # Wait 1 second
+    </code></pre><p>Let's break down what each part of this code does:</p>
+<ul>
+<li><code>from machine import Pin</code>: This line imports the <code>Pin</code> class from the <code>machine</code> module, which allows us to control the Pico's GPIO pins.</li>
+<li><code>import utime</code>: The <code>utime</code> module provides time-related functions, specifically <code>sleep()</code> for introducing delays.</li>
+<li><code>LED = Pin(2, Pin.OUT)</code>: Here, we initialize GP2 (pin number 2) as an output pin. We assign this configured pin object to the variable <code>LED</code> for easy reference.</li>
+<li><code>while True:</code>: This creates an infinite loop, ensuring the code inside it runs continuously after being uploaded to the Pico.</li>
+<li><code>LED.value(1)</code>: Sets the voltage of GP2 to HIGH (3.3V), turning the LED ON.</li>
+<li><code>utime.sleep(1)</code>: Pauses the program for 1 second.</li>
+<li><code>LED.value(0)</code>: Sets the voltage of GP2 to LOW (0V), turning the LED OFF.</li>
+<li><code>utime.sleep(1)</code>: Pauses the program for another 1 second.</li>
+</ul>
+<p>This sequence causes the LED to flash on for one second, then off for one second, repeating indefinitely. For more advanced projects and to explore the full capabilities of the Raspberry Pi Pico, you might find resources like&nbsp;<a href="https://www.icexplorer.online/2026/05/raspberry-pi-pico-2.html">Raspberry Pi Pico 2</a>&nbsp;or even general Raspberry Pi tutorials like&nbsp;<a href="https://www.icexplorer.online/2026/03/raspberry-pi-3.html">Raspberry Pi 3</a>&nbsp;helpful.</p>
+
+<h2>Next Steps: Beyond Basic Flashing</h2>
+<p>This simple LED flashing project is just the beginning. You can expand on this by changing the delay times, adding more LEDs, or even creating complex patterns. For instance, you could implement a Morse code flasher, like the SOS signal (three short flashes, three long flashes, three short flashes), which involves varying the <code>utime.sleep()</code> durations. This demonstrates how basic principles can lead to more sophisticated applications.</p>
+
+<h2>Conclusion</h2>
+<p>You have successfully connected an external LED to your&nbsp;<a href="https://www.icexplorer.online/2026/05/raspberry-pi-pico-2.html">Raspberry Pi Pico 2</a>&nbsp;and programmed it to flash using MicroPython. This foundational project is essential for anyone starting with microcontrollers, providing a clear understanding of hardware connections, resistor calculations, and basic programming logic. Keep experimenting with different timings and patterns to deepen your understanding!</p>

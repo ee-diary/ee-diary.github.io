@@ -1,0 +1,473 @@
+---
+layout: post
+title: "Raspberry Pi Pico 2"
+date: 2026-05-16 09:18:16 +0000
+description: "Raspberry Pi Pico 2: interactive pinout explorer with pin functions, design files and datasheet."
+---
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+.p2-w{all:initial;display:block;font-family:'Share Tech Mono','Courier New',monospace;color:#d0d0d0;background:#0D1117;border-radius:12px;padding:10px;max-width:1020px;margin:0 auto;box-sizing:border-box;}
+.p2-w *{box-sizing:border-box;}
+.p2-w button{all:unset;}
+.p2-hdr{display:flex;align-items:center;justify-content:space-between;background:#0D1117;border:1px solid #3c3c3c;border-radius:10px;padding:9px 14px;margin-bottom:10px;position:relative;overflow:hidden;}
+.p2-hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#c0392b,#e74c3c,transparent);}
+.p2-hdr-logo{display:flex;align-items:center;gap:10px;}
+.p2-logo-svg{width:28px;height:28px;flex-shrink:0;color:#c0392b;}
+.p2-hdr-title{font-family:'Orbitron','Arial Black',sans-serif;font-size:15px;font-weight:900;color:#d4d4d4;letter-spacing:.12em;display:block;}
+.p2-hdr-sub{font-size:13px;color:#888;margin-top:2px;display:block;}
+.p2-badge{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:#c0392b;background:rgba(192,57,43,0.10);border:1px solid rgba(192,57,43,0.30);border-radius:4px;padding:3px 8px;letter-spacing:.06em;}
+.p2-pulse{width:7px;height:7px;border-radius:50%;background:#c0392b;box-shadow:0 0 8px #c0392b;animation:p2Pulse 2s infinite;flex-shrink:0;}
+@keyframes p2Pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.p2-main{display:flex;gap:10px;align-items:flex-start;}
+.p2-board-wrap{flex:0 0 auto;width:300px;background:#0D1117;border:1px solid #2d2d2d;border-radius:10px;padding:8px;}
+.p2-board-wrap svg{width:100%;height:auto;display:block;touch-action:manipulation;}
+.p2-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;}
+.p2-detail{background:#0D1117;border:1px solid #3c3c3c;border-radius:10px;overflow:hidden;}
+.p2-empty{padding:28px 20px;text-align:center;color:#888;}
+.p2-arrow{font-size:28px;margin-bottom:10px;display:block;animation:p2Arr 1.8s infinite;}
+@keyframes p2Arr{0%,100%{opacity:.3;transform:translateX(-4px);}50%{opacity:.9;transform:translateX(4px);}}
+.p2-empty p{font-size:13px;line-height:1.6;color:#aaa;margin:0;}
+.p2-det-content{display:none;}
+.p2-det-content.show{display:block;}
+.p2-det-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #2d2d2d;}
+.p2-det-badge{width:56px;height:56px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;border:2px solid;font-family:'Share Tech Mono',monospace;}
+.p2-det-name{flex:1;}
+.p2-det-id{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;line-height:1;color:#d4d4d4;display:block;}
+.p2-det-full{font-size:13px;color:#6a6a6a;margin-top:3px;display:block;}
+.p2-funcs{display:flex;flex-wrap:wrap;gap:5px;padding:8px 14px;border-bottom:1px solid #2d2d2d;}
+.p2-func-chip{padding:5px 12px;border-radius:4px;font-size:12px;font-weight:700;border:1px solid;letter-spacing:.06em;display:inline-block;}
+.p2-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.p2-info-cell{padding:8px 14px;border-bottom:1px solid #2d2d2d;border-right:1px solid #2d2d2d;}
+.p2-info-cell:nth-child(2n){border-right:none;}
+.p2-info-cell:nth-last-child(-n+2){border-bottom:none;}
+.p2-info-label{font-size:11px;color:#6a6a6a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;display:block;}
+.p2-info-value{font-size:14px;color:#d4d4d4;font-weight:700;display:block;}
+.p2-alt-sec{padding:8px 14px;border-top:1px solid #2d2d2d;}
+.p2-alt-label{font-size:11px;color:#6a6a6a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;display:block;}
+.p2-alt-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.p2-alt-chip{padding:4px 10px;border-radius:3px;font-size:12px;background:#1c2128;border:1px solid #3c3c3c;color:#9cdcfe;display:inline-block;}
+.p2-note{padding:10px 14px;border-top:1px solid #2d2d2d;font-size:12px;color:#6a9fb5;line-height:1.6;}
+.p2-filter-sec{background:#0D1117;border:1px solid #3c3c3c;border-radius:10px;overflow:hidden;padding:10px 10px 0;}
+.p2-panel-box{border:1px solid #c0392b;border-radius:6px;padding:8px;background:#1a0d0d;}
+.p2-panel-label{font-size:10px;color:#c0392b;letter-spacing:.12em;text-transform:uppercase;font-family:'Share Tech Mono',monospace;margin-bottom:8px;display:block;font-weight:700;}
+.p2-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
+.p2-fbtn{display:flex;align-items:center;justify-content:center;height:30px;width:100%;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.06em;font-family:'Share Tech Mono',monospace;cursor:pointer;user-select:none;outline:none;border:1px solid rgba(255,255,255,0.18);transition:all .12s;box-shadow:0 2px 4px rgba(0,0,0,0.5);}
+.p2-fbtn:hover{background:rgba(255,255,255,0.10)!important;border-color:rgba(255,255,255,0.45)!important;}
+.p2-fbtn.active{border-color:currentColor!important;box-shadow:0 0 8px currentColor;transform:translateY(1px);}
+.p2-pinlist{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+.p2-pinlist.open{max-height:400px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#3c3c3c transparent;}
+.p2-prow{display:flex;align-items:center;gap:7px;padding:5px 10px;cursor:pointer;border-bottom:1px solid rgba(60,60,60,.5);}
+.p2-prow:hover{background:rgba(255,255,255,.04);}
+.p2-prow.on{background:rgba(192,57,43,.12);border-left:2px solid #c0392b;padding-left:8px;}
+.p2-pbadge{min-width:44px;height:24px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.p2-pname{font-size:12px;flex:1;color:#9d9d9d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.p2-ptag{padding:2px 6px;border-radius:2px;font-size:10px;font-weight:700;flex-shrink:0;}
+.p2-list-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;cursor:pointer;background:#0D1117;border-top:1px solid #2d2d2d;}
+.p2-list-toggle:hover{background:#160e0e;}
+.p2-list-toggle span{font-size:13px;color:#888;}
+.p2-list-toggle b{color:#c0392b;}
+.p2-legend{display:flex;flex-wrap:wrap;gap:5px;padding:7px 14px;border-top:1px solid #2d2d2d;}
+.p2-ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0;display:inline-block;}
+.p2-leg{display:flex;align-items:center;gap:4px;font-size:11px;color:#888;}
+.p2-tt{position:fixed;background:#0D1117;border:1px solid #3c3c3c;border-radius:8px;padding:9px 13px;font-size:12px;pointer-events:none;z-index:99999;display:none;min-width:180px;max-width:280px;box-shadow:0 4px 24px rgba(0,0,0,.8);font-family:'Share Tech Mono',monospace;color:#d4d4d4;}
+.p2-tt.show{display:block;}
+.p2-tt .ttn{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:900;margin-bottom:4px;display:block;}
+.p2-tt .ttnote{color:#6a9fb5;font-size:11px;line-height:1.5;display:block;}
+@media(max-width:660px){.p2-main{flex-direction:column;}.p2-board-wrap{width:100%;}.p2-btns{grid-template-columns:repeat(3,1fr);}}
+</style>
+
+<div class="p2-w" id="p2Widget">
+  <div class="p2-hdr">
+    <div class="p2-hdr-logo">
+      <svg class="p2-logo-svg" fill="currentColor" viewbox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+        <path d="M25 3C18 3 13 8 13 15c0 2 .6 3.8 1.5 5.3C12.2 21.5 10 24 10 27.5c0 3.5 2.5 6.5 6 7.7V40c0 3.3 2.7 6 6 6h6c3.3 0 6-2.7 6-6v-4.8c3.5-1.2 6-4.2 6-7.7 0-3.5-2.2-6-4.5-7.2.9-1.5 1.5-3.3 1.5-5.3C37 8 32 3 25 3z">
+      </path></svg>
+      <div>
+        <span class="p2-hdr-title">RASPBERRY PI PICO 2</span>
+        <span class="p2-hdr-sub">Interactive Pinout Explorer · RP2350 · Click any pin</span>
+      </div>
+    </div>
+    <div style="align-items: center; display: flex; gap: 8px;">
+      <span class="p2-badge">RP2350 · 150MHz</span>
+      <div class="p2-pulse"></div>
+    </div>
+  </div>
+
+  <div class="p2-main">
+    <div class="p2-board-wrap">
+      <svg id="p2SVG" style="overflow: visible;" viewbox="0 -20 220 660" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="p2-right">
+      <div class="p2-detail" id="p2Detail">
+        <div class="p2-empty" id="p2Empty">
+          <span class="p2-arrow">←</span>
+          <p>Click any pin on the board<br />to see full details here</p>
+        </div>
+        <div class="p2-det-content" id="p2DetContent">
+          <div class="p2-det-bar">
+            <div class="p2-det-badge" id="p2DetBadge"></div>
+            <div class="p2-det-name">
+              <span class="p2-det-id" id="p2DetId"></span>
+              <span class="p2-det-full" id="p2DetFull"></span>
+            </div>
+          </div>
+          <div class="p2-funcs" id="p2Funcs"></div>
+          <div class="p2-info-grid" id="p2InfoGrid"></div>
+          <div class="p2-alt-sec" id="p2AltSec">
+            <span class="p2-alt-label">Alternate Functions</span>
+            <div class="p2-alt-chips" id="p2AltChips"></div>
+          </div>
+          <div class="p2-note" id="p2Note"></div>
+        </div>
+      </div>
+      <div class="p2-filter-sec">
+        <div class="p2-panel-box">
+          <span class="p2-panel-label">◆ Highlight by Function</span>
+          <div class="p2-btns" id="p2Btns"></div>
+        </div>
+        <div class="p2-list-toggle" onclick="p2Toggle()">
+          <span>PIN LIST &nbsp;<b id="p2ListCnt"></b></span>
+          <span id="p2ToggleIcon" style="color: #c0392b;">▼ SHOW</span>
+        </div>
+        <div class="p2-pinlist" id="p2PinList"><div id="p2Rows"></div></div>
+        <div class="p2-legend" id="p2Legend"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="p2-tt" id="p2TT"></div>
+
+<script>
+(function(){
+'use strict';
+var NS='http://www.w3.org/2000/svg';
+var svg=document.getElementById('p2SVG');
+function mk(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+function tx(s,a){var e=mk('text',a);e.textContent=s;return e;}
+function ap(p,c){p.appendChild(c);return c;}
+
+var defs=ap(svg,mk('defs',{}));
+function lg(id,x1,y1,x2,y2,stops){
+  var g=mk('linearGradient',{id:id,x1:x1,y1:y1,x2:x2,y2:y2});
+  stops.forEach(function(s){var st=mk('stop',{offset:s[0]});st.setAttribute('stop-color',s[1]);g.appendChild(st);});
+  defs.appendChild(g);
+}
+lg('p2PcbG','0','0','1','1',[['0%','#1a3a1a'],['50%','#112810'],['100%','#0c1e0c']]);
+lg('p2ChipG','0','0','1','1',[['0%','#1e1e1e'],['100%','#080808']]);
+lg('p2SilvG','0','0','0','1',[['0%','#d8d8d8'],['50%','#a8a8a8'],['100%','#787878']]);
+lg('p2UsbG','0','0','1','0',[['0%','#e0e0e0'],['40%','#ffffff'],['70%','#d0d0d0'],['100%','#b0b0b0']]);
+
+var pat=mk('pattern',{id:'p2Dots',width:'16',height:'16',patternUnits:'userSpaceOnUse'});
+ap(pat,mk('circle',{cx:'8',cy:'8',r:'0.6',fill:'rgba(100,220,100,0.10)'}));
+defs.appendChild(pat);
+
+var gfilt=mk('filter',{id:'p2Glow',x:'-60%',y:'-60%',width:'220%',height:'220%'});
+var gb=mk('feGaussianBlur',{stdDeviation:'3.5',result:'blur'});
+gfilt.appendChild(gb);
+var gfm=mk('feMerge',{});
+ap(gfm,mk('feMergeNode',{in:'blur'}));ap(gfm,mk('feMergeNode',{in:'SourceGraphic'}));
+gfilt.appendChild(gfm);defs.appendChild(gfilt);
+
+/* ── BOARD BODY ── */
+ap(svg,mk('rect',{x:'0',y:'0',width:'220',height:'620',rx:'10',fill:'url(#p2PcbG)',stroke:'#0a1f0a','stroke-width':'2'}));
+ap(svg,mk('rect',{x:'0',y:'0',width:'220',height:'620',rx:'10',fill:'url(#p2Dots)'}));
+ap(svg,mk('rect',{x:'1',y:'1',width:'218',height:'618',rx:'9',fill:'none',stroke:'rgba(100,220,100,0.09)','stroke-width':'1'}));
+
+/* Mounting holes */
+[{cx:5.5,cy:5.5},{cx:214.5,cy:5.5},{cx:5.5,cy:614.5},{cx:214.5,cy:614.5}].forEach(function(h){
+  ap(svg,mk('circle',{cx:h.cx,cy:h.cy,r:'3.5',fill:'#061206',stroke:'#1a3a1a','stroke-width':'1'}));
+});
+
+/* ── Micro-USB connector — top centre ── */
+var ux=60,uy=-18,uw=100,uh=50;
+ap(svg,mk('rect',{x:ux,y:uy,width:uw,height:uh,rx:'5',fill:'url(#p2UsbG)',stroke:'#999','stroke-width':'1.5'}));
+ap(svg,mk('rect',{x:ux+4,y:uy+4,width:uw-8,height:uh-8,rx:'3',fill:'url(#p2UsbG)'}));
+ap(svg,mk('ellipse',{cx:ux+uw/2,cy:uy+uh-8,rx:'13',ry:'8',fill:'#111',stroke:'#555','stroke-width':'1'}));
+ap(svg,tx('micro USB',{fill:'#555','font-family':'monospace','font-size':'6','text-anchor':'middle',x:''+(ux+uw/2),y:''+(uy+16)}));
+
+/* ── RP2350 Main Chip ── */
+var cW=110,cH=100,cX=55,cY=240;
+ap(svg,mk('rect',{x:cX,y:cY,width:cW,height:cH,rx:'5',fill:'url(#p2ChipG)',stroke:'#1a2a1a','stroke-width':'2'}));
+ap(svg,mk('rect',{x:cX+4,y:cY+4,width:cW-8,height:cH-8,rx:'3',fill:'none',stroke:'#1a1a1a','stroke-width':'1','stroke-dasharray':'4,4'}));
+ap(svg,mk('circle',{cx:cX+9,cy:cY+9,r:'3',fill:'#1a3a1a'}));
+ap(svg,tx('RP2350',{fill:'rgba(255,255,255,0.88)','font-family':'monospace','font-size':'12','font-weight':'bold','text-anchor':'middle',x:cX+cW/2,y:cY+cH/2-12}));
+ap(svg,tx('Cortex-M33',{fill:'rgba(255,255,255,0.55)','font-family':'monospace','font-size':'7','text-anchor':'middle',x:cX+cW/2,y:cY+cH/2+2}));
+ap(svg,tx('150 MHz',{fill:'rgba(100,220,100,0.65)','font-family':'monospace','font-size':'7','text-anchor':'middle',x:cX+cW/2,y:cY+cH/2+14}));
+ap(svg,tx('Dual-Core',{fill:'rgba(255,255,255,0.30)','font-family':'monospace','font-size':'6','text-anchor':'middle',x:cX+cW/2,y:cY+cH/2+26}));
+
+/* ── W25Q32 Flash ── */
+var fX=72,fY=128,fW=76,fH=36;
+ap(svg,mk('rect',{x:fX,y:fY,width:fW,height:fH,rx:'3',fill:'url(#p2ChipG)',stroke:'#1a2a1a','stroke-width':'1.5'}));
+ap(svg,mk('circle',{cx:fX+6,cy:fY+6,r:'2',fill:'#1a2a1a'}));
+ap(svg,tx('W25Q32JV',{fill:'rgba(255,255,255,0.75)','font-family':'monospace','font-size':'6','font-weight':'bold','text-anchor':'middle',x:fX+fW/2,y:fY+fH/2-2}));
+ap(svg,tx('4MB Flash',{fill:'rgba(255,255,255,0.40)','font-family':'monospace','font-size':'5','text-anchor':'middle',x:fX+fW/2,y:fY+fH/2+8}));
+
+/* ── RT6150 Buck-Boost SMPS ── */
+var sX=72,sY=178,sW=55,sH=28;
+ap(svg,mk('rect',{x:sX,y:sY,width:sW,height:sH,rx:'2',fill:'url(#p2ChipG)',stroke:'#1a2a1a','stroke-width':'1.2'}));
+ap(svg,tx('RT6150',{fill:'rgba(255,255,255,0.65)','font-family':'monospace','font-size':'5','text-anchor':'middle',x:sX+sW/2,y:sY+sH/2-2}));
+ap(svg,tx('SMPS',{fill:'rgba(100,220,100,0.45)','font-family':'monospace','font-size':'5','text-anchor':'middle',x:sX+sW/2,y:sY+sH/2+6}));
+
+/* SMD passives */
+function smdR(x,y,w,h){ap(svg,mk('rect',{x:x,y:y,width:h*.65,height:h,rx:'.5',fill:'url(#p2SilvG)',stroke:'#888','stroke-width':'.3'}));ap(svg,mk('rect',{x:x+w-h*.65,y:y,width:h*.65,height:h,rx:'.5',fill:'url(#p2SilvG)',stroke:'#888','stroke-width':'.3'}));ap(svg,mk('rect',{x:x+h*.55,y:y,width:Math.max(1,w-h*1.1),height:h,rx:'.7',fill:'#1e1408',stroke:'#141008','stroke-width':'.3'}));}
+function smdC(x,y,w,h){ap(svg,mk('rect',{x:x,y:y,width:h*.65,height:h,rx:'.5',fill:'url(#p2SilvG)',stroke:'#888','stroke-width':'.3'}));ap(svg,mk('rect',{x:x+w-h*.65,y:y,width:h*.65,height:h,rx:'.5',fill:'url(#p2SilvG)',stroke:'#888','stroke-width':'.3'}));ap(svg,mk('rect',{x:x+h*.55,y:y,width:Math.max(1,w-h*1.1),height:h,rx:'.7',fill:'#c8a040',stroke:'#a08020','stroke-width':'.3'}));}
+smdR(140,140,14,6);smdC(158,142,10,5);smdR(138,180,12,5);smdC(155,182,10,5);
+smdR(40,205,12,5);smdC(58,207,10,5);smdR(145,205,12,5);smdC(160,207,10,5);
+smdR(42,360,10,5);smdC(55,362,10,5);smdR(145,360,12,5);smdC(158,362,10,5);
+smdR(42,450,10,5);smdC(55,452,10,5);
+ap(svg,mk('rect',{x:95,y:178,width:14,height:8,rx:1,fill:'#ffaa00',stroke:'#cc8800','stroke-width':'.6'}));
+ap(svg,tx('LED',{fill:'rgba(255,160,0,0.6)','font-family':'monospace','font-size':'4','text-anchor':'middle',x:102,y:176}));
+
+/* Onboard LED label */
+ap(svg,tx('GP25 LED',{fill:'rgba(255,160,0,0.35)','font-family':'monospace','font-size':'5','text-anchor':'middle',x:110,y:195}));
+
+/* BOOTSEL button */
+var bX=140,bY=76,bW=36,bH=28;
+ap(svg,mk('rect',{x:bX,y:bY,width:bW,height:bH,rx:'2',fill:'url(#p2SilvG)',stroke:'#666','stroke-width':'1.2'}));
+ap(svg,mk('rect',{x:bX+4,y:bY+5,width:bW-8,height:bH-10,rx:'2',fill:'#1a1a1a',stroke:'#444','stroke-width':'.8'}));
+ap(svg,mk('circle',{cx:bX+bW/2,cy:bY+bH/2,r:'7',fill:'#e0e0e0',stroke:'#555','stroke-width':'.8'}));
+ap(svg,tx('BOOT',{fill:'rgba(255,255,255,0.6)','font-family':'monospace','font-size':'5','text-anchor':'middle',x:bX+bW/2,y:bY-5}));
+
+/* SWD debug header */
+var dX=72,dY=590,dS=24;
+ap(svg,mk('rect',{x:dX-4,y:dY-10,width:dS*3+8,height:24,rx:2,fill:'none',stroke:'rgba(255,255,255,0.20)','stroke-width':'.6'}));
+ap(svg,tx('SWD DEBUG',{fill:'rgba(180,230,180,0.40)','font-family':'monospace','font-size':'5','text-anchor':'middle',x:dX+dS,y:dY-13}));
+['GND','SWDIO','SWCLK'].forEach(function(n,i){
+  ap(svg,mk('circle',{cx:dX+i*dS,cy:dY,r:'5',fill:'#c8a040',stroke:'#9a7c20','stroke-width':'1'}));
+  ap(svg,mk('circle',{cx:dX+i*dS,cy:dY,r:'2.5',fill:'#0a1a0a'}));
+  ap(svg,tx(n,{fill:'rgba(200,220,200,0.45)','font-family':'monospace','font-size':'4','text-anchor':'middle',x:dX+i*dS,y:dY+12}));
+});
+
+/* Board silkscreen */
+ap(svg,tx('Raspberry Pi',{fill:'rgba(180,255,180,0.22)','font-family':'Georgia,serif','font-size':'11','font-style':'italic','font-weight':'bold','text-anchor':'middle',x:'110',y:'392'}));
+ap(svg,tx('PICO 2',{fill:'rgba(140,220,140,0.18)','font-family':'monospace','font-size':'10','font-weight':'900','letter-spacing':'3','text-anchor':'middle',x:'110',y:'408'}));
+
+/* Header strip backgrounds */
+ap(svg,mk('rect',{x:'0',y:'14',width:'20',height:'570',rx:'0',fill:'#061006',stroke:'none'}));
+ap(svg,mk('rect',{x:'200',y:'14',width:'20',height:'570',rx:'0',fill:'#061006',stroke:'none'}));
+
+/* ── PIN DATA ── */
+var C={
+  PWR: {c:'#ff6b6b',bg:'rgba(255,107,107,.14)',border:'rgba(255,107,107,.35)'},
+  GND: {c:'#9e9e9e',bg:'rgba(158,158,158,.12)',border:'rgba(158,158,158,.3)'},
+  GPIO:{c:'#b07ee8',bg:'rgba(176,126,232,.10)',border:'rgba(176,126,232,.28)'},
+  SPI: {c:'#4a90d9',bg:'rgba(74,144,217,.12)',border:'rgba(74,144,217,.3)'},
+  I2C: {c:'#8888cc',bg:'rgba(136,136,204,.12)',border:'rgba(136,136,204,.3)'},
+  UART:{c:'#c06080',bg:'rgba(192,96,128,.12)',border:'rgba(192,96,128,.3)'},
+  PWM: {c:'#50c8a0',bg:'rgba(80,200,160,.12)',border:'rgba(80,200,160,.3)'},
+  ADC: {c:'#d4a017',bg:'rgba(212,160,23,.12)',border:'rgba(212,160,23,.3)'},
+  SPEC:{c:'#7090a0',bg:'rgba(112,144,160,.12)',border:'rgba(112,144,160,.3)'},
+};
+function cl(t){return C[t]||C.SPEC;}
+
+var PS=18,LX=10,RX=210;
+/* 20 rows, pin 1 (physical) at top. PY0=20, PYS=27 → last row y=20+19*27=533 */
+var PY0=20,PYS=27;
+function py(row){return PY0+row*PYS;}
+
+/* Physical pin layout (Pico 2 40-pin, same as Pico 1):
+   Left col (physical 1,3,5,...,39): pin 1=GP0 at top, pin 39=VSYS at bottom
+   Right col (physical 2,4,6,...,40): pin 2=GP1 at top, pin 40=VBUS at bottom */
+
+var ALT={
+  'GP0': ['UART0_TX','I2C0_SDA','SPI0_RX','PWM0A'],
+  'GP1': ['UART0_RX','I2C0_SCL','SPI0_CSn','PWM0B'],
+  'GP2': ['UART0_CTS','I2C1_SDA','SPI0_SCK','PWM1A'],
+  'GP3': ['UART0_RTS','I2C1_SCL','SPI0_TX','PWM1B'],
+  'GP4': ['UART1_TX','I2C0_SDA','SPI0_RX','PWM2A'],
+  'GP5': ['UART1_RX','I2C0_SCL','SPI0_CSn','PWM2B'],
+  'GP6': ['UART1_CTS','I2C1_SDA','SPI0_SCK','PWM3A'],
+  'GP7': ['UART1_RTS','I2C1_SCL','SPI0_TX','PWM3B'],
+  'GP8': ['UART1_TX','I2C0_SDA','SPI1_RX','PWM4A'],
+  'GP9': ['UART1_RX','I2C0_SCL','SPI1_CSn','PWM4B'],
+  'GP10':['UART1_CTS','I2C1_SDA','SPI1_SCK','PWM5A'],
+  'GP11':['UART1_RTS','I2C1_SCL','SPI1_TX','PWM5B'],
+  'GP12':['UART0_TX','I2C0_SDA','SPI1_RX','PWM6A'],
+  'GP13':['UART0_RX','I2C0_SCL','SPI1_CSn','PWM6B'],
+  'GP14':['UART0_CTS','I2C1_SDA','SPI1_SCK','PWM7A'],
+  'GP15':['UART0_RTS','I2C1_SCL','SPI1_TX','PWM7B'],
+  'GP16':['UART0_TX','I2C0_SDA','SPI0_RX','PWM0A'],
+  'GP17':['UART0_RX','I2C0_SCL','SPI0_CSn','PWM0B'],
+  'GP18':['UART0_CTS','I2C1_SDA','SPI0_SCK','PWM1A'],
+  'GP19':['UART0_RTS','I2C1_SCL','SPI0_TX','PWM1B'],
+  'GP20':['UART1_TX','I2C0_SDA','SPI0_RX','PWM2A'],
+  'GP21':['UART1_RX','I2C0_SCL','SPI0_CSn','PWM2B'],
+  'GP22':['UART1_CTS','I2C1_SDA','SPI0_SCK','PWM3A'],
+  'GP26':['ADC0','I2C1_SDA','SPI1_SCK','PWM5A'],
+  'GP27':['ADC1','I2C1_SCL','SPI1_TX','PWM5B'],
+  'GP28':['ADC2','I2C0_SDA','SPI1_RX','PWM6A'],
+};
+
+var PINS=[
+  /* Left col: physical pins 1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,30,31,32,33,34 */
+  {id:'GP0',  lbl:'GP0',  phys:'1',  name:'GPIO 0',        type:'GPIO',funcs:['GPIO','UART','SPI','I2C','PWM'],volt:'3.3V',curr:'4mA', note:'Default UART0 TX. 3.3V logic only — never connect 5V signals.',cx:LX,cy:py(0)},
+  {id:'GP2',  lbl:'GP2',  phys:'5',  name:'GPIO 2',        type:'PWM', funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI0 SCK default. PWM1A. UART0 CTS.',cx:LX,cy:py(1)},
+  {id:'GP4',  lbl:'GP4',  phys:'6',  name:'GPIO 4',        type:'PWM', funcs:['GPIO','UART','SPI','I2C','PWM'],volt:'3.3V',curr:'4mA', note:'UART1 TX default. SPI0 RX alternate. PWM2A.',cx:LX,cy:py(2)},
+  {id:'GP6',  lbl:'GP6',  phys:'9',  name:'GPIO 6',        type:'PWM', funcs:['GPIO','UART','SPI','I2C','PWM'],volt:'3.3V',curr:'4mA', note:'UART1 CTS. SPI0 SCK alternate. I2C1 SDA. PWM3A.',cx:LX,cy:py(3)},
+  {id:'GP8',  lbl:'GP8',  phys:'11', name:'GPIO 8',        type:'PWM', funcs:['GPIO','UART','SPI','I2C','PWM'],volt:'3.3V',curr:'4mA', note:'UART1 TX. SPI1 RX. I2C0 SDA. PWM4A.',cx:LX,cy:py(4)},
+  {id:'GP10', lbl:'GP10', phys:'14', name:'GPIO 10',       type:'SPI', funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI1 SCK default. I2C1 SDA. UART1 CTS. PWM5A.',cx:LX,cy:py(5)},
+  {id:'GP12', lbl:'GP12', phys:'16', name:'GPIO 12',       type:'SPI', funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI1 RX default. I2C0 SDA. UART0 TX. PWM6A.',cx:LX,cy:py(6)},
+  {id:'GP14', lbl:'GP14', phys:'19', name:'GPIO 14',       type:'SPI', funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI1 SCK. I2C1 SDA. UART0 CTS. PWM7A.',cx:LX,cy:py(7)},
+  {id:'GP16', lbl:'GP16', phys:'21', name:'GPIO 16',       type:'GPIO',funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI0 RX. I2C0 SDA. UART0 TX. PWM0A.',cx:LX,cy:py(8)},
+  {id:'GP18', lbl:'GP18', phys:'24', name:'GPIO 18',       type:'SPI', funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI0 SCK default. I2C1 SDA. UART0 CTS. PWM1A.',cx:LX,cy:py(9)},
+  {id:'GP20', lbl:'GP20', phys:'26', name:'GPIO 20',       type:'GPIO',funcs:['GPIO','UART','SPI','I2C','PWM'],volt:'3.3V',curr:'4mA', note:'UART1 TX. SPI0 RX. I2C0 SDA. PWM2A.',cx:LX,cy:py(10)},
+  {id:'GP22', lbl:'GP22', phys:'29', name:'GPIO 22',       type:'GPIO',funcs:['GPIO','UART','I2C','SPI','PWM'],volt:'3.3V',curr:'4mA', note:'UART1 CTS. I2C1 SDA. SPI0 SCK. PWM3A.',cx:LX,cy:py(11)},
+  {id:'GND_L1',lbl:'GND', phys:'3',  name:'Ground',        type:'GND', funcs:['GND'],                          volt:'0V',  curr:'N/A',  note:'Ground reference.',cx:LX,cy:py(12)},
+  {id:'GND_L2',lbl:'GND', phys:'8',  name:'Ground',        type:'GND', funcs:['GND'],                          volt:'0V',  curr:'N/A',  note:'Ground reference.',cx:LX,cy:py(13)},
+  {id:'GND_L3',lbl:'GND', phys:'13', name:'Ground',        type:'GND', funcs:['GND'],                          volt:'0V',  curr:'N/A',  note:'Ground reference.',cx:LX,cy:py(14)},
+  {id:'GND_L4',lbl:'GND', phys:'18', name:'Ground',        type:'GND', funcs:['GND'],                          volt:'0V',  curr:'N/A',  note:'Ground reference.',cx:LX,cy:py(15)},
+  {id:'GND_L5',lbl:'GND', phys:'23', name:'Ground',        type:'GND', funcs:['GND'],                          volt:'0V',  curr:'N/A',  note:'Ground reference.',cx:LX,cy:py(16)},
+  {id:'GND_L6',lbl:'AGND',phys:'33', name:'Analog Ground', type:'GND', funcs:['GND'],                          volt:'0V',  curr:'N/A',  note:'Separate analog ground for ADC pins GP26-GP28. Connect to GND if ADC not used.',cx:LX,cy:py(17)},
+  {id:'ADC_VREF',lbl:'VREF',phys:'35',name:'ADC Voltage Ref',type:'SPEC',funcs:['SPEC'],                       volt:'3.3V',curr:'N/A',  note:'ADC reference voltage, filtered from 3.3V supply. Connect external reference here for better ADC accuracy.',cx:LX,cy:py(18)},
+  {id:'P3V3_EN',lbl:'3V3_EN',phys:'37',name:'3.3V Enable',  type:'SPEC',funcs:['SPEC'],                        volt:'3.3V',curr:'N/A',  note:'Pull low to disable the 3.3V regulator (also disables RP2350). Has 100kΩ pull-up to VSYS.',cx:LX,cy:py(19)},
+
+  /* Right col: physical pins 2,4,6,8,10,12,14,16,18,20,22,24,26,27,28,29,30,34,36,38,39,40 */
+  {id:'GP1',  lbl:'GP1',  phys:'2',  name:'GPIO 1',        type:'GPIO',funcs:['GPIO','UART','SPI','I2C','PWM'],volt:'3.3V',curr:'4mA', note:'Default UART0 RX. SPI0 CSn. I2C0 SCL. PWM0B.',cx:RX,cy:py(0)},
+  {id:'GP3',  lbl:'GP3',  phys:'7',  name:'GPIO 3',        type:'GPIO',funcs:['GPIO','UART','SPI','I2C','PWM'],volt:'3.3V',curr:'4mA', note:'UART0 RTS. SPI0 TX. I2C1 SCL. PWM1B.',cx:RX,cy:py(1)},
+  {id:'GP5',  lbl:'GP5',  phys:'10', name:'GPIO 5',        type:'PWM', funcs:['GPIO','UART','SPI','I2C','PWM'],volt:'3.3V',curr:'4mA', note:'UART1 RX. SPI0 CSn. I2C0 SCL. PWM2B.',cx:RX,cy:py(2)},
+  {id:'GP7',  lbl:'GP7',  phys:'12', name:'GPIO 7',        type:'GPIO',funcs:['GPIO','UART','SPI','I2C','PWM'],volt:'3.3V',curr:'4mA', note:'UART1 RTS. SPI0 TX. I2C1 SCL. PWM3B.',cx:RX,cy:py(3)},
+  {id:'GP9',  lbl:'GP9',  phys:'12', name:'GPIO 9',        type:'SPI', funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI1 CSn default. I2C0 SCL. UART1 RX. PWM4B.',cx:RX,cy:py(4)},
+  {id:'GP11', lbl:'GP11', phys:'15', name:'GPIO 11',       type:'SPI', funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI1 TX default. I2C1 SCL. UART1 RTS. PWM5B.',cx:RX,cy:py(5)},
+  {id:'GP13', lbl:'GP13', phys:'17', name:'GPIO 13',       type:'SPI', funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI1 CSn. I2C0 SCL. UART0 RX. PWM6B.',cx:RX,cy:py(6)},
+  {id:'GP15', lbl:'GP15', phys:'20', name:'GPIO 15',       type:'GPIO',funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI1 TX. I2C1 SCL. UART0 RTS. PWM7B.',cx:RX,cy:py(7)},
+  {id:'GP17', lbl:'GP17', phys:'22', name:'GPIO 17',       type:'GPIO',funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI0 CSn. I2C0 SCL. UART0 RX. PWM0B.',cx:RX,cy:py(8)},
+  {id:'GP19', lbl:'GP19', phys:'25', name:'GPIO 19',       type:'SPI', funcs:['GPIO','SPI','I2C','UART','PWM'],volt:'3.3V',curr:'4mA', note:'SPI0 TX default. I2C1 SCL. UART0 RTS. PWM1B.',cx:RX,cy:py(9)},
+  {id:'GP21', lbl:'GP21', phys:'27', name:'GPIO 21',       type:'I2C', funcs:['GPIO','I2C','SPI','UART','PWM'],volt:'3.3V',curr:'4mA', note:'I2C0 SCL default. SPI0 CSn. UART1 RX. PWM2B.',cx:RX,cy:py(10)},
+  {id:'RUN',  lbl:'RUN',  phys:'30', name:'Run / Reset',   type:'SPEC',funcs:['SPEC'],                          volt:'3.3V',curr:'N/A',  note:'RP2350 enable pin. Has internal pull-up ~50kΩ to 3.3V. Pull low to reset.',cx:RX,cy:py(11)},
+  {id:'GP26', lbl:'GP26', phys:'31', name:'GPIO 26 / ADC0',type:'ADC', funcs:['GPIO','ADC','I2C','SPI','PWM'],  volt:'3.3V',curr:'4mA',  note:'ADC channel 0. 12-bit, 500ksps. Do not exceed VDDIO+0.3V on ADC pins.',cx:RX,cy:py(12)},
+  {id:'GP27', lbl:'GP27', phys:'32', name:'GPIO 27 / ADC1',type:'ADC', funcs:['GPIO','ADC','I2C','SPI','PWM'],  volt:'3.3V',curr:'4mA',  note:'ADC channel 1. 12-bit resolution.',cx:RX,cy:py(13)},
+  {id:'GP28', lbl:'GP28', phys:'34', name:'GPIO 28 / ADC2',type:'ADC', funcs:['GPIO','ADC','I2C','SPI','PWM'],  volt:'3.3V',curr:'4mA',  note:'ADC channel 2. 12-bit resolution.',cx:RX,cy:py(14)},
+  {id:'GP29', lbl:'GP29', phys:'36', name:'GPIO 29 / ADC3',type:'ADC', funcs:['GPIO','ADC'],                    volt:'3.3V',curr:'4mA',  note:'ADC channel 3. Used internally to sense VSYS/3 on Pico. Can also be used as GPIO.',cx:RX,cy:py(15)},
+  {id:'P3V3', lbl:'3V3',  phys:'36', name:'3.3V Power Out', type:'PWR', funcs:['PWR'],                          volt:'3.3V',curr:'300mA', note:'3.3V regulated output from onboard SMPS. Max recommended load ~300mA.',cx:RX,cy:py(16)},
+  {id:'VSYS', lbl:'VSYS', phys:'39', name:'System Voltage', type:'PWR', funcs:['PWR'],                          volt:'1.8–5.5V',curr:'N/A',note:'Main system input voltage for the SMPS (1.8V–5.5V). Used when not powered via USB.',cx:RX,cy:py(17)},
+  {id:'VBUS', lbl:'VBUS', phys:'40', name:'USB Bus Voltage',type:'PWR', funcs:['PWR'],                          volt:'5V',  curr:'N/A',  note:'5V from micro-USB connector. Use to power the board externally or detect USB connection.',cx:RX,cy:py(18)},
+  {id:'GND_R',lbl:'GND',  phys:'28', name:'Ground',         type:'GND', funcs:['GND'],                          volt:'0V',  curr:'N/A',  note:'Ground reference.',cx:RX,cy:py(19)},
+];
+
+/* Silk labels */
+PINS.forEach(function(p){
+  var isL=(p.cx===LX);
+  var t=tx(p.lbl,{
+    x:isL?p.cx+PS/2+3:p.cx-PS/2-3,y:p.cy+4,
+    fill:'rgba(255,255,255,0.82)','font-size':'7.5','font-family':'monospace',
+    'text-anchor':isL?'start':'end','pointer-events':'none'
+  });
+  svg.appendChild(t);
+});
+
+/* Physical pin numbers */
+PINS.forEach(function(p){
+  var isL=(p.cx===LX);
+  var t=tx(p.phys,{
+    x:isL?p.cx-PS/2-3:p.cx+PS/2+3,y:p.cy+4,
+    fill:'rgba(255,255,255,0.38)','font-size':'6','font-family':'monospace',
+    'text-anchor':isL?'end':'start','pointer-events':'none'
+  });
+  svg.appendChild(t);
+});
+
+/* Draw pads */
+PINS.forEach(function(p){
+  var col=cl(p.type);
+  var g=mk('g',{'class':'p2-pin','data-id':p.id});
+  g.style.cursor='pointer';
+  ap(g,mk('rect',{x:p.cx-PS/2-2,y:p.cy-PS/2-2,width:PS+4,height:PS+4,rx:'3',fill:'rgba(80,140,60,0.18)',stroke:'rgba(80,140,60,0.35)','stroke-width':'.5'}));
+  var sq=mk('rect',{x:p.cx-PS/2,y:p.cy-PS/2,width:PS,height:PS,rx:'3',fill:col.bg,stroke:col.c,'stroke-width':'1.4','class':'p2sq'});
+  ap(g,sq);
+  ap(g,mk('circle',{cx:p.cx,cy:p.cy,r:'3',fill:'#040e04','pointer-events':'none'}));
+  ap(g,mk('rect',{x:p.cx-13,y:p.cy-13,width:26,height:26,fill:'transparent'}));
+  g.addEventListener('click',function(e){e.stopPropagation();pickPin(p.id);});
+  g.addEventListener('mouseenter',function(e){showTT(p,e);});
+  g.addEventListener('mousemove',function(e){moveTT(e);});
+  g.addEventListener('mouseleave',hideTT);
+  svg.appendChild(g);
+});
+
+/* ── INTERACTION ── */
+var selId=null,listOpen=false,filterType=null;
+var FILTERS=[
+  {lbl:'GPIO',key:'GPIO',fn:function(p){return p.funcs.indexOf('GPIO')>=0;}},
+  {lbl:'PWM', key:'PWM', fn:function(p){return p.funcs.indexOf('PWM')>=0;}},
+  {lbl:'ADC', key:'ADC', fn:function(p){return p.funcs.indexOf('ADC')>=0;}},
+  {lbl:'SPI', key:'SPI', fn:function(p){return p.funcs.indexOf('SPI')>=0;}},
+  {lbl:'I2C', key:'I2C', fn:function(p){return p.funcs.indexOf('I2C')>=0;}},
+  {lbl:'UART',key:'UART',fn:function(p){return p.funcs.indexOf('UART')>=0;}},
+  {lbl:'GND', key:'GND', fn:function(p){return p.type==='GND';}},
+  {lbl:'PWR', key:'PWR', fn:function(p){return p.type==='PWR';}},
+];
+var FCLR={GPIO:'#b07ee8',PWM:'#50c8a0',ADC:'#d4a017',SPI:'#4a90d9',I2C:'#8888cc',UART:'#c06080',GND:'#9e9e9e',PWR:'#ff6b6b'};
+
+function buildBtns(){
+  var w=document.getElementById('p2Btns');
+  w.innerHTML=FILTERS.map(function(f){
+    var c=FCLR[f.key]||'#888',ia=filterType===f.key;
+    return '<button class="p2-fbtn'+(ia?' active':'')+'" data-key="'+f.key+'" style="color:'+c+';background:'+(ia?'#1a0d0d':'#1e1e22')+';border-color:'+(ia?c:'rgba(255,255,255,0.18)')+'">'+f.lbl+'</button>';
+  }).join('');
+  w.querySelectorAll('.p2-fbtn').forEach(function(b){
+    b.addEventListener('click',function(){var k=b.getAttribute('data-key');filterType=(filterType===k)?null:k;buildBtns();updateBoard();updateList();});
+  });
+}
+
+function pickPin(id){selId=(selId===id)?null:id;updateBoard();updateDetail();updateList();}
+
+function pinOk(p){if(!filterType)return true;var f=FILTERS.find(function(x){return x.key===filterType;});return f?f.fn(p):true;}
+
+function updateBoard(){
+  var hf=filterType!=null;
+  document.querySelectorAll('.p2-pin').forEach(function(g){
+    var id=g.getAttribute('data-id'),p=PINS.find(function(x){return x.id===id;}),sq=g.querySelector('.p2sq');
+    if(!p)return;
+    var col=cl(p.type),active=selId===id,ok=pinOk(p);
+    if(active){sq.setAttribute('fill',col.c);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','2.5');sq.setAttribute('filter','url(#p2Glow)');g.style.opacity='1';}
+    else if(hf&&!ok){sq.setAttribute('fill','rgba(15,18,15,0.5)');sq.setAttribute('stroke','rgba(40,60,40,0.3)');sq.setAttribute('stroke-width','1');sq.removeAttribute('filter');g.style.opacity='0.18';}
+    else if(hf&&ok){sq.setAttribute('fill',col.c);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','2');sq.setAttribute('filter','url(#p2Glow)');g.style.opacity='1';}
+    else{sq.setAttribute('fill',col.bg);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','1.4');sq.removeAttribute('filter');g.style.opacity='1';}
+  });
+}
+
+function updateDetail(){
+  var empty=document.getElementById('p2Empty'),cont=document.getElementById('p2DetContent');
+  if(!selId){empty.style.display='block';cont.className='p2-det-content';return;}
+  var p=PINS.find(function(x){return x.id===selId;});
+  if(!p){empty.style.display='block';cont.className='p2-det-content';return;}
+  empty.style.display='none';cont.className='p2-det-content show';
+  var col=cl(p.type),badge=document.getElementById('p2DetBadge');
+  badge.textContent=p.lbl;badge.style.background=col.bg;badge.style.color=col.c;badge.style.borderColor=col.c;
+  document.getElementById('p2DetId').textContent='Pin '+p.phys+' — '+p.id;
+  document.getElementById('p2DetFull').textContent=p.name;
+  document.getElementById('p2Funcs').innerHTML=p.funcs.map(function(f){var fc=C[f]||col;return '<span class="p2-func-chip" style="background:'+fc.bg+';color:'+fc.c+';border-color:'+fc.border+'">'+f+'</span>';}).join('');
+  document.getElementById('p2InfoGrid').innerHTML=[['Voltage',p.volt],['Max Current',p.curr],['Type',p.type],['Physical Pin',p.phys]].map(function(pr){return '<div class="p2-info-cell"><span class="p2-info-label">'+pr[0]+'</span><span class="p2-info-value">'+pr[1]+'</span></div>';}).join('');
+  var alt=ALT[p.id],altSec=document.getElementById('p2AltSec');
+  if(alt&&alt.length){altSec.style.display='';document.getElementById('p2AltChips').innerHTML=alt.map(function(a){return '<span class="p2-alt-chip">'+a+'</span>';}).join('');}
+  else{altSec.style.display='none';}
+  document.getElementById('p2Note').innerHTML='<span style="color:#c0392b;margin-right:4px;">&#9432;</span>'+p.note;
+}
+
+function updateList(){
+  var pins=PINS.filter(pinOk);
+  document.getElementById('p2Rows').innerHTML=pins.map(function(p){var col=cl(p.type),on=selId===p.id;return '<div class="p2-prow'+(on?' on':'')+'" data-id="'+p.id+'"><div class="p2-pbadge" style="background:'+col.bg+';color:'+col.c+';border:1px solid '+col.border+'">'+p.lbl+'</div><div class="p2-pname">Pin '+p.phys+' — '+p.name+'</div><span class="p2-ptag" style="background:'+col.bg+';color:'+col.c+'">'+p.type+'</span></div>';}).join('');
+  document.getElementById('p2ListCnt').textContent=pins.length+(pins.length<PINS.length?' / '+PINS.length:'');
+  document.querySelectorAll('.p2-prow').forEach(function(r){r.addEventListener('click',function(){pickPin(r.dataset.id);});});
+}
+
+(function(){
+  var types=[];PINS.forEach(function(p){if(types.indexOf(p.type)<0)types.push(p.type);});
+  document.getElementById('p2Legend').innerHTML=types.map(function(t){var c=cl(t);return '<div class="p2-leg"><span class="p2-ldot" style="background:'+c.c+'"></span>'+t+'</div>';}).join('');
+})();
+
+document.getElementById('p2ListCnt').textContent=PINS.length;
+buildBtns();updateList();
+
+function p2Toggle(){listOpen=!listOpen;document.getElementById('p2PinList').className='p2-pinlist'+(listOpen?' open':'');document.getElementById('p2ToggleIcon').innerHTML=listOpen?'▲ HIDE':'▼ SHOW ALL';}
+window.p2Toggle=p2Toggle;
+
+var ttEl=document.getElementById('p2TT');
+function showTT(p,e){var col=cl(p.type);ttEl.innerHTML='<span class="ttn" style="color:'+col.c+'">Pin '+p.phys+' · '+p.id+'</span><span class="ttnote">'+p.funcs.join(' · ')+' | '+p.volt+'</span>';ttEl.className='p2-tt show';moveTT(e);}
+function moveTT(e){ttEl.style.left=(e.clientX+14)+'px';ttEl.style.top=(e.clientY-10)+'px';}
+function hideTT(){ttEl.className='p2-tt';}
+})();
+</script>
+
+
+<div><br /></div><div><br /></div><h3 style="text-align: left;">Raspberry Pi Pico 2 Interactive Pinout Explorer User Guide&nbsp;</h3><div>Welcome to the ultimate Interactive <b>Raspberry Pi Pico 2 Board Explorer</b>, a web-based companion designed for embedded developers, students, and hardware hobbyists working with the powerful RP2350 microcontroller. Simply hover over or click any physical pin on the high-definition PCB graphic to instantly reveal its dedicated voltage levels, alternate pin multiplexing, and hardware properties. Use the Highlight by Function panel to isolate specific peripheral groups like hardware SPI, I2C, PWM, or Programmable I/O (PIO) blocks at a glance or map out the board's internal layout using the Highlight by Component tool. Complete with direct access to official schematics, PCB footprints, and 3D CAD models, this interactive tool eliminates the need to scour massive documentation, streamlining your firmware development and circuit prototyping workflow.</div><div><br /></div><div><div class="separator" style="display:none;"><a href="https://blogger.googleusercontent.com/img/a/AVvXsEjiuC4n698xw-LMngneHOvTYkEgncIOvYWxqKlj5XYLiPDUC2QC_dCuACvh9Twr-8wicgRfROkHIKjY3p72YBdeIrDZ8ObH7CAOjHTSdbhW12NRFGj3i5YSZKSAENHZjA3MTT9J9zVAiMKAvkiWPRWRT71lLj5HegAbhhNm3H7QasKQJsZnXlp2TA5TpHDi" style="margin-left: 1em; margin-right: 1em;"><img alt="Raspberry Pi Pico 2 pinout explorer" data-original-height="930" data-original-width="933" height="240" src="https://blogger.googleusercontent.com/img/a/AVvXsEjiuC4n698xw-LMngneHOvTYkEgncIOvYWxqKlj5XYLiPDUC2QC_dCuACvh9Twr-8wicgRfROkHIKjY3p72YBdeIrDZ8ObH7CAOjHTSdbhW12NRFGj3i5YSZKSAENHZjA3MTT9J9zVAiMKAvkiWPRWRT71lLj5HegAbhhNm3H7QasKQJsZnXlp2TA5TpHDi" width="241" /></a></div><br /><br /></div><div><br /></div>

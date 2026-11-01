@@ -1,0 +1,391 @@
+---
+layout: post
+title: "PCB Datasheet Intelligence Tool"
+date: 2026-05-17 21:47:41 +0000
+description: "PCB Datasheet Intelligence Tool with PDF, TXT and CSV support — search, find and compress component datasheets PCB Datasheet Intelligence Upload component"
+---
+
+<h2 class="sr-only">PCB Datasheet Intelligence Tool with PDF, TXT and CSV support — search, find and compress component datasheets</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.app{padding:1.5rem 0;color:#fff}
+.header{margin-bottom:1.25rem}
+.header h1{font-size:20px;font-weight:500;color:#fff}
+.header p{font-size:13px;color:rgba(255,255,255,0.5);margin-top:4px}
+.tabs{display:flex;gap:0;margin-bottom:1.25rem;border-bottom:1px solid rgba(255,255,255,0.15)}
+.tab{font-size:13px;padding:8px 14px;cursor:pointer;border:none;background:none;color:rgba(255,255,255,0.45);border-bottom:2px solid transparent;margin-bottom:-1px;font-family:var(--font-sans)}
+.tab.active{color:#fff;border-bottom-color:#fff;font-weight:500}
+.panel{display:none}
+.panel.active{display:block}
+.upload-zone{border:1.5px dashed rgba(255,255,255,0.25);border-radius:var(--border-radius-lg);padding:1.5rem;text-align:center;cursor:pointer;background:rgba(255,255,255,0.05)}
+.upload-zone:hover{background:rgba(255,255,255,0.09)}
+.upload-zone i{font-size:26px;color:rgba(255,255,255,0.35);display:block;margin-bottom:8px}
+.upload-zone p{font-size:13px;color:rgba(255,255,255,0.5)}
+.upload-zone small{font-size:11px;color:rgba(255,255,255,0.3)}
+.file-list{margin-top:1rem;display:flex;flex-direction:column;gap:6px}
+.file-item{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.12);border-radius:var(--border-radius-md);padding:8px 12px;font-size:13px}
+.file-item i{color:rgba(255,255,255,0.4);font-size:16px}
+.file-name{flex:1;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file-meta{font-size:11px;color:rgba(255,255,255,0.35);white-space:nowrap}
+.file-remove{cursor:pointer;color:rgba(255,255,255,0.3);font-size:15px;border:none;background:none;padding:0}
+.file-remove:hover{color:rgba(255,255,255,0.7)}
+.result-box{background:rgba(255,255,255,0.06);border:0.5px solid rgba(255,255,255,0.12);border-radius:var(--border-radius-lg);padding:1.25rem;font-size:13px;color:#fff;line-height:1.7;min-height:100px}
+.result-box.muted{color:rgba(255,255,255,0.35)}
+.row{display:flex;gap:8px;margin-bottom:1rem;align-items:center}
+.di{flex:1;background:rgba(255,255,255,0.08);border:0.5px solid rgba(255,255,255,0.2);border-radius:var(--border-radius-md);padding:0 12px;height:36px;color:#fff;font-size:13px;font-family:var(--font-sans);outline:none}
+.di::placeholder{color:rgba(255,255,255,0.28)}
+.di:focus{border-color:rgba(255,255,255,0.4)}
+.db{background:rgba(255,255,255,0.1);border:0.5px solid rgba(255,255,255,0.2);border-radius:var(--border-radius-md);padding:0 14px;height:36px;color:#fff;font-size:13px;cursor:pointer;font-family:var(--font-sans);white-space:nowrap}
+.db:hover{background:rgba(255,255,255,0.17)}
+.db:active{transform:scale(0.98)}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:1rem}
+.stat{background:rgba(255,255,255,0.08);border-radius:var(--border-radius-md);padding:10px 12px}
+.stat-label{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:4px}
+.stat-val{font-size:20px;font-weight:500;color:#fff}
+.match-item{border:0.5px solid rgba(255,255,255,0.12);border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.04)}
+.match-score{font-size:11px;font-weight:500;color:#AFA9EC;background:rgba(83,74,183,0.3);padding:2px 8px;border-radius:20px;float:right}
+.match-title{font-size:13px;font-weight:500;color:#fff;margin-bottom:4px}
+.match-excerpt{font-size:12px;color:rgba(255,255,255,0.45);line-height:1.6}
+.highlight{background:rgba(239,159,39,0.3);color:#FAC775;padding:0 2px;border-radius:2px}
+.tree-wrap{background:rgba(255,255,255,0.05);border:0.5px solid rgba(255,255,255,0.1);border-radius:var(--border-radius-lg);padding:1rem;margin-top:1rem}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.bar-label{font-size:11px;color:rgba(255,255,255,0.4);width:64px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar-track{flex:1;background:rgba(255,255,255,0.08);border-radius:3px;height:12px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;background:#534AB7}
+.bar-val{font-size:11px;color:rgba(255,255,255,0.3);width:34px}
+.progress{font-size:12px;color:rgba(255,255,255,0.4);margin-top:6px}
+.tag-pdf{background:rgba(224,74,74,0.25);color:#F09595;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500}
+.tag-txt{background:rgba(29,158,117,0.25);color:#5DCAA5;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500}
+.tag-csv{background:rgba(55,138,221,0.25);color:#85B7EB;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500}
+.sample-btn{font-size:12px;padding:4px 12px;background:rgba(255,255,255,0.07);border:0.5px solid rgba(255,255,255,0.16);border-radius:var(--border-radius-md);color:rgba(255,255,255,0.55);cursor:pointer;font-family:var(--font-sans)}
+.sample-btn:hover{background:rgba(255,255,255,0.13);color:#fff}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,0.2);border-top-color:rgba(255,255,255,0.7);border-radius:50%;animation:spin 0.6s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+
+<div class="app">
+  <div class="header">
+    <h1><i class="ti ti-circuit-board" aria-hidden="true"></i> PCB Datasheet Intelligence</h1>
+    <p>Upload component datasheets to search, find, and compress them</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('upload',this)"><i class="ti ti-upload" aria-hidden="true"></i> Upload</button>
+    <button class="tab" onclick="switchTab('search',this)"><i class="ti ti-search" aria-hidden="true"></i> Search</button>
+    <button class="tab" onclick="switchTab('find',this)"><i class="ti ti-text-scan-2" aria-hidden="true"></i> Find</button>
+    <button class="tab" onclick="switchTab('compress',this)"><i class="ti ti-archive" aria-hidden="true"></i> Compress</button>
+  </div>
+
+  <div id="tab-upload" class="panel active">
+    <div class="upload-zone" id="dropZone" onclick="document.getElementById('fi').click()">
+      <i class="ti ti-file-upload" aria-hidden="true"></i>
+      <p>Click or drag & drop datasheet files</p>
+      <small>Supports PDF, TXT, CSV — multiple files OK</small>
+    </div>
+    <input type="file" id="fi" multiple accept=".pdf,.txt,.csv" style="display:none" onchange="handleFiles(this.files)"/>
+    <div id="uploadProgress" style="display:none" class="progress"><span class="spinner"></span>Extracting text from files...</div>
+    <div class="file-list" id="flist"></div>
+    <div id="corpusStats" style="margin-top:1rem;display:none">
+      <div class="stat-grid" id="statsGrid"></div>
+    </div>
+    <p style="font-size:12px;color:rgba(255,255,255,0.28);margin-top:1rem">No files? <button class="sample-btn" onclick="loadSamples()">Load sample datasheets</button></p>
+  </div>
+
+  <div id="tab-search" class="panel">
+    <div class="row">
+      <input class="di" type="text" id="searchQ" placeholder="e.g. voltage regulator 5V low dropout..."/>
+      <button class="db" onclick="doTFIDF()"><i class="ti ti-search" aria-hidden="true"></i> Search</button>
+    </div>
+    <div id="searchResults" class="result-box muted">Upload datasheets then search. Results ranked by relevance.</div>
+  </div>
+
+  <div id="tab-find" class="panel">
+    <div class="row">
+      <input class="di" type="text" id="findQ" placeholder="e.g. operating temperature, max current..."/>
+      <button class="db" onclick="doBoyerMoore()"><i class="ti ti-text-scan-2" aria-hidden="true"></i> Find exact</button>
+    </div>
+    <div id="findResults" class="result-box muted">Finds exact phrase matches across all uploaded documents.</div>
+  </div>
+
+  <div id="tab-compress" class="panel">
+    <p style="font-size:13px;color:rgba(255,255,255,0.45);margin-bottom:1rem">Select a file to compress and see the stats.</p>
+    <div class="file-list" id="compressList"></div>
+    <div id="compressResult" style="margin-top:1rem;display:none">
+      <div class="stat-grid" id="compressStats"></div>
+      <div class="tree-wrap">
+        <p style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:8px;font-weight:500">Character frequencies</p>
+        <div id="freqBars"></div>
+        <p style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:12px;margin-bottom:8px;font-weight:500">Encoded bit assignments</p>
+        <div id="huffCodes" style="font-size:12px;font-family:var(--font-mono);color:rgba(255,255,255,0.4);line-height:1.8"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+let corpus=[];
+let pdfWorkerSet=false;
+
+function setPdfWorker(){
+  if(!pdfWorkerSet && window.pdfjsLib){
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    pdfWorkerSet=true;
+  }
+}
+
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  el.classList.add('active');
+  if(name==='compress') renderCompressList();
+}
+
+function fileTag(name){
+  const ext=name.split('.').pop().toLowerCase();
+  if(ext==='pdf') return '<span class="tag-pdf">PDF</span>';
+  if(ext==='csv') return '<span class="tag-csv">CSV</span>';
+  return '<span class="tag-txt">TXT</span>';
+}
+
+async function extractPdfText(file){
+  setPdfWorker();
+  const ab=await file.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+  let text='';
+  for(let i=1;i<=pdf.numPages;i++){
+    const page=await pdf.getPage(i);
+    const content=await page.getTextContent();
+    text+=content.items.map(it=>it.str).join(' ')+'\n';
+  }
+  return text;
+}
+
+async function handleFiles(files){
+  const prog=document.getElementById('uploadProgress');
+  prog.style.display='block';
+  for(const f of Array.from(files)){
+    if(corpus.find(c=>c.name===f.name)) continue;
+    try{
+      let text='';
+      const ext=f.name.split('.').pop().toLowerCase();
+      if(ext==='pdf'){
+        text=await extractPdfText(f);
+      } else {
+        text=await f.text();
+      }
+      corpus.push({name:f.name,text,size:f.size,ext});
+    } catch(e){
+      corpus.push({name:f.name,text:'[Could not extract text from this file]',size:f.size,ext:'?'});
+    }
+  }
+  prog.style.display='none';
+  renderUpload();
+}
+
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.style.background='rgba(255,255,255,0.1)';});
+dz.addEventListener('dragleave',()=>{dz.style.background='rgba(255,255,255,0.05)';});
+dz.addEventListener('drop',e=>{e.preventDefault();dz.style.background='rgba(255,255,255,0.05)';handleFiles(e.dataTransfer.files);});
+
+function loadSamples(){
+  corpus=[
+    {name:'LM7805_regulator.txt',ext:'txt',size:420,text:'LM7805 Voltage Regulator. Output voltage: 5V fixed. Input voltage: 7V to 35V. Maximum output current: 1.5A. Operating temperature: 0°C to 125°C. Package: TO-220, D2PAK. Dropout voltage: 2V typical. Short circuit protection: yes. Thermal shutdown: yes. Applications: power supply, battery charger, motor driver. PSRR: 70dB. Quiescent current: 8mA. Line regulation: 3mV. Load regulation: 15mV.'},
+    {name:'NE555_timer.txt',ext:'txt',size:390,text:'NE555 Timer IC. Supply voltage: 4.5V to 16V. Output current: 200mA sink and source. Operating temperature: 0°C to 70°C. Package: DIP-8, SO-8. Timing range: microseconds to hours. Modes: monostable, astable, bistable. Trigger voltage: 1/3 VCC. Threshold voltage: 2/3 VCC. Applications: oscillator, pulse generator, PWM, tone generator. Max frequency: 500kHz.'},
+    {name:'ATmega328P_mcu.txt',ext:'txt',size:510,text:'ATmega328P Microcontroller. Flash memory: 32KB. SRAM: 2KB. EEPROM: 1KB. Operating voltage: 1.8V to 5.5V. Max clock speed: 20MHz. Digital I/O pins: 23. PWM channels: 6. ADC channels: 8 with 10-bit resolution. Operating temperature: -40°C to 85°C. Package: DIP-28, QFP-32, QFN-32. Communication: UART, SPI, I2C. Applications: embedded systems, robotics, IoT, Arduino.'},
+    {name:'AMS1117_ldo.txt',ext:'txt',size:380,text:'AMS1117 Low Dropout Regulator. Output voltage: 1.2V adjustable to 5V fixed versions. Input voltage: up to 15V. Maximum output current: 800mA. Dropout voltage: 1.1V at 800mA. Operating temperature: -40°C to 125°C. Package: SOT-223, TO-252. Applications: USB power, low voltage logic supply, battery powered devices. Line regulation: 0.2%. Load regulation: 0.4%.'},
+    {name:'L298N_motor_driver.txt',ext:'txt',size:440,text:'L298N Dual H-Bridge Motor Driver. Operating voltage: 5V to 46V. Maximum output current: 2A per channel, 4A peak. Logic supply: 5V. Operating temperature: -25°C to 130°C. Package: Multiwatt-15, PowerSO-20. Applications: DC motor control, stepper motor, robotics. PWM speed control. Thermal protection: yes. Power dissipation: 25W.'}
+  ];
+  renderUpload();
+}
+
+function renderUpload(){
+  const fl=document.getElementById('flist');
+  fl.innerHTML=corpus.map((f,i)=>`
+    <div class="file-item">
+      <i class="ti ti-file-text" aria-hidden="true"></i>
+      <span class="file-name">${f.name}</span>
+      ${fileTag(f.name)}
+      <span class="file-meta">${(f.size/1024).toFixed(1)}KB</span>
+      <button class="file-remove" onclick="corpus.splice(${i},1);renderUpload()" aria-label="Remove"><i class="ti ti-x"></i></button>
+    </div>`).join('');
+  const sg=document.getElementById('statsGrid');
+  const cs=document.getElementById('corpusStats');
+  if(corpus.length){
+    cs.style.display='block';
+    const totalWords=corpus.reduce((a,c)=>a+c.text.split(/\s+/).length,0);
+    const totalChars=corpus.reduce((a,c)=>a+c.text.length,0);
+    const pdfs=corpus.filter(c=>c.ext==='pdf').length;
+    sg.innerHTML=`
+      <div class="stat"><div class="stat-label">Documents</div><div class="stat-val">${corpus.length}</div></div>
+      <div class="stat"><div class="stat-label">PDFs loaded</div><div class="stat-val">${pdfs}</div></div>
+      <div class="stat"><div class="stat-label">Total words</div><div class="stat-val">${totalWords.toLocaleString()}</div></div>
+      <div class="stat"><div class="stat-label">Total chars</div><div class="stat-val">${totalChars.toLocaleString()}</div></div>`;
+  } else { cs.style.display='none'; }
+}
+
+function tokenize(text){
+  return text.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(w=>w.length>2);
+}
+
+function buildTFIDF(){
+  const N=corpus.length;
+  const dfs={};
+  const tfMaps=corpus.map(doc=>{
+    const tokens=tokenize(doc.text);
+    const tf={};
+    tokens.forEach(t=>{tf[t]=(tf[t]||0)+1;});
+    Object.keys(tf).forEach(t=>{tf[t]=tf[t]/tokens.length;dfs[t]=(dfs[t]||0)+1;});
+    return tf;
+  });
+  return corpus.map((doc,i)=>{
+    const vec={};
+    Object.keys(tfMaps[i]).forEach(t=>{
+      vec[t]=tfMaps[i][t]*Math.log((N+1)/(dfs[t]+1));
+    });
+    return vec;
+  });
+}
+
+function cosine(a,b){
+  const keys=new Set([...Object.keys(a),...Object.keys(b)]);
+  let dot=0,magA=0,magB=0;
+  keys.forEach(k=>{const av=a[k]||0,bv=b[k]||0;dot+=av*bv;magA+=av*av;magB+=bv*bv;});
+  return magA&&magB?dot/(Math.sqrt(magA)*Math.sqrt(magB)):0;
+}
+
+function doTFIDF(){
+  const q=document.getElementById('searchQ').value.trim();
+  const el=document.getElementById('searchResults');
+  if(!q){el.textContent='Enter a search query.';el.className='result-box muted';return;}
+  if(!corpus.length){el.textContent='Upload documents first.';el.className='result-box muted';return;}
+  const vecs=buildTFIDF();
+  const qTokens=tokenize(q);
+  const qVec={};
+  qTokens.forEach(t=>{qVec[t]=(qVec[t]||0)+1/qTokens.length;});
+  const scores=corpus.map((doc,i)=>({doc,score:cosine(vecs[i],qVec)}));
+  scores.sort((a,b)=>b.score-a.score);
+  if(!scores[0].score){el.className='result-box muted';el.textContent='No relevant results found.';return;}
+  el.className='result-box';
+  el.innerHTML=scores.filter(s=>s.score>0).map(s=>`
+    <div class="match-item">
+      <span class="match-score">score: ${s.score.toFixed(3)}</span>
+      <div class="match-title">${fileTag(s.doc.name)} ${s.doc.name}</div>
+      <div class="match-excerpt">${s.doc.text.substring(0,150).replace(/\n/g,' ')}...</div>
+    </div>`).join('');
+}
+
+function boyerMoore(text,pattern){
+  const n=text.length,m=pattern.length;
+  if(m===0) return [];
+  const bad={};
+  for(let i=0;i<m;i++) bad[pattern[i]]=i;
+  const positions=[];
+  let s=0;
+  while(s<=n-m){
+    let j=m-1;
+    while(j>=0&&pattern[j]===text[s+j]) j--;
+    if(j<0){positions.push(s);s+=m;}
+    else s+=Math.max(1,j-(bad[text[s+j]]??-1));
+  }
+  return positions;
+}
+
+function doBoyerMoore(){
+  const q=document.getElementById('findQ').value.trim().toLowerCase();
+  const el=document.getElementById('findResults');
+  if(!q){el.textContent='Enter a search term.';el.className='result-box muted';return;}
+  if(!corpus.length){el.textContent='Upload documents first.';el.className='result-box muted';return;}
+  el.className='result-box';
+  let html='',totalMatches=0;
+  corpus.forEach(doc=>{
+    const text=doc.text.toLowerCase();
+    const positions=boyerMoore(text,q);
+    if(positions.length){
+      totalMatches+=positions.length;
+      const excerpts=positions.slice(0,3).map(p=>{
+        const start=Math.max(0,p-35),end=Math.min(text.length,p+q.length+35);
+        const pre=doc.text.substring(start,p);
+        const match=doc.text.substring(p,p+q.length);
+        const post=doc.text.substring(p+q.length,end);
+        return `...${pre}<span class="highlight">${match}</span>${post}...`;
+      }).join('<br>');
+      html+=`<div class="match-item">
+        <span class="match-score">${positions.length} match${positions.length>1?'es':''}</span>
+        <div class="match-title">${fileTag(doc.name)} ${doc.name}</div>
+        <div class="match-excerpt">${excerpts}</div>
+      </div>`;
+    }
+  });
+  if(!html) html='<p style="color:rgba(255,255,255,0.35)">No exact matches found for "'+q+'".</p>';
+  else html=`<p style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:10px">${totalMatches} match${totalMatches>1?'es':''} found across all files</p>`+html;
+  el.innerHTML=html;
+}
+
+function huffman(text){
+  const freq={};
+  for(const c of text) freq[c]=(freq[c]||0)+1;
+  let nodes=Object.entries(freq).map(([ch,f])=>({ch,f,left:null,right:null}));
+  nodes.sort((a,b)=>a.f-b.f);
+  while(nodes.length>1){
+    const l=nodes.shift(),r=nodes.shift();
+    const p={ch:null,f:l.f+r.f,left:l,right:r};
+    let i=0;
+    while(i<nodes.length&&nodes[i].f<p.f) i++;
+    nodes.splice(i,0,p);
+  }
+  const codes={};
+  function walk(node,code){
+    if(!node) return;
+    if(node.ch!==null){codes[node.ch]=code||'0';return;}
+    walk(node.left,code+'0');
+    walk(node.right,code+'1');
+  }
+  walk(nodes[0],'');
+  const origBits=text.length*8;
+  const compBits=text.split('').reduce((a,c)=>a+(codes[c]||'').length,0);
+  return{freq,codes,origBits,compBits,ratio:((1-compBits/origBits)*100)};
+}
+
+function renderCompressList(){
+  const el=document.getElementById('compressList');
+  if(!corpus.length){el.innerHTML='<p style="font-size:13px;color:rgba(255,255,255,0.35)">No files uploaded.</p>';return;}
+  el.innerHTML=corpus.map((f,i)=>`
+    <div class="file-item" style="cursor:pointer" onclick="runCompress(${i})">
+      <i class="ti ti-file-text" aria-hidden="true"></i>
+      <span class="file-name">${f.name}</span>
+      ${fileTag(f.name)}
+      <span class="file-meta">${(f.size/1024).toFixed(1)}KB</span>
+      <button class="db" style="font-size:11px;padding:0 10px;height:28px">Compress</button>
+    </div>`).join('');
+}
+
+function runCompress(i){
+  const f=corpus[i];
+  const textToCompress=f.text.substring(0,50000);
+  const{freq,codes,origBits,compBits,ratio}=huffman(textToCompress);
+  document.getElementById('compressResult').style.display='block';
+  document.getElementById('compressStats').innerHTML=`
+    <div class="stat"><div class="stat-label">Original</div><div class="stat-val">${Math.round(origBits/8).toLocaleString()}B</div></div>
+    <div class="stat"><div class="stat-label">Compressed</div><div class="stat-val">${Math.round(compBits/8).toLocaleString()}B</div></div>
+    <div class="stat"><div class="stat-label">Saved</div><div class="stat-val">${ratio.toFixed(1)}%</div></div>
+    <div class="stat"><div class="stat-label">Unique chars</div><div class="stat-val">${Object.keys(freq).length}</div></div>`;
+  const sortedFreq=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  const maxF=sortedFreq[0][1];
+  document.getElementById('freqBars').innerHTML=sortedFreq.map(([ch,f])=>{
+    const label=ch===' '?'space':ch==='\n'?'newline':ch==='\r'?'return':ch;
+    return `<div class="bar-row">
+      <span class="bar-label">'${label}'</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(f/maxF*100)}%"></div></div>
+      <span class="bar-val">${f}x</span>
+    </div>`;
+  }).join('');
+  const sortedCodes=Object.entries(codes).sort((a,b)=>a[1].length-b[1].length).slice(0,16);
+  document.getElementById('huffCodes').innerHTML=sortedCodes.map(([ch,code])=>{
+    const label=ch===' '?'[space]':ch==='\n'?'[newline]':ch==='\r'?'[return]':ch;
+    return `'${label}' → ${code} (${code.length} bits)`;
+  }).join('<br>');
+}
+</script>
+

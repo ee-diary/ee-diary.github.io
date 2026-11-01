@@ -1,0 +1,513 @@
+---
+layout: post
+title: "ESP32 DevKit V1"
+date: 2026-03-26 04:14:00 +0000
+description: "ESP32 DevKit V1: interactive pinout explorer with pin functions, design files and datasheet."
+---
+<!--════════════════════════════════════════════════════════
+     ESP32 DevKit V1 PINOUT EXPLORER
+     https://icexplorer.online
+    ════════════════════════════════════════════════════════-->
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+.uno-widget{all:initial;display:block;font-family:'Share Tech Mono','Courier New',monospace;color:#d0d0d0;background:#1e1e1e;border-radius:12px;padding:10px;max-width:960px;margin:0 auto;box-sizing:border-box;position:relative;}
+.uno-widget *{box-sizing:border-box;}
+.uno-widget a,.uno-widget button{all:unset;}
+.uno-hdr{display:flex;align-items:center;justify-content:space-between;background:#252526;border:1px solid #3c3c3c;border-radius:10px;padding:9px 14px;margin-bottom:10px;position:relative;overflow:hidden;}
+.uno-hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#e05a00,#ff8c42,transparent);}
+.uno-hdr-logo{display:flex;align-items:center;gap:10px;}
+.ard-logo-svg{width:28px;height:28px;flex-shrink:0;color:#e05a00;}
+.uno-hdr-title{font-family:'Orbitron','Arial Black',sans-serif;font-size:15px;font-weight:900;color:#d4d4d4;letter-spacing:.12em;display:block;}
+.uno-hdr-sub{font-size:13px;color:#888;margin-top:2px;display:block;}
+.uno-pulse{width:7px;height:7px;border-radius:50%;background:#e05a00;box-shadow:0 0 8px #e05a00;animation:unoPulse 2s infinite;flex-shrink:0;}
+@keyframes unoPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.uno-main{display:flex;gap:10px;align-items:flex-start;}
+.uno-board-wrap{flex:0 0 auto;width:360px;background:#1e1e1e;border:1px solid #2d2d2d;border-radius:10px;padding:8px;position:relative;}
+.uno-board-wrap svg{width:100%;height:auto;display:block;touch-action:manipulation;}
+.uno-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;}
+.uno-detail{background:#252526;border:1px solid #3c3c3c;border-radius:10px;overflow:hidden;}
+.uno-detail-empty{padding:28px 20px;text-align:center;color:#888;}
+.uno-detail-empty .unoArrow{font-size:28px;margin-bottom:10px;display:block;animation:unoArrow 1.8s infinite;}
+@keyframes unoArrow{0%,100%{opacity:.3;transform:translateX(-4px);}50%{opacity:.9;transform:translateX(4px);}}
+.uno-detail-empty p{font-size:13px;line-height:1.6;color:#aaa;margin:0;}
+.uno-detail-content{display:none;}
+.uno-detail-content.show{display:block;}
+.uno-det-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #2d2d2d;}
+.uno-det-badge{width:56px;height:56px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;border:2px solid;font-family:'Share Tech Mono',monospace;}
+.uno-det-name{flex:1;}
+.uno-det-pinid{font-family:'Orbitron','Arial Black',sans-serif;font-size:20px;font-weight:900;line-height:1;color:#d4d4d4;display:block;}
+.uno-det-fullname{font-size:13px;color:#6a6a6a;margin-top:3px;letter-spacing:.05em;display:block;}
+.uno-funcs{display:flex;flex-wrap:wrap;gap:5px;padding:8px 14px;border-bottom:1px solid #2d2d2d;}
+.uno-func-chip{padding:5px 12px;border-radius:4px;font-size:13px;font-weight:700;border:1px solid;letter-spacing:.06em;display:inline-block;}
+.uno-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.uno-info-cell{padding:8px 14px;border-bottom:1px solid #2d2d2d;border-right:1px solid #2d2d2d;}
+.uno-info-cell:nth-child(2n){border-right:none;}
+.uno-info-cell:nth-last-child(-n+2){border-bottom:none;}
+.uno-info-label{font-size:11px;color:#6a6a6a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;display:block;}
+.uno-info-value{font-size:14px;color:#d4d4d4;font-weight:700;display:block;}
+.uno-alt-section{padding:8px 14px;border-top:1px solid #2d2d2d;}
+.uno-alt-label{font-size:11px;color:#6a6a6a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;display:block;}
+.uno-alt-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.uno-alt-chip{padding:4px 10px;border-radius:3px;font-size:13px;background:#2d2d2d;border:1px solid #3c3c3c;color:#9cdcfe;display:inline-block;}
+.uno-note{padding:10px 14px;border-top:1px solid #2d2d2d;font-size:13px;color:#6a9fb5;line-height:1.6;background:#252526;}
+.uno-note-icon{color:#e05a00;margin-right:4px;}
+.uno-filter-section{background:#252526;border:1px solid #3c3c3c;border-radius:10px;overflow:hidden;padding:10px 10px 0;}
+.uno-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.uno-panel-box{border:1px solid #e05a00;border-radius:6px;padding:10px;background:#1a1a1e;}
+.uno-panel-label{font-size:10px;color:#e05a00;letter-spacing:.14em;text-transform:uppercase;font-family:'Share Tech Mono',monospace;margin-bottom:10px;display:block;font-weight:700;}
+.uno-fbtn{display:flex;align-items:center;justify-content:center;height:34px;width:100%;padding:0 4px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.08em;font-family:'Share Tech Mono',monospace;cursor:pointer;user-select:none;outline:none;border:1px solid rgba(255,255,255,0.22);transition:background .12s,border-color .12s,box-shadow .12s,transform .08s;box-shadow:0 2px 4px rgba(0,0,0,0.5);}
+.uno-fbtn:hover{background:rgba(255,255,255,0.14) !important;border-color:rgba(255,255,255,0.5) !important;}
+.uno-fbtn.active{border-color:currentColor !important;box-shadow:0 0 8px currentColor,0 1px 3px rgba(0,0,0,0.7) inset;transform:translateY(1px);}
+.uno-pinlist{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+.uno-pinlist.open{max-height:460px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#3c3c3c transparent;}
+.uno-pinlist::-webkit-scrollbar{width:3px;}
+.uno-pinlist::-webkit-scrollbar-thumb{background:#3c3c3c;}
+.uno-prow{display:flex;align-items:center;gap:7px;padding:6px 10px;cursor:pointer;border-bottom:1px solid rgba(60,60,60,.5);}
+.uno-prow:hover{background:rgba(255,255,255,.04);}
+.uno-prow.on{background:rgba(224,90,0,.12);border-left:2px solid #e05a00;padding-left:8px;}
+.uno-pbadge{min-width:44px;height:26px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.uno-pname{font-size:13px;flex:1;color:#9d9d9d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.uno-ptag{padding:3px 7px;border-radius:2px;font-size:11px;font-weight:700;flex-shrink:0;display:inline-block;}
+.uno-list-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;cursor:pointer;background:#1e1e1e;border-top:1px solid #2d2d2d;}
+.uno-list-toggle:hover{background:#2a2d2e;}
+.uno-list-toggle span{font-size:13px;color:#888;}
+.uno-list-toggle b{color:#e05a00;}
+.uno-legend{display:flex;flex-wrap:wrap;gap:5px;padding:7px 14px;border-top:1px solid #2d2d2d;background:#1e1e1e;}
+.uno-leg{display:flex;align-items:center;gap:4px;font-size:12px;color:#888;}
+.uno-ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0;display:inline-block;}
+.uno-tt{position:fixed;background:#252526;border:1px solid #3c3c3c;border-radius:8px;padding:9px 13px;font-size:13px;pointer-events:none;z-index:99999;display:none;min-width:180px;max-width:280px;box-shadow:0 4px 24px rgba(0,0,0,.8);font-family:'Share Tech Mono',monospace;color:#d4d4d4;}
+.uno-tt.show{display:block;}
+.uno-tt .ttn{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:900;margin-bottom:4px;display:block;}
+.uno-tt .ttnote{color:#6a9fb5;font-size:12px;line-height:1.5;display:block;}
+@media(max-width:620px){
+  .uno-main{flex-direction:column;}
+  .uno-board-wrap{width:100%;}
+  .uno-detail-empty .unoArrow{transform:rotate(90deg);display:inline-block;}
+}
+</style>
+
+<div class="uno-widget" id="unoWidget">
+  <div class="uno-hdr">
+    <div class="uno-hdr-logo">
+      <svg class="ard-logo-svg" viewbox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" fill="none" r="48" stroke-width="4" stroke="currentColor"></circle>
+        <text fill="currentColor" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" text-anchor="middle" x="50" y="38">ESP</text>
+        <text fill="currentColor" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" text-anchor="middle" x="50" y="62">32</text>
+        <line stroke-linecap="round" stroke-width="3" stroke="currentColor" x1="20" x2="80" y1="70" y2="70"></line>
+        <text fill="currentColor" font-family="monospace" font-size="9" letter-spacing="2" text-anchor="middle" x="50" y="84">DevKit V1</text>
+      </svg>
+      <div>
+        <span class="uno-hdr-title">ESP32 DevKit V1</span>
+        <span class="uno-hdr-sub">Interactive Pinout · Click any pin for details</span>
+      </div>
+    </div>
+    <div class="uno-pulse"></div>
+  </div>
+
+  <div class="uno-main">
+    <div class="uno-board-wrap">
+      <svg id="unoSVG" viewbox="0 0 260 395" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <div class="uno-right">
+      <div class="uno-detail" id="unoDetail">
+        <div class="uno-detail-empty" id="unoEmpty">
+          <span class="unoArrow">←</span>
+          <p>Click any pin on the board<br />to see its full details here</p>
+        </div>
+        <div class="uno-detail-content" id="unoDetailContent">
+          <div class="uno-det-bar">
+            <div class="uno-det-badge" id="unoDetBadge"></div>
+            <div class="uno-det-name">
+              <span class="uno-det-pinid" id="unoDetId"></span>
+              <span class="uno-det-fullname" id="unoDetFull"></span>
+            </div>
+          </div>
+          <div class="uno-funcs" id="unoFuncs"></div>
+          <div class="uno-info-grid" id="unoInfoGrid"></div>
+          <div class="uno-alt-section" id="unoAltSection">
+            <span class="uno-alt-label">Alternative Functions</span>
+            <div class="uno-alt-chips" id="unoAltChips"></div>
+          </div>
+          <div class="uno-note" id="unoNote"></div>
+        </div>
+      </div>
+
+      <div class="uno-filter-section">
+        <div class="uno-panel-box">
+          <span class="uno-panel-label">◆ Highlight Pins</span>
+          <div class="uno-btns" id="unoBtns"></div>
+        </div>
+        <div class="uno-list-toggle" onclick="esp32ToggleList()">
+          <span>PIN LIST &nbsp;<b id="unoListCnt"></b></span>
+          <span id="unoToggleIcon" style="color: #e05a00;">▼ SHOW</span>
+        </div>
+        <div class="uno-pinlist" id="unoPinList">
+          <div id="unoRows"></div>
+        </div>
+        <div class="uno-legend" id="unoLegend"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="uno-tt" id="unoTT"></div>
+
+<script>
+//<![CDATA[
+(function(){
+'use strict';
+
+var NS='http://www.w3.org/2000/svg';
+var svg=document.getElementById('unoSVG');
+
+function mk(tag,attrs){
+  var el=document.createElementNS(NS,tag);
+  for(var k in attrs) el.setAttribute(k,attrs[k]);
+  return el;
+}
+function app(p,c){p.appendChild(c);return c;}
+function txt(str,attrs){var el=mk('text',attrs);el.textContent=str;return el;}
+
+/* ── DEFS ── */
+var defs=app(svg,mk('defs',{}));
+function linGrad(id,x1,y1,x2,y2,stops){
+  var g=mk('linearGradient',{id:id,x1:x1,y1:y1,x2:x2,y2:y2});
+  stops.forEach(function(s){var st=mk('stop',{offset:s[0]});st.setAttribute('stop-color',s[1]);g.appendChild(st);});
+  defs.appendChild(g);
+}
+linGrad('unoPcbG','0','0','0','1',[['0%','#0f0f0f'],['100%','#080808']]);
+linGrad('unoChipG','0','0','1','1',[['0%','#2a2a2a'],['100%','#181818']]);
+linGrad('unoUsbG','0','0','1','0',[['0%','#777'],['100%','#444']]);
+linGrad('shieldG','0','0','0.04','1',[['0%','#d8d8d8'],['100%','#b8b8b8']]);
+var pat=mk('pattern',{id:'unoDots',width:'16',height:'16',patternUnits:'userSpaceOnUse'});
+app(pat,mk('circle',{cx:'8',cy:'8',r:'0.5',fill:'rgba(255,255,255,0.04)'}));
+defs.appendChild(pat);
+var filt=mk('filter',{id:'unoPinGlow',x:'-50%',y:'-50%',width:'200%',height:'200%'});
+var fgb=mk('feGaussianBlur',{stdDeviation:'3',result:'blur'});
+filt.appendChild(fgb);
+var fm=mk('feMerge',{});
+app(fm,mk('feMergeNode',{in:'blur'}));
+app(fm,mk('feMergeNode',{in:'SourceGraphic'}));
+filt.appendChild(fm);
+defs.appendChild(filt);
+
+/* ── PCB BODY ── */
+app(svg,mk('rect',{x:'0',y:'0',width:'260',height:'395',rx:'5',fill:'url(#unoPcbG)',stroke:'#222','stroke-width':'1.5'}));
+app(svg,mk('rect',{x:'0',y:'0',width:'260',height:'395',rx:'5',fill:'url(#unoDots)'}));
+app(svg,mk('rect',{x:'1.5',y:'1.5',width:'257',height:'392',rx:'4',fill:'none',stroke:'rgba(255,255,255,0.05)','stroke-width':'1'}));
+
+/* ── Mounting holes ── */
+[[12,10],[248,10],[12,385],[248,385]].forEach(function(h){
+  app(svg,mk('circle',{cx:h[0],cy:h[1],r:'9',fill:'#1c1c1c',stroke:'#3a3a3a','stroke-width':'1.2'}));
+  app(svg,mk('circle',{cx:h[0],cy:h[1],r:'5.5',fill:'#030303',stroke:'#111','stroke-width':'0.5'}));
+});
+
+/* ── USB Micro-B ── */
+app(svg,mk('rect',{x:'95',y:'0',width:'70',height:'30',rx:'3',fill:'url(#unoUsbG)',stroke:'#555','stroke-width':'1.2'}));
+app(svg,mk('rect',{x:'99',y:'3',width:'62',height:'26',rx:'2',fill:'#2e2e2e'}));
+app(svg,mk('rect',{x:'110',y:'0',width:'40',height:'8',rx:'1',fill:'#1a1a1a',stroke:'#666','stroke-width':'0.8'}));
+app(svg,txt('USB',{fill:'#666','font-family':'monospace','font-size':'6.5','text-anchor':'middle',x:'130',y:'20'}));
+
+/* ── BOOT button ── */
+app(svg,mk('rect',{x:'44',y:'5',width:'28',height:'16',rx:'3',fill:'#2a2a2a',stroke:'#444','stroke-width':'1'}));
+app(svg,mk('circle',{cx:'58',cy:'13',r:'6.5',fill:'#1e5a99',stroke:'#0d3d77','stroke-width':'1.2'}));
+app(svg,mk('circle',{cx:'56.5',cy:'11.5',r:'2',fill:'rgba(140,200,255,0.4)'}));
+app(svg,txt('BOOT',{fill:'#5588aa','font-family':'monospace','font-size':'5','font-weight':'bold','text-anchor':'middle',x:'58',y:'28'}));
+
+/* ── EN button ── */
+app(svg,mk('rect',{x:'188',y:'5',width:'28',height:'16',rx:'3',fill:'#2a2a2a',stroke:'#444','stroke-width':'1'}));
+app(svg,mk('circle',{cx:'202',cy:'13',r:'6.5',fill:'#991a1a',stroke:'#771111','stroke-width':'1.2'}));
+app(svg,mk('circle',{cx:'200.5',cy:'11.5',r:'2',fill:'rgba(255,140,140,0.4)'}));
+app(svg,txt('EN',{fill:'#aa5555','font-family':'monospace','font-size':'5','font-weight':'bold','text-anchor':'middle',x:'202',y:'28'}));
+
+/* ── ESP32-WROOM-32 shield ── */
+app(svg,mk('rect',{x:'67',y:'229',width:'126',height:'126',rx:'4',fill:'url(#shieldG)',stroke:'#888','stroke-width':'1.4'}));
+app(svg,mk('rect',{x:'70',y:'232',width:'120',height:'120',rx:'3',fill:'none',stroke:'rgba(0,0,0,0.15)','stroke-width':'1'}));
+[[74,236],[186,236],[74,348],[186,348]].forEach(function(h){
+  app(svg,mk('circle',{cx:h[0],cy:h[1],r:'2.2',fill:'#c8c8c8',stroke:'#999','stroke-width':'0.7'}));
+});
+app(svg,mk('rect',{x:'106',y:'229',width:'48',height:'6',rx:'1.5',fill:'#e0e0e0'}));
+app(svg,mk('rect',{x:'116',y:'220',width:'28',height:'10',rx:'1',fill:'#d0d0d0',stroke:'#aaa','stroke-width':'0.7'}));
+app(svg,txt('ESP32',{fill:'#222','font-family':'monospace','font-size':'11','font-weight':'bold','text-anchor':'middle',x:'130',y:'275'}));
+app(svg,txt('WROOM-32',{fill:'#333','font-family':'monospace','font-size':'9.5','font-weight':'bold','text-anchor':'middle',x:'130',y:'291'}));
+app(svg,txt('240MHz \u00b7 WiFi \u00b7 BT4.2',{fill:'#555','font-family':'monospace','font-size':'6.5','text-anchor':'middle',x:'130',y:'307'}));
+app(svg,txt('Dual-Core Xtensa LX6',{fill:'#666','font-family':'monospace','font-size':'6','text-anchor':'middle',x:'130',y:'321'}));
+app(svg,mk('rect',{x:'77',y:'243',width:'106',height:'98',rx:'2',fill:'none',stroke:'rgba(0,0,0,0.09)','stroke-width':'0.8','stroke-dasharray':'3,2'}));
+
+/* ── CP2102 chip ── */
+[[66,68.2],[66,76.2],[66,84.2],[66,92.2]].forEach(function(p){app(svg,mk('rect',{x:p[0],y:p[1],width:'4',height:'1.5',rx:'0.3',fill:'#aaa',stroke:'#888','stroke-width':'0.3'}));});
+[[108,68.2],[108,76.2],[108,84.2],[108,92.2]].forEach(function(p){app(svg,mk('rect',{x:p[0],y:p[1],width:'4',height:'1.5',rx:'0.3',fill:'#aaa',stroke:'#888','stroke-width':'0.3'}));});
+[76.2,84.2,92.2,100.2].forEach(function(x){
+  app(svg,mk('rect',{x:x,y:'58',width:'1.5',height:'4',rx:'0.3',fill:'#aaa',stroke:'#888','stroke-width':'0.3'}));
+  app(svg,mk('rect',{x:x,y:'100',width:'1.5',height:'4',rx:'0.3',fill:'#aaa',stroke:'#888','stroke-width':'0.3'}));
+});
+app(svg,mk('rect',{x:'70',y:'62',width:'38',height:'38',rx:'2',fill:'url(#unoChipG)',stroke:'#111','stroke-width':'1'}));
+app(svg,mk('circle',{cx:'75',cy:'67',r:'1.5',fill:'none',stroke:'#555','stroke-width':'0.6'}));
+app(svg,txt('CP2102',{fill:'#7ab','font-family':'monospace','font-size':'5.5','font-weight':'bold','text-anchor':'middle',x:'89',y:'80'}));
+app(svg,txt('USB-UART',{fill:'#556','font-family':'monospace','font-size':'4.5','text-anchor':'middle',x:'89',y:'87'}));
+
+/* ── AMS1117 LDO ── */
+[64.0,79.0,94.0].forEach(function(y){app(svg,mk('rect',{x:'160',y:y,width:'5',height:'2',rx:'0.4',fill:'#bbb',stroke:'#888','stroke-width':'0.4'}));});
+app(svg,mk('rect',{x:'187',y:'70.1',width:'7',height:'19.8',rx:'1',fill:'#ccc',stroke:'#888','stroke-width':'0.6'}));
+app(svg,mk('rect',{x:'165',y:'62',width:'22',height:'36',rx:'2',fill:'url(#unoChipG)',stroke:'#111','stroke-width':'1'}));
+app(svg,mk('circle',{cx:'169',cy:'66',r:'1.5',fill:'none',stroke:'#555','stroke-width':'0.6'}));
+var a1=mk('text',{fill:'#7ab','font-family':'monospace','font-size':'5.5','font-weight':'bold','text-anchor':'middle',transform:'rotate(-90,176,80)',x:'176',y:'79'});a1.textContent='AMS1117';svg.appendChild(a1);
+var a2=mk('text',{fill:'#556','font-family':'monospace','font-size':'4.5','text-anchor':'middle',transform:'rotate(-90,176,88)',x:'176',y:'87'});a2.textContent='3.3V LDO';svg.appendChild(a2);
+
+/* ── FLASH 4MB SPI chip ── */
+[154.2,162.2,170.2,178.2,186.2].forEach(function(y){
+  app(svg,mk('rect',{x:'99',y:y,width:'4',height:'1.5',rx:'0.3',fill:'#aaa',stroke:'#888','stroke-width':'0.3'}));
+  app(svg,mk('rect',{x:'145',y:y,width:'4',height:'1.5',rx:'0.3',fill:'#aaa',stroke:'#888','stroke-width':'0.3'}));
+});
+[107.2,115.2,123.2,131.2,139.2].forEach(function(x){
+  app(svg,mk('rect',{x:x,y:'146',width:'1.5',height:'4',rx:'0.3',fill:'#aaa',stroke:'#888','stroke-width':'0.3'}));
+  app(svg,mk('rect',{x:x,y:'192',width:'1.5',height:'4',rx:'0.3',fill:'#aaa',stroke:'#888','stroke-width':'0.3'}));
+});
+app(svg,mk('rect',{x:'103',y:'150',width:'42',height:'42',rx:'2',fill:'url(#unoChipG)',stroke:'#111','stroke-width':'1'}));
+app(svg,mk('circle',{cx:'108',cy:'155',r:'1.5',fill:'none',stroke:'#555','stroke-width':'0.6'}));
+app(svg,txt('FLASH',{fill:'#7ab','font-family':'monospace','font-size':'5.5','font-weight':'bold','text-anchor':'middle',x:'124',y:'170'}));
+app(svg,txt('4MB SPI',{fill:'#556','font-family':'monospace','font-size':'4.5','text-anchor':'middle',x:'124',y:'177'}));
+
+/* ── SMD passives ── */
+app(svg,mk('rect',{x:'58',y:'97',width:'9',height:'5',rx:'1.2',fill:'#c8a020',stroke:'#7a5e00','stroke-width':'0.6'}));
+app(svg,mk('rect',{x:'59',y:'98',width:'7',height:'3',rx:'0.6',fill:'#d4aa28'}));
+app(svg,mk('rect',{x:'58',y:'98',width:'2.5',height:'3',rx:'0.3',fill:'#999'}));
+app(svg,mk('rect',{x:'64.5',y:'98',width:'2.5',height:'3',rx:'0.3',fill:'#999'}));
+[[58,161],[58,182],[182,161],[182,182]].forEach(function(p){
+  app(svg,mk('rect',{x:p[0],y:p[1],width:'9',height:'5',rx:'1',fill:'#1e1e1e',stroke:'#333','stroke-width':'0.5'}));
+  app(svg,mk('rect',{x:p[0]+2,y:p[1]+1,width:'5',height:'3',rx:'0.4',fill:'#2a2820'}));
+  app(svg,mk('rect',{x:p[0],y:p[1],width:'2.5',height:'5',rx:'0.3',fill:'#555'}));
+  app(svg,mk('rect',{x:p[0]+6.5,y:p[1],width:'2.5',height:'5',rx:'0.3',fill:'#555'}));
+});
+[[97,202],[110,202],[135,202]].forEach(function(p){
+  app(svg,mk('rect',{x:p[0],y:p[1],width:'9',height:'5',rx:'1.2',fill:'#1a1a1a',stroke:'#333','stroke-width':'0.5'}));
+  app(svg,mk('rect',{x:p[0],y:p[1]+1,width:'2.5',height:'3',rx:'0.3',fill:'#666'}));
+  app(svg,mk('rect',{x:p[0]+6.5,y:p[1]+1,width:'2.5',height:'3',rx:'0.3',fill:'#666'}));
+});
+app(svg,mk('rect',{x:'148',y:'202',width:'9',height:'5',rx:'1',fill:'#1e1e1e',stroke:'#333','stroke-width':'0.5'}));
+app(svg,mk('rect',{x:'150',y:'203',width:'5',height:'3',rx:'0.4',fill:'#2a2820'}));
+app(svg,mk('rect',{x:'148',y:'202',width:'2.5',height:'5',rx:'0.3',fill:'#555'}));
+app(svg,mk('rect',{x:'154.5',y:'202',width:'2.5',height:'5',rx:'0.3',fill:'#555'}));
+
+/* ── Shield solder pads ── */
+[232,247,262,277,292,307,322,337].forEach(function(y){
+  app(svg,mk('rect',{x:'57',y:y,width:'10',height:'7',rx:'1.2',fill:'#c8a060',stroke:'#8a6030','stroke-width':'0.6'}));
+  app(svg,mk('rect',{x:'58.5',y:y+1.5,width:'7',height:'4',rx:'0.6',fill:'#d4b070'}));
+  app(svg,mk('line',{x1:'67',y1:y+3.5,x2:'70',y2:y+3.5,stroke:'rgba(180,130,50,0.35)','stroke-width':'1'}));
+  app(svg,mk('rect',{x:'193',y:y,width:'10',height:'7',rx:'1.2',fill:'#c8a060',stroke:'#8a6030','stroke-width':'0.6'}));
+  app(svg,mk('rect',{x:'194.5',y:y+1.5,width:'7',height:'4',rx:'0.6',fill:'#d4b070'}));
+  app(svg,mk('line',{x1:'190',y1:y+3.5,x2:'193',y2:y+3.5,stroke:'rgba(180,130,50,0.35)','stroke-width':'1'}));
+});
+
+/* ── Pin header rails ── */
+app(svg,mk('rect',{x:'3',y:'57',width:'12',height:'318',rx:'2',fill:'#0d0d0d',stroke:'#1e1e1e','stroke-width':'1'}));
+app(svg,mk('rect',{x:'245',y:'57',width:'12',height:'318',rx:'2',fill:'#0d0d0d',stroke:'#1e1e1e','stroke-width':'1'}));
+
+/* ════════════════ PIN DATA ════════════════ */
+var C={
+  PWR:  {c:'#ff6b6b',bg:'rgba(255,107,107,.14)',border:'rgba(255,107,107,.35)'},
+  GND:  {c:'#9e9e9e',bg:'rgba(158,158,158,.12)',border:'rgba(158,158,158,.3)'},
+  GPIO: {c:'#a0c0a0',bg:'rgba(100,160,100,.10)',border:'rgba(100,160,100,.28)'},
+  ADC:  {c:'#c0a060',bg:'rgba(192,160,96,.12)', border:'rgba(192,160,96,.3)'},
+  SPI:  {c:'#4a90d9',bg:'rgba(74,144,217,.12)', border:'rgba(74,144,217,.3)'},
+  I2C:  {c:'#8888cc',bg:'rgba(136,136,204,.12)',border:'rgba(136,136,204,.3)'},
+  UART: {c:'#c06080',bg:'rgba(192,96,128,.12)', border:'rgba(192,96,128,.3)'},
+  PWM:  {c:'#60b0b0',bg:'rgba(96,176,176,.12)', border:'rgba(96,176,176,.3)'},
+  TOUCH:{c:'#d4a800',bg:'rgba(212,168,0,.12)',  border:'rgba(212,168,0,.3)'},
+  DAC:  {c:'#a060d0',bg:'rgba(160,96,208,.12)', border:'rgba(160,96,208,.3)'},
+  SPEC: {c:'#7090a0',bg:'rgba(112,144,160,.12)',border:'rgba(112,144,160,.3)'},
+};
+function cl(t){return C[t]||C.SPEC;}
+
+var LX=10,RX=250;
+var LY=[69,90,111,132,153,174,195,216,237,258,279,300,321,342,363];
+var RY=[69,90,111,132,153,174,195,216,237,258,279,300,321,342,363];
+
+var ALT={
+  'GND0':['Common ground','Return path'],'GND1':['Common ground'],
+  '3V3_0':['Sensor supply','Shield 3.3V'],
+  'VIN':['USB 5V passthrough','Li-Po charger input'],
+  'EN':['Software reset','Deep-sleep wake'],
+  'VP':['ADC1_CH0','GPIO36 input-only'],'VN':['ADC1_CH3','GPIO39 input-only'],
+  'D34':['ADC1_CH6','RTC_GPIO4','input-only'],'D35':['ADC1_CH7','RTC_GPIO5','input-only'],
+  'D32':['ADC1_CH4','TOUCH9','RTC_GPIO9','XTAL_32K_P'],'D33':['ADC1_CH5','TOUCH8','RTC_GPIO8','XTAL_32K_N'],
+  'D25':['ADC2_CH8','DAC1','RTC_GPIO6','I2S_DATA_OUT'],'D26':['ADC2_CH9','DAC2','RTC_GPIO7','I2S_WS'],
+  'D27':['ADC2_CH7','TOUCH7','RTC_GPIO17','I2S_DATA_IN'],
+  'D14':['ADC2_CH6','TOUCH6','RTC_GPIO16','HSPI_CLK','I2S_CLK'],
+  'D12':['ADC2_CH5','TOUCH5','RTC_GPIO15','HSPI_MISO','JTAG_TDI'],
+  'D13':['ADC2_CH4','TOUCH4','RTC_GPIO14','HSPI_MOSI','JTAG_TCK'],
+  'D15':['ADC2_CH3','TOUCH3','RTC_GPIO13','HSPI_SS','JTAG_TDO'],
+  'D2':['ADC2_CH2','TOUCH2','RTC_GPIO12','HSPIWP','LED_BUILTIN'],
+  'D4':['ADC2_CH0','TOUCH0','RTC_GPIO10','HSPIHD'],
+  'RX2':['UART2_RX','GPIO16'],'TX2':['UART2_TX','GPIO17'],
+  'D5':['VSPI_SS','PWM','JTAG_TRST'],'D18':['VSPI_CLK','PWM'],'D19':['VSPI_MISO','PWM'],
+  'D21':['I2C_SDA','Wire.begin()'],'RX0':['UART0_RX','Serial.read()','USB-UART shared'],
+  'TX0':['UART0_TX','Serial.print()','USB-UART shared'],'D22':['I2C_SCL','Wire.setClock()'],'D23':['VSPI_MOSI'],
+};
+
+var PINS=[
+  {id:'3V3_0',lbl:'3V3', name:'3.3V Output',         type:'PWR',  funcs:['PWR'],                            volt:'3.3V',   curr:'600mA max',note:'3.3V regulated output from onboard LDO (AMS1117-3.3). Max ~600mA. Main I/O voltage for all GPIOs.',cx:LX,cy:LY[0]},
+  {id:'GND0', lbl:'GND', name:'Ground',              type:'GND',  funcs:['GND'],                            volt:'0V',     curr:'N/A',      note:'Ground. Internally connected to all other GND pins.',cx:LX,cy:LY[1]},
+  {id:'D15',  lbl:'15',  name:'GPIO15 / HSPI_SS',    type:'SPI',  funcs:['GPIO','PWM','ADC','SPI','TOUCH'], volt:'0/3.3V', curr:'40mA',     note:'HSPI Slave Select. ADC2_CH3, TOUCH3, JTAG_TDO. Pull-up during boot - must be HIGH at power-on.',cx:LX,cy:LY[2]},
+  {id:'D2',   lbl:'2',   name:'GPIO2 / LED_BUILTIN', type:'GPIO', funcs:['GPIO','PWM','ADC','TOUCH'],       volt:'0/3.3V', curr:'40mA',     note:'Onboard blue LED (active HIGH). Must be LOW or floating at boot. ADC2_CH2, TOUCH2.',cx:LX,cy:LY[3]},
+  {id:'D4',   lbl:'4',   name:'GPIO4',               type:'GPIO', funcs:['GPIO','PWM','ADC','TOUCH'],       volt:'0/3.3V', curr:'40mA',     note:'General purpose I/O. ADC2_CH0, TOUCH0, RTC_GPIO10, HSPIHD.',cx:LX,cy:LY[4]},
+  {id:'RX2',  lbl:'RX2', name:'GPIO16 / UART2 RX',  type:'UART', funcs:['GPIO','PWM','UART'],              volt:'0/3.3V', curr:'40mA',     note:'UART2 receive (Serial2). PWM capable. Free from USB bridge - ideal for secondary serial devices.',cx:LX,cy:LY[5]},
+  {id:'TX2',  lbl:'TX2', name:'GPIO17 / UART2 TX',  type:'UART', funcs:['GPIO','PWM','UART'],              volt:'0/3.3V', curr:'40mA',     note:'UART2 transmit (Serial2). PWM capable. Independent serial port - does not conflict with USB.',cx:LX,cy:LY[6]},
+  {id:'D5',   lbl:'5',   name:'GPIO5 / VSPI_SS',     type:'SPI',  funcs:['GPIO','PWM','SPI'],               volt:'0/3.3V', curr:'40mA',     note:'VSPI Slave Select. PWM capable. Boot-sensitive - must be HIGH at power-on. JTAG_TRST.',cx:LX,cy:LY[7]},
+  {id:'D18',  lbl:'18',  name:'GPIO18 / VSPI_CLK',   type:'SPI',  funcs:['GPIO','PWM','SPI'],               volt:'0/3.3V', curr:'40mA',     note:'VSPI Clock. Default SPI.begin() clock pin. PWM capable.',cx:LX,cy:LY[8]},
+  {id:'D19',  lbl:'19',  name:'GPIO19 / VSPI_MISO',  type:'SPI',  funcs:['GPIO','PWM','SPI'],               volt:'0/3.3V', curr:'40mA',     note:'VSPI MISO - data from peripheral to ESP32. PWM capable.',cx:LX,cy:LY[9]},
+  {id:'D21',  lbl:'21',  name:'GPIO21 / I2C SDA',    type:'I2C',  funcs:['GPIO','PWM','I2C'],               volt:'0/3.3V', curr:'40mA',     note:'Default I2C SDA (Wire library). Wire.begin(21,22). Use 4.7k pull-up to 3.3V.',cx:LX,cy:LY[10]},
+  {id:'RX0',  lbl:'RX0', name:'GPIO3 / UART0 RX',   type:'UART', funcs:['GPIO','PWM','UART'],              volt:'0/3.3V', curr:'40mA',     note:'UART0 RX - shared with USB-UART (CP2102). Avoid during Serial Monitor use.',cx:LX,cy:LY[11]},
+  {id:'TX0',  lbl:'TX0', name:'GPIO1 / UART0 TX',   type:'UART', funcs:['GPIO','PWM','UART'],              volt:'0/3.3V', curr:'40mA',     note:'UART0 TX - shared with USB-UART (CP2102). Avoid during Serial.print() use.',cx:LX,cy:LY[12]},
+  {id:'D22',  lbl:'22',  name:'GPIO22 / I2C SCL',    type:'I2C',  funcs:['GPIO','PWM','I2C'],               volt:'0/3.3V', curr:'40mA',     note:'Default I2C SCL (Wire library). Wire.begin(21,22). Use 4.7k pull-up to 3.3V.',cx:LX,cy:LY[13]},
+  {id:'D23',  lbl:'23',  name:'GPIO23 / VSPI_MOSI',  type:'SPI',  funcs:['GPIO','PWM','SPI'],               volt:'0/3.3V', curr:'40mA',     note:'VSPI MOSI - data from ESP32 to peripheral. SPI.begin() default data pin.',cx:LX,cy:LY[14]},
+  {id:'VIN',  lbl:'VIN', name:'Voltage Input',       type:'PWR',  funcs:['PWR'],                            volt:'5V',     curr:'N/A',      note:'5V input from USB or external supply. Feeds AMS1117-3.3 LDO regulator to produce 3.3V.',cx:RX,cy:RY[0]},
+  {id:'GND1', lbl:'GND', name:'Ground',              type:'GND',  funcs:['GND'],                            volt:'0V',     curr:'N/A',      note:'Ground pin.',cx:RX,cy:RY[1]},
+  {id:'D13',  lbl:'13',  name:'GPIO13 / HSPI_MOSI',  type:'SPI',  funcs:['GPIO','PWM','ADC','SPI','TOUCH'], volt:'0/3.3V', curr:'40mA',     note:'HSPI MOSI. ADC2_CH4, TOUCH4. Boot-sensitive - internal pull-up, glitch on boot is normal.',cx:RX,cy:RY[2]},
+  {id:'D12',  lbl:'12',  name:'GPIO12 / HSPI_MISO',  type:'SPI',  funcs:['GPIO','PWM','ADC','SPI','TOUCH'], volt:'0/3.3V', curr:'40mA',     note:'HSPI MISO. ADC2_CH5, TOUCH5. Must be LOW at power-on for normal boot.',cx:RX,cy:RY[3]},
+  {id:'D14',  lbl:'14',  name:'GPIO14 / HSPI_CLK',   type:'SPI',  funcs:['GPIO','PWM','ADC','SPI','TOUCH'], volt:'0/3.3V', curr:'40mA',     note:'HSPI Clock. ADC2_CH6, TOUCH6. Outputs PWM signal during boot.',cx:RX,cy:RY[4]},
+  {id:'D27',  lbl:'27',  name:'GPIO27',              type:'GPIO', funcs:['GPIO','PWM','ADC','TOUCH'],       volt:'0/3.3V', curr:'40mA',     note:'General purpose I/O. ADC2_CH7, TOUCH7, RTC_GPIO17.',cx:RX,cy:RY[5]},
+  {id:'D26',  lbl:'26',  name:'GPIO26 / DAC2',       type:'DAC',  funcs:['GPIO','PWM','ADC','DAC'],         volt:'0-3.3V', curr:'N/A',      note:'8-bit DAC output. dacWrite(26, value). PWM capable. ADC2_CH9.',cx:RX,cy:RY[6]},
+  {id:'D25',  lbl:'25',  name:'GPIO25 / DAC1',       type:'DAC',  funcs:['GPIO','PWM','ADC','DAC'],         volt:'0-3.3V', curr:'N/A',      note:'8-bit DAC output. dacWrite(25, value). PWM capable. ADC2_CH8. I2S_DATA_OUT.',cx:RX,cy:RY[7]},
+  {id:'D33',  lbl:'33',  name:'GPIO33 / TOUCH8',     type:'TOUCH',funcs:['GPIO','PWM','ADC','TOUCH'],       volt:'0/3.3V', curr:'40mA',     note:'Capacitive touch (touchRead). PWM capable. ADC1_CH5. 32kHz crystal XTAL_32K_N.',cx:RX,cy:RY[8]},
+  {id:'D32',  lbl:'32',  name:'GPIO32 / TOUCH9',     type:'TOUCH',funcs:['GPIO','PWM','ADC','TOUCH'],       volt:'0/3.3V', curr:'40mA',     note:'Capacitive touch (touchRead). PWM capable. ADC1_CH4. 32kHz crystal XTAL_32K_P.',cx:RX,cy:RY[9]},
+  {id:'D35',  lbl:'35',  name:'GPIO35 - Input Only', type:'ADC',  funcs:['ADC'],                            volt:'0-3.3V', curr:'N/A',      note:'INPUT ONLY - no pull-up/down, no output. ADC1_CH7, RTC_GPIO5.',cx:RX,cy:RY[10]},
+  {id:'D34',  lbl:'34',  name:'GPIO34 - Input Only', type:'ADC',  funcs:['ADC'],                            volt:'0-3.3V', curr:'N/A',      note:'INPUT ONLY - no pull-up/down, no output. ADC1_CH6, RTC_GPIO4.',cx:RX,cy:RY[11]},
+  {id:'VN',   lbl:'VN',  name:'GPIO39 / VN Input',   type:'ADC',  funcs:['ADC'],                            volt:'0-3.3V', curr:'N/A',      note:'INPUT ONLY. ADC1_CH3. Differential pair with VP for Hall-effect sensor.',cx:RX,cy:RY[12]},
+  {id:'VP',   lbl:'VP',  name:'GPIO36 / VP Input',   type:'ADC',  funcs:['ADC'],                            volt:'0-3.3V', curr:'N/A',      note:'INPUT ONLY. ADC1_CH0. Differential input with VN for Hall-effect sensor readings.',cx:RX,cy:RY[13]},
+  {id:'EN',   lbl:'EN',  name:'Enable (Reset)',       type:'SPEC', funcs:['SPEC'],                           volt:'3.3V',   curr:'N/A',      note:'Active-high chip enable. Pull LOW to reset. EN button on board does this. 10k pull-up onboard.',cx:RX,cy:RY[14]},
+];
+
+var PS=16;
+function addSilk(p){
+  var onR=p.cx>130;
+  var t=mk('text',{x:onR?p.cx-PS-3:p.cx+PS+4,y:p.cy+4,'text-anchor':onR?'end':'start',
+    fill:'rgba(200,240,200,0.75)','font-size':'9','font-family':'monospace','font-weight':'bold','pointer-events':'none'});
+  t.textContent=p.lbl;svg.appendChild(t);
+}
+
+PINS.forEach(function(p){
+  var col=cl(p.type);
+  var g=mk('g',{'class':'uno-pin','data-id':p.id});g.style.cursor='pointer';
+  app(g,mk('rect',{x:p.cx-PS/2-2,y:p.cy-PS/2-2,width:PS+4,height:PS+4,rx:'2',fill:'rgba(184,130,60,0.3)',stroke:'rgba(184,130,60,0.55)','stroke-width':'0.5'}));
+  var sq=mk('rect',{x:p.cx-PS/2,y:p.cy-PS/2,width:PS,height:PS,rx:'2',fill:col.bg,stroke:col.c,'stroke-width':'1.5','class':'pin-sq'});
+  app(g,sq);
+  app(g,mk('rect',{x:p.cx-3,y:p.cy-3,width:6,height:6,rx:'1',fill:'#050810','pointer-events':'none'}));
+  var lbl=mk('text',{x:p.cx,y:p.cy+3.5,'text-anchor':'middle',fill:col.c,'font-size':'7','font-family':'monospace','font-weight':'bold','pointer-events':'none'});
+  lbl.textContent=p.lbl.length>4?p.lbl.slice(0,4):p.lbl;
+  app(g,lbl);addSilk(p);
+  app(g,mk('rect',{x:p.cx-14,y:p.cy-14,width:28,height:28,fill:'transparent'}));
+  g.addEventListener('click',function(e){e.stopPropagation();pickPin(p.id);});
+  g.addEventListener('mouseenter',function(e){showTT(p,e);});
+  g.addEventListener('mousemove',function(e){moveTT(e);});
+  g.addEventListener('mouseleave',hideTT);
+  svg.appendChild(g);
+});
+
+var selId=null,listOpen=false,filterType=null;
+var FILTERS=[
+  {lbl:'DIGITAL',key:'GPIO', fn:function(p){return p.funcs.indexOf('GPIO')>=0;}},
+  {lbl:'PWM',    key:'PWM',  fn:function(p){return p.funcs.indexOf('PWM')>=0;}},
+  {lbl:'ANALOG', key:'ADC',  fn:function(p){return p.funcs.indexOf('ADC')>=0;}},
+  {lbl:'TOUCH',  key:'TOUCH',fn:function(p){return p.funcs.indexOf('TOUCH')>=0;}},
+  {lbl:'DAC',    key:'DAC',  fn:function(p){return p.funcs.indexOf('DAC')>=0;}},
+  {lbl:'UART',   key:'UART', fn:function(p){return p.funcs.indexOf('UART')>=0;}},
+  {lbl:'SPI',    key:'SPI',  fn:function(p){return p.funcs.indexOf('SPI')>=0;}},
+  {lbl:'I2C',    key:'I2C',  fn:function(p){return p.funcs.indexOf('I2C')>=0;}},
+  {lbl:'GND',    key:'GND',  fn:function(p){return p.type==='GND';}},
+  {lbl:'PWR',    key:'PWR',  fn:function(p){return p.type==='PWR';}},
+  {lbl:'3.3V',   key:'3V3',  fn:function(p){return p.id==='3V3_0'||p.id==='3V3_1';}},
+];
+var FCLR={GPIO:'#a0c0a0',PWM:'#60b0b0',ADC:'#c0a060',TOUCH:'#d4a800',DAC:'#a060d0',SPI:'#4a90d9',I2C:'#8888cc',UART:'#c06080',GND:'#9e9e9e',PWR:'#ff6b6b','3V3':'#f0a070'};
+
+function buildBtns(){
+  var wrap=document.getElementById('unoBtns');
+  wrap.innerHTML=FILTERS.map(function(f){
+    var c=FCLR[f.key],ia=filterType===f.key;
+    return '<button class="uno-fbtn'+(ia?' active':'')+'" data-key="'+f.key+'" style="color:'+c+';background:'+(ia?'#1a1a1e':'#2c2c30')+';border-color:'+(ia?c:'rgba(255,255,255,0.22)')+'">'+f.lbl+'</button>';
+  }).join('');
+  var btns=document.querySelectorAll('.uno-fbtn');
+  for(var i=0;i<btns.length;i++){
+    btns[i].addEventListener('click',(function(b){return function(){
+      var k=b.getAttribute('data-key');filterType=(filterType===k)?null:k;buildBtns();updateBoard();updateList();
+    };})(btns[i]));
+  }
+}
+function pickPin(id){selId=(selId===id)?null:id;updateBoard();updateDetail();updateList();}
+function pinMatchesFilter(p){
+  if(!filterType) return true;
+  var f=FILTERS.filter(function(x){return x.key===filterType;})[0];
+  return f?f.fn(p):true;
+}
+function updateBoard(){
+  var hf=filterType!=null,gs=document.querySelectorAll('.uno-pin');
+  for(var i=0;i<gs.length;i++){
+    var g=gs[i],id=g.getAttribute('data-id');
+    var p=PINS.filter(function(x){return x.id===id;})[0];
+    var col=cl(p.type),sq=g.querySelector('.pin-sq'),act=selId===id,match=pinMatchesFilter(p);
+    if(act){sq.setAttribute('fill',col.c);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','2.5');sq.setAttribute('filter','url(#unoPinGlow)');g.querySelector('text').setAttribute('fill','#050810');g.style.opacity='1';}
+    else if(hf&&!match){sq.setAttribute('fill','rgba(30,30,40,0.4)');sq.setAttribute('stroke','rgba(80,80,90,0.3)');sq.setAttribute('stroke-width','1');sq.removeAttribute('filter');g.querySelector('text').setAttribute('fill','rgba(100,100,110,0.4)');g.style.opacity='0.25';}
+    else if(hf&&match){var fc=FCLR[filterType]||col.c;sq.setAttribute('fill',fc);sq.setAttribute('stroke',fc);sq.setAttribute('stroke-width','2');sq.setAttribute('filter','url(#unoPinGlow)');g.querySelector('text').setAttribute('fill','#050810');g.style.opacity='1';}
+    else{sq.setAttribute('fill',col.bg);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','1.5');sq.removeAttribute('filter');g.querySelector('text').setAttribute('fill',col.c);g.style.opacity='1';}
+  }
+}
+function updateDetail(){
+  var empty=document.getElementById('unoEmpty'),content=document.getElementById('unoDetailContent');
+  if(!selId){empty.style.display='block';content.className='uno-detail-content';return;}
+  var p=PINS.filter(function(x){return x.id===selId;})[0],col=cl(p.type);
+  empty.style.display='none';content.className='uno-detail-content show';
+  var badge=document.getElementById('unoDetBadge');
+  badge.style.background=col.bg;badge.style.borderColor=col.c;badge.style.color=col.c;badge.textContent=p.lbl;
+  var di=document.getElementById('unoDetId');di.style.color=col.c;di.textContent=p.id;
+  document.getElementById('unoDetFull').textContent=p.name;
+  document.getElementById('unoFuncs').innerHTML=p.funcs.map(function(f){return '<span class="uno-func-chip" style="background:'+col.bg+';color:'+col.c+';border-color:'+col.border+'">'+f+'</span>';}).join('');
+  document.getElementById('unoInfoGrid').innerHTML=
+    '<div class="uno-info-cell"><span class="uno-info-label">Type</span><span class="uno-info-value" style="color:'+col.c+'">'+p.type+'</span></div>'+
+    '<div class="uno-info-cell"><span class="uno-info-label">Voltage</span><span class="uno-info-value">'+p.volt+'</span></div>'+
+    '<div class="uno-info-cell"><span class="uno-info-label">Max Current</span><span class="uno-info-value">'+p.curr+'</span></div>'+
+    '<div class="uno-info-cell"><span class="uno-info-label">Board</span><span class="uno-info-value" style="color:#e05a00;">ESP32 DevKit V1</span></div>';
+  var alts=ALT[p.id]||[],altSec=document.getElementById('unoAltSection');
+  if(alts.length>0){altSec.style.display='block';document.getElementById('unoAltChips').innerHTML=alts.map(function(a){return '<span class="uno-alt-chip">'+a+'</span>';}).join('');}
+  else{altSec.style.display='none';}
+  document.getElementById('unoNote').innerHTML='<span class="uno-note-icon">&#128161;</span>'+p.note;
+}
+document.getElementById('unoListCnt').textContent=PINS.length;
+buildBtns();
+function updateList(){
+  var pins=PINS.filter(function(p){return pinMatchesFilter(p);});
+  document.getElementById('unoRows').innerHTML=pins.map(function(p){
+    var col=cl(p.type),on=selId===p.id;
+    return '<div class="uno-prow'+(on?' on':'')+'" data-id="'+p.id+'"><div class="uno-pbadge" style="background:'+col.bg+';color:'+col.c+';border:1px solid '+col.border+'">'+p.lbl+'</div><div class="uno-pname">'+p.name+'</div><span class="uno-ptag" style="background:'+col.bg+';color:'+col.c+'">'+p.type+'</span></div>';
+  }).join('');
+  document.getElementById('unoListCnt').textContent=pins.length+(pins.length<PINS.length?' / '+PINS.length:'');
+  var rows=document.querySelectorAll('.uno-prow');
+  for(var i=0;i<rows.length;i++){rows[i].addEventListener('click',(function(r){return function(){pickPin(r.dataset.id);};})(rows[i]));}
+}
+updateList();
+(function(){
+  var types=[];PINS.forEach(function(p){if(types.indexOf(p.type)<0)types.push(p.type);});
+  document.getElementById('unoLegend').innerHTML=types.map(function(t){var c=cl(t);return '<div class="uno-leg"><span class="uno-ldot" style="background:'+c.c+'"></span>'+t+'</div>';}).join('');
+})();
+function esp32ToggleList(){
+  listOpen=!listOpen;
+  document.getElementById('unoPinList').className='uno-pinlist'+(listOpen?' open':'');
+  document.getElementById('unoToggleIcon').innerHTML=listOpen?'&#9650; HIDE':'&#9660; SHOW ALL';
+}
+window.esp32ToggleList=esp32ToggleList;
+var ttEl=document.getElementById('unoTT');
+function showTT(p,e){
+  var col=cl(p.type);
+  ttEl.innerHTML='<span class="ttn" style="color:'+col.c+'">'+p.id+' &mdash; '+p.name+'</span><span class="ttnote">'+p.funcs.join(' &middot; ')+' | '+p.volt+' | '+p.curr+'</span>';
+  ttEl.className='uno-tt show';moveTT(e);
+}
+function moveTT(e){ttEl.style.left=(e.clientX+14)+'px';ttEl.style.top=(e.clientY-10)+'px';}
+function hideTT(){ttEl.className='uno-tt';}
+})();
+//]]>
+</script>
+<!--══════════════════ END ESP32 PINOUT ══════════════════-->
+
+<!--User Guide & About Section - ESP32 Version with Normal Blog Text Size-->
+<div class="separator" style="display: none;"><a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj9t2MhdNLhJMzNFX2SqElTzS5VkIZJ8Sj53pJisbzLNHHRwgGM8YXWcZkDcWnp5_4S0xNmjTwROlDP9f70cONIjP7aTzrLsFKrm5zrq9j0U2Cr5PmbtRrNyc1U4EytCpBWFk5P8ao1F6eR2WlA0-NkelrpwDHO-UxOGpZ3Yl3Rc0Bnt4bN8DTzLs-meBh9/s1600/esp32%20devkit%20v1.png" style="display: block; padding: 1em 0px; text-align: center;"><img alt="ESP32 DevKit V1 IC explorer" border="0" data-original-height="768" data-original-width="1376" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj9t2MhdNLhJMzNFX2SqElTzS5VkIZJ8Sj53pJisbzLNHHRwgGM8YXWcZkDcWnp5_4S0xNmjTwROlDP9f70cONIjP7aTzrLsFKrm5zrq9j0U2Cr5PmbtRrNyc1U4EytCpBWFk5P8ao1F6eR2WlA0-NkelrpwDHO-UxOGpZ3Yl3Rc0Bnt4bN8DTzLs-meBh9/s1600/esp32%20devkit%20v1.png" /></a></div><div><br /></div><h2>🖥️ How to Use the ESP32 DevKit V1 Pinout Tool</h2><h3>1. <strong>Navigate the Pin Map</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">The ESP32 DevKit has dual cores and many GPIO pins with multiple functions.</span></p></li><li><p><span style="white-space-collapse: preserve;">Hover or click on pins in the diagram to see their role (digital I/O, ADC, DAC, PWM, touch sensing, etc.).</span></p></li><li><p><span style="white-space-collapse: preserve;">This helps you plan which pins to use for sensors, actuators, or communication modules.</span></p></li></ul><h3>2. <strong>Understand Special Functions</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">The tool highlights pins with <strong>Wi‑Fi, Bluetooth, and capacitive touch capabilities</strong>.</span></p></li><li><p><span style="white-space-collapse: preserve;">Some pins are input‑only or have restrictions — the explorer makes these clear so you avoid wiring mistakes.</span></p></li></ul><h3>3. <strong>Check Power Pins</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">The diagram shows <strong>3.3V, VIN, and GND</strong> pins.</span></p></li><li><p><span style="white-space-collapse: preserve;">Remember: ESP32 is a <strong>3.3V device</strong> — connecting 5V signals directly can damage it.</span></p></li><li><p><span style="white-space-collapse: preserve;">Use the tool to confirm safe voltage levels for external modules.</span></p></li></ul><h3>4. <strong>Explore Communication Interfaces</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">The ESP32 supports <strong>multiple UARTs, SPI buses, and I2C channels</strong>.</span></p></li><li><p><span style="white-space-collapse: preserve;">The explorer shows which pins can be remapped for these functions, giving you flexibility in design.</span></p></li></ul><h3>5. <strong>Plan Advanced Projects</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">With built‑in Wi‑Fi and Bluetooth, the ESP32 is ideal for IoT.</span></p></li><li><p><span style="white-space-collapse: preserve;">Use the tool to decide pin assignments before coding, especially for projects with displays, sensors, and wireless communication.</span></p></li></ul><h3>6. <strong>Educational Use</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">Teachers can use the tool to demonstrate how modern microcontrollers integrate wireless features.</span></p></li><li><p><span style="white-space-collapse: preserve;">Beginners can visually grasp the difference between ESP32 and simpler boards like Arduino Uno.</span></p></li></ul><div></div><h2>✅ Why This Tool Is Useful</h2><ul><li><p><span style="white-space-collapse: preserve;">Simplifies working with a feature‑rich microcontroller.</span></p></li><li><p><span style="white-space-collapse: preserve;">Prevents wiring errors by showing pin restrictions.</span></p></li><li><p><span style="white-space-collapse: preserve;">Helps plan IoT projects with Wi‑Fi and Bluetooth.</span></p></li><li><p><span style="white-space-collapse: preserve;">Acts as a quick reference while coding and prototyping.</span></p></li></ul><h4 style="text-align: left;"><span style="white-space-collapse: preserve;">Video Guide</span></h4><div><div class="separator" style="clear: both; text-align: center;"><iframe allowfullscreen="" class="BLOG_video_class" height="449" src="https://www.youtube.com/embed/-Vt2IQy8Iw4" width="540" youtube-src-id="-Vt2IQy8Iw4"></iframe></div><br /><span style="white-space-collapse: preserve;"><br /></span></div><div><br /></div><div><span style="white-space-collapse: preserve;">👉 In short: this ESP32 DevKit V1 explorer is your </span><strong style="white-space-collapse: preserve;">IoT project companion</strong><span style="white-space-collapse: preserve;">. It’s not just a pin map — it’s a way to unlock the full potential of a Wi‑Fi + Bluetooth microcontroller.</span></div><div></div><h2>🔗 Related Tools</h2><div></div><ul><li><p><span style="white-space-collapse: preserve;"><a href="https://www.icexplorer.online/2026/03/arduino-uno.html">Arduino Uno Pinout Explorer</a></span></p></li><li><p><span style="white-space-collapse: preserve;"><a href="https://www.icexplorer.online/2026/03/arduino-nano.html">Arduino Nano Pinout Explorer</a></span></p></li><li><p><span style="white-space-collapse: preserve;"><a href="https://www.icexplorer.online/2026/03/arduino-mega-2560.html">Arduino Mega 2560 Pinout Explorer</a></span></p></li><li><p><a href="https://www.icexplorer.online/2026/03/atmega328p.html">ATmega328P IC explorer</a></p></li></ul>

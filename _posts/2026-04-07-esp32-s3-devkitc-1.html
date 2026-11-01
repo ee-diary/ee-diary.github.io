@@ -1,0 +1,607 @@
+---
+layout: post
+title: "ESP32-S3 DevKitC-1"
+date: 2026-04-07 21:24:00 +0000
+description: "ESP32-S3 DevKitC-1: interactive pinout explorer with pin functions, design files and datasheet."
+---
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* ── IC Explorer palette ─────────────────────────────────────────────────── */
+:root{
+  --bg:         #060c1a;
+  --surface:    #0d1425;
+  --surface2:   #111827;
+  --border:     #1e2d4a;
+  --border2:    #243352;
+  --accent:     #3a86ff;
+  --accent2:    #06d6a0;
+  --text:       #c8d8f0;
+  --text2:      #6a7a9a;
+  --text3:      #3a4a6a;
+  --mono:       'Share Tech Mono','Courier New',monospace;
+  --head:       'Orbitron','Arial Black',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;}
+
+.wrap{max-width:1020px;margin:0 auto;padding:14px;}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;
+  padding:10px 16px;margin-bottom:12px;position:relative;overflow:hidden;
+}
+.hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);}
+.hdr-left{display:flex;align-items:center;gap:12px;}
+.hdr-icon{width:36px;height:36px;flex-shrink:0;
+  background:rgba(58,134,255,.1);border:1px solid var(--border2);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;}
+.hdr-icon svg{width:22px;height:22px;color:var(--accent);}
+.hdr-title{font-family:var(--head);font-size:14px;font-weight:900;color:#e0e8ff;letter-spacing:.12em;}
+.hdr-sub{font-size:11px;color:var(--text2);margin-top:2px;letter-spacing:.04em;}
+.hdr-badge{
+  background:rgba(58,134,255,.12);border:1px solid rgba(58,134,255,.3);
+  color:var(--accent);border-radius:4px;padding:3px 9px;
+  font-size:11px;font-weight:700;letter-spacing:.08em;
+}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--accent2);
+  box-shadow:0 0 8px var(--accent2);animation:pulse 2s infinite;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+.main{display:flex;gap:12px;align-items:flex-start;}
+@media(max-width:660px){.main{flex-direction:column;}.board-wrap{width:100%!important;}}
+
+.board-wrap{
+  flex:0 0 auto;width:300px;
+  background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px;
+}
+.board-wrap svg{width:100%;height:auto;display:block;touch-action:manipulation;}
+
+.right{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;}
+
+/* ── Detail panel ───────────────────────────────────────────────────────── */
+.detail{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.detail-empty{padding:28px 20px;text-align:center;}
+.detail-empty .arrow{font-size:26px;margin-bottom:8px;display:block;color:var(--accent);
+  animation:arr 1.8s infinite;}
+@keyframes arr{0%,100%{opacity:.3;transform:translateX(-4px);}50%{opacity:.9;transform:translateX(4px);}}
+.detail-empty p{font-size:12px;line-height:1.7;color:var(--text2);}
+.detail-content{display:none;}
+.detail-content.show{display:block;}
+
+.det-bar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);}
+.det-badge{width:54px;height:54px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;flex-shrink:0;border:2px solid;font-family:var(--mono);}
+.det-pinid{font-family:var(--head);font-size:16px;font-weight:900;color:#e0e8ff;display:block;letter-spacing:.06em;}
+.det-full{font-size:11px;color:var(--text2);margin-top:3px;display:block;}
+
+.funcs{display:flex;flex-wrap:wrap;gap:5px;padding:9px 16px;border-bottom:1px solid var(--border);}
+.func-chip{padding:3px 9px;border-radius:3px;font-size:11px;font-weight:700;border:1px solid;letter-spacing:.06em;}
+
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.info-cell{padding:8px 16px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);}
+.info-cell:nth-child(2n){border-right:none;}
+.info-cell:nth-last-child(-n+2){border-bottom:none;}
+.info-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:3px;display:block;}
+.info-val{font-size:13px;color:#e0e8ff;font-weight:700;display:block;}
+
+.alt-section{padding:9px 16px;border-top:1px solid var(--border);}
+.alt-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px;display:block;}
+.alt-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.alt-chip{padding:3px 9px;border-radius:3px;font-size:11px;
+  background:rgba(58,134,255,.07);border:1px solid var(--border2);color:#9cdcfe;}
+
+.note{padding:10px 16px;border-top:1px solid var(--border);font-size:11px;color:#4a7a9a;line-height:1.7;
+  background:rgba(6,214,160,.03);}
+.note-icon{color:var(--accent);margin-right:4px;}
+
+/* ── Filter / list panel ────────────────────────────────────────────────── */
+.filter-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.panel-box{padding:10px 12px;border-bottom:1px solid var(--border);}
+.panel-label{font-size:10px;color:var(--accent);letter-spacing:.14em;text-transform:uppercase;
+  font-weight:700;margin-bottom:8px;display:block;}
+.btns{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.fbtn{
+  display:flex;align-items:center;justify-content:center;height:32px;
+  border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.07em;font-family:var(--mono);
+  cursor:pointer;user-select:none;outline:none;
+  border:1px solid var(--border2);background:var(--surface2);
+  transition:background .1s,border-color .1s,box-shadow .1s,transform .08s;
+}
+.fbtn:hover{background:rgba(255,255,255,.07)!important;border-color:rgba(255,255,255,.3)!important;}
+.fbtn.active{border-color:currentColor!important;
+  box-shadow:0 0 8px currentColor;transform:translateY(1px);}
+
+.list-toggle{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 16px;cursor:pointer;background:var(--surface2);
+}
+.list-toggle:hover{background:rgba(58,134,255,.06);}
+.list-toggle span{font-size:12px;color:var(--text2);}
+.list-toggle b{color:var(--accent);}
+
+.pinlist{max-height:0;overflow:hidden;transition:max-height .35s ease;}
+.pinlist.open{max-height:420px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border2) transparent;}
+.pinlist::-webkit-scrollbar{width:3px;}
+.pinlist::-webkit-scrollbar-thumb{background:var(--border2);}
+
+.prow{display:flex;align-items:center;gap:8px;padding:6px 12px;cursor:pointer;
+  border-bottom:1px solid rgba(30,45,74,.6);}
+.prow:hover{background:rgba(255,255,255,.03);}
+.prow.on{background:rgba(58,134,255,.1);border-left:2px solid var(--accent);padding-left:10px;}
+.pbadge{min-width:42px;height:26px;border-radius:3px;display:flex;align-items:center;
+  justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.pname{font-size:12px;flex:1;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ptag{padding:2px 7px;border-radius:2px;font-size:11px;font-weight:700;flex-shrink:0;}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;
+  border-top:1px solid var(--border);background:var(--surface2);}
+.leg{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);}
+.ldot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+.tt{position:fixed;background:var(--surface);border:1px solid var(--border2);border-radius:8px;
+  padding:9px 13px;font-size:11px;pointer-events:none;z-index:99999;display:none;
+  min-width:180px;max-width:280px;box-shadow:0 4px 24px rgba(0,0,0,.7);
+  font-family:var(--mono);color:var(--text);}
+.tt.show{display:block;}
+.tt .ttn{font-family:var(--head);font-size:11px;font-weight:900;margin-bottom:4px;display:block;letter-spacing:.06em;}
+.tt .ttnote{color:var(--text2);font-size:10px;line-height:1.5;display:block;}
+</style>
+
+
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="hdr">
+    <div class="hdr-left">
+      <div class="hdr-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="6" width="18" height="12" rx="2"/>
+          <path d="M3 9h18M3 15h18M9 6v12M15 6v12"/>
+        </svg>
+      </div>
+      <div>
+        <div class="hdr-title">ESP32-S3 DevKitC-1</div>
+        <div class="hdr-sub">Interactive Pinout · 45 GPIOs · USB-OTG · AI/ML · Click any pin</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <span class="hdr-badge">DevKitC-1</span>
+      <div class="pulse"></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Board SVG -->
+    <div class="board-wrap">
+      <svg id="bSVG" viewBox="0 0 260 440" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <div class="right">
+      <!-- Detail panel -->
+      <div class="detail" id="detPanel">
+        <div class="detail-empty" id="detEmpty">
+          <span class="arrow">←</span>
+          <p>Click any pin on the board<br>to see its full details here</p>
+        </div>
+        <div class="detail-content" id="detContent">
+          <div class="det-bar">
+            <div class="det-badge" id="detBadge"></div>
+            <div>
+              <span class="det-pinid" id="detId"></span>
+              <span class="det-full" id="detFull"></span>
+            </div>
+          </div>
+          <div class="funcs" id="detFuncs"></div>
+          <div class="info-grid" id="detGrid"></div>
+          <div class="alt-section" id="detAlt">
+            <span class="alt-label">Alternative Functions</span>
+            <div class="alt-chips" id="detAltChips"></div>
+          </div>
+          <div class="note" id="detNote"></div>
+        </div>
+      </div>
+
+      <!-- Filter + list -->
+      <div class="filter-section">
+        <div class="panel-box">
+          <span class="panel-label">◆ Highlight Pins</span>
+          <div class="btns" id="fBtns"></div>
+        </div>
+        <div class="list-toggle" onclick="toggleList()">
+          <span>PIN LIST &nbsp;<b id="listCnt"></b></span>
+          <span id="toggleIcon" style="color:var(--accent)">▼ SHOW ALL</span>
+        </div>
+        <div class="pinlist" id="pinList">
+          <div id="listRows"></div>
+        </div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="tt" id="tt"></div>
+
+<script>
+(function(){
+'use strict';
+var NS='http://www.w3.org/2000/svg';
+var svg=document.getElementById('bSVG');
+function mk(tag,a){var el=document.createElementNS(NS,tag);for(var k in a)el.setAttribute(k,a[k]);return el;}
+function ap(p,c){p.appendChild(c);return c;}
+function tx(str,a){var el=mk('text',a);el.textContent=str;return el;}
+
+/* ── Defs ───────────────────────────────────────────────────────────────── */
+var defs=ap(svg,mk('defs',{}));
+function lg(id,x1,y1,x2,y2,stops){
+  var g=mk('linearGradient',{id:id,x1:x1,y1:y1,x2:x2,y2:y2,gradientUnits:'objectBoundingBox'});
+  stops.forEach(function(s){var st=mk('stop',{offset:s[0],'stop-color':s[1]});g.appendChild(st);});
+  defs.appendChild(g);
+}
+lg('pcbG','0','0','0','1',[['0%','#07101e'],['100%','#040c18']]);
+lg('chipG','0','0','1','1',[['0%','#1a1f30'],['100%','#0d1120']]);
+lg('usbG','0','0','1','0',[['0%','#5a6070'],['100%','#383c48']]);
+lg('shieldG','0','0','0.04','1',[['0%','#8090a8'],['100%','#6a7890']]);
+var pat=mk('pattern',{id:'dots',width:'16',height:'16',patternUnits:'userSpaceOnUse'});
+ap(pat,mk('circle',{cx:'8',cy:'8',r:'0.5',fill:'rgba(58,134,255,0.05)'}));
+defs.appendChild(pat);
+var filt=mk('filter',{id:'pinGlow',x:'-60%',y:'-60%',width:'220%',height:'220%'});
+var fgb=mk('feGaussianBlur',{stdDeviation:'2.5',result:'blur'});filt.appendChild(fgb);
+var fm=mk('feMerge',{});ap(fm,mk('feMergeNode',{in:'blur'}));ap(fm,mk('feMergeNode',{in:'SourceGraphic'}));
+filt.appendChild(fm);defs.appendChild(filt);
+
+/* ── PCB body ───────────────────────────────────────────────────────────── */
+ap(svg,mk('rect',{x:'0',y:'0',width:'260',height:'440',rx:'6',fill:'url(#pcbG)',stroke:'#1e2d4a','stroke-width':'1.5'}));
+ap(svg,mk('rect',{x:'0',y:'0',width:'260',height:'440',rx:'6',fill:'url(#dots)'}));
+ap(svg,mk('rect',{x:'1.5',y:'1.5',width:'257',height:'437',rx:'5',fill:'none',stroke:'rgba(58,134,255,0.07)','stroke-width':'1'}));
+
+/* mounting holes */
+[[12,10],[248,10],[12,430],[248,430]].forEach(function(h){
+  ap(svg,mk('circle',{cx:h[0],cy:h[1],r:'9',fill:'#04080e',stroke:'#1e2d4a','stroke-width':'1.2'}));
+  ap(svg,mk('circle',{cx:h[0],cy:h[1],r:'5',fill:'#02050b',stroke:'#111','stroke-width':'0.5'}));
+});
+
+/* USB-C */
+ap(svg,mk('rect',{x:'98',y:'0',width:'64',height:'26',rx:'4',fill:'url(#usbG)',stroke:'#4a5060','stroke-width':'1.2'}));
+ap(svg,mk('rect',{x:'102',y:'3',width:'56',height:'22',rx:'3',fill:'#141a28'}));
+ap(svg,mk('rect',{x:'112',y:'0',width:'36',height:'7',rx:'1',fill:'#0e1420',stroke:'#4a5060','stroke-width':'0.7'}));
+ap(svg,tx('USB-C',{fill:'#3a4a6a','font-family':'monospace','font-size':'6','text-anchor':'middle',x:'130',y:'19'}));
+
+/* BOOT btn */
+ap(svg,mk('rect',{x:'38',y:'4',width:'26',height:'14',rx:'3',fill:'#0d1425',stroke:'#1e2d4a','stroke-width':'1'}));
+ap(svg,mk('circle',{cx:'51',cy:'11',r:'5',fill:'#0f2a60',stroke:'#0a1a40','stroke-width':'1.2'}));
+ap(svg,mk('circle',{cx:'49.5',cy:'9.5',r:'1.5',fill:'rgba(58,134,255,0.3)'}));
+ap(svg,tx('BOOT',{fill:'#2a5090','font-family':'monospace','font-size':'4.5','font-weight':'bold','text-anchor':'middle',x:'51',y:'24'}));
+
+/* RESET btn */
+ap(svg,mk('rect',{x:'196',y:'4',width:'26',height:'14',rx:'3',fill:'#0d1425',stroke:'#1e2d4a','stroke-width':'1'}));
+ap(svg,mk('circle',{cx:'209',cy:'11',r:'5',fill:'#601010',stroke:'#400a0a','stroke-width':'1.2'}));
+ap(svg,mk('circle',{cx:'207.5',cy:'9.5',r:'1.5',fill:'rgba(255,80,80,0.3)'}));
+ap(svg,tx('RST',{fill:'#904040','font-family':'monospace','font-size':'4.5','font-weight':'bold','text-anchor':'middle',x:'209',y:'24'}));
+
+/* Module shield */
+ap(svg,mk('rect',{x:'55',y:'255',width:'150',height:'155',rx:'4',fill:'url(#shieldG)',stroke:'#4a5a70','stroke-width':'1.4'}));
+ap(svg,mk('rect',{x:'58',y:'258',width:'144',height:'149',rx:'3',fill:'none',stroke:'rgba(0,0,0,0.2)','stroke-width':'1'}));
+[[60,261],[197,261],[60,403],[197,403]].forEach(function(h){
+  ap(svg,mk('circle',{cx:h[0],cy:h[1],r:'2.2',fill:'#7080a0',stroke:'#5a6a88','stroke-width':'0.7'}));
+});
+/* antenna */
+ap(svg,mk('rect',{x:'95',y:'255',width:'70',height:'6',rx:'1.5',fill:'#8090a8'}));
+ap(svg,mk('rect',{x:'103',y:'245',width:'54',height:'12',rx:'1',fill:'#6a7888',stroke:'#5a6878','stroke-width':'0.7'}));
+/* chip label */
+ap(svg,tx('ESP32-S3',{fill:'#0d1425','font-family':'monospace','font-size':'12','font-weight':'bold','text-anchor':'middle',x:'130',y:'306'}));
+ap(svg,tx('WROOM-1',{fill:'#141c30','font-family':'monospace','font-size':'10','font-weight':'bold','text-anchor':'middle',x:'130',y:'322'}));
+ap(svg,tx('240MHz · WiFi · BT5 · BLE',{fill:'#2a3a5a','font-family':'monospace','font-size':'6.5','text-anchor':'middle',x:'130',y:'338'}));
+ap(svg,tx('Dual-Core Xtensa LX7 · AI/ML',{fill:'#2a3a5a','font-family':'monospace','font-size':'6','text-anchor':'middle',x:'130',y:'352'}));
+ap(svg,tx('512KB SRAM · 8MB PSRAM',{fill:'#2a3a5a','font-family':'monospace','font-size':'5.5','text-anchor':'middle',x:'130',y:'365'}));
+
+/* CP2102N */
+[[62,65],[62,72],[62,79],[62,86]].forEach(function(p){ap(svg,mk('rect',{x:p[0],y:p[1],width:'4',height:'1.5',rx:'0.3',fill:'#5a6888',stroke:'#3a4860','stroke-width':'0.3'}));});
+[[104,65],[104,72],[104,79],[104,86]].forEach(function(p){ap(svg,mk('rect',{x:p[0],y:p[1],width:'4',height:'1.5',rx:'0.3',fill:'#5a6888',stroke:'#3a4860','stroke-width':'0.3'}));});
+[72,80,88,96].forEach(function(x){
+  ap(svg,mk('rect',{x:x,y:'55',width:'1.5',height:'4',rx:'0.3',fill:'#5a6888',stroke:'#3a4860','stroke-width':'0.3'}));
+  ap(svg,mk('rect',{x:x,y:'98',width:'1.5',height:'4',rx:'0.3',fill:'#5a6888',stroke:'#3a4860','stroke-width':'0.3'}));
+});
+ap(svg,mk('rect',{x:'66',y:'59',width:'38',height:'38',rx:'2',fill:'url(#chipG)',stroke:'#0a1020','stroke-width':'1'}));
+ap(svg,mk('circle',{cx:'71',cy:'64',r:'1.5',fill:'none',stroke:'#1e2d4a','stroke-width':'0.6'}));
+ap(svg,tx('CP2102N',{fill:'#3a6888','font-family':'monospace','font-size':'5','font-weight':'bold','text-anchor':'middle',x:'85',y:'77'}));
+ap(svg,tx('USB-UART',{fill:'#2a4860','font-family':'monospace','font-size':'4.5','text-anchor':'middle',x:'85',y:'84'}));
+
+/* AMS1117 LDO */
+[62,77,92].forEach(function(y){ap(svg,mk('rect',{x:'158',y:y,width:'5',height:'2',rx:'0.4',fill:'#5a6888',stroke:'#3a4860','stroke-width':'0.4'}));});
+ap(svg,mk('rect',{x:'185',y:'68',width:'7',height:'20',rx:'1',fill:'#6a7888',stroke:'#4a5870','stroke-width':'0.6'}));
+ap(svg,mk('rect',{x:'163',y:'60',width:'22',height:'36',rx:'2',fill:'url(#chipG)',stroke:'#0a1020','stroke-width':'1'}));
+var a1=tx('AMS1117',{'font-family':'monospace','font-size':'5','font-weight':'bold','text-anchor':'middle',fill:'#3a6888',transform:'rotate(-90,174,78)',x:'174',y:'77'});svg.appendChild(a1);
+var a2=tx('3.3V LDO',{'font-family':'monospace','font-size':'4.5','text-anchor':'middle',fill:'#2a4860',transform:'rotate(-90,174,86)',x:'174',y:'85'});svg.appendChild(a2);
+
+/* SMD passives */
+[[55,155],[55,175],[195,155],[195,175]].forEach(function(p){
+  ap(svg,mk('rect',{x:p[0],y:p[1],width:'9',height:'5',rx:'1',fill:'#0d1425',stroke:'#1e2d4a','stroke-width':'0.5'}));
+  ap(svg,mk('rect',{x:p[0]+2,y:p[1]+1,width:'5',height:'3',rx:'0.4',fill:'#111827'}));
+  ap(svg,mk('rect',{x:p[0],y:p[1],width:'2.5',height:'5',rx:'0.3',fill:'#2a3a58'}));
+  ap(svg,mk('rect',{x:p[0]+6.5,y:p[1],width:'2.5',height:'5',rx:'0.3',fill:'#2a3a58'}));
+});
+
+/* solder pads (gold color kept for PCB realism) */
+[260,274,288,302,316,330,344,358,372,386].forEach(function(y){
+  ap(svg,mk('rect',{x:'45',y:y,width:'10',height:'7',rx:'1.2',fill:'#a08030',stroke:'#604010','stroke-width':'0.6'}));
+  ap(svg,mk('rect',{x:'46.5',y:y+1.5,width:'7',height:'4',rx:'0.6',fill:'#b09040'}));
+  ap(svg,mk('line',{x1:'55',y1:y+3.5,x2:'58',y2:y+3.5,stroke:'rgba(140,100,30,0.3)','stroke-width':'1'}));
+  ap(svg,mk('rect',{x:'205',y:y,width:'10',height:'7',rx:'1.2',fill:'#a08030',stroke:'#604010','stroke-width':'0.6'}));
+  ap(svg,mk('rect',{x:'206.5',y:y+1.5,width:'7',height:'4',rx:'0.6',fill:'#b09040'}));
+  ap(svg,mk('line',{x1:'202',y1:y+3.5,x2:'205',y2:y+3.5,stroke:'rgba(140,100,30,0.3)','stroke-width':'1'}));
+});
+
+/* pin header rails */
+ap(svg,mk('rect',{x:'3',y:'55',width:'12',height:'368',rx:'2',fill:'#040c18',stroke:'#111827','stroke-width':'1'}));
+ap(svg,mk('rect',{x:'245',y:'55',width:'12',height:'368',rx:'2',fill:'#040c18',stroke:'#111827','stroke-width':'1'}));
+
+/* ── Pin colour palette (matches IC Explorer) ───────────────────────────── */
+var C={
+  PWR:  {c:'#ff6b6b',bg:'rgba(255,107,107,.10)',bd:'rgba(255,107,107,.30)'},
+  GND:  {c:'#8a8a9a',bg:'rgba(138,138,154,.10)',bd:'rgba(138,138,154,.28)'},
+  GPIO: {c:'#78c878',bg:'rgba(120,200,120,.10)',bd:'rgba(120,200,120,.28)'},
+  ADC:  {c:'#c8a850',bg:'rgba(200,168,80,.10)', bd:'rgba(200,168,80,.28)'},
+  SPI:  {c:'#4a9aee',bg:'rgba(74,154,238,.10)', bd:'rgba(74,154,238,.28)'},
+  I2C:  {c:'#9898d8',bg:'rgba(152,152,216,.10)',bd:'rgba(152,152,216,.28)'},
+  UART: {c:'#cc6888',bg:'rgba(204,104,136,.10)',bd:'rgba(204,104,136,.28)'},
+  PWM:  {c:'#50c8c8',bg:'rgba(80,200,200,.10)', bd:'rgba(80,200,200,.28)'},
+  TOUCH:{c:'#e8c04a',bg:'rgba(232,192,74,.10)', bd:'rgba(232,192,74,.28)'},
+  USB:  {c:'#06d6a0',bg:'rgba(6,214,160,.10)',  bd:'rgba(6,214,160,.28)'},
+  SPEC: {c:'#7090a8',bg:'rgba(112,144,168,.10)',bd:'rgba(112,144,168,.28)'},
+};
+function col(t){return C[t]||C.SPEC;}
+
+var LX=10,RX=250;
+var LY=[],RY=[];
+for(var i=0;i<22;i++){LY.push(62+i*17);RY.push(62+i*17);}
+
+var ALT={
+  'G0':['BOOT strapping','WS2812 RGB'],'G1':['ADC1_CH0','TOUCH1','RTC_GPIO1'],
+  'G2':['ADC1_CH1','TOUCH2','RTC_GPIO2'],'G3':['ADC1_CH2','TOUCH3','RTC_GPIO3'],
+  'G4':['ADC1_CH3','TOUCH4','RTC_GPIO4'],'G5':['ADC1_CH4','TOUCH5','RTC_GPIO5'],
+  'G6':['ADC1_CH5','TOUCH6','RTC_GPIO6'],'G7':['ADC1_CH6','TOUCH7','RTC_GPIO7'],
+  'G8':['ADC1_CH7','TOUCH8','RTC_GPIO8','SUBSPICS1'],
+  'G9':['ADC1_CH8','TOUCH9','RTC_GPIO9','SUBSPICS0'],
+  'G10':['ADC1_CH9','TOUCH10','RTC_GPIO10','SUBSPICS2'],
+  'G11':['SUBSPID','TOUCH11','RTC_GPIO11'],'G12':['SUBSPICLK','TOUCH12','RTC_GPIO12'],
+  'G13':['SUBSPIQ','TOUCH13','RTC_GPIO13'],'G14':['SUBSPIWP','TOUCH14','RTC_GPIO14'],
+  'G15':['ADC2_CH4','XTAL_32K_P','RTC_GPIO15'],
+  'G16':['ADC2_CH5','XTAL_32K_N','RTC_GPIO16','U0RXD'],
+  'G17':['ADC2_CH6','DAC_1','RTC_GPIO17','U1TXD'],
+  'G18':['ADC2_CH7','DAC_2','RTC_GPIO18','CLK_OUT3','U1RXD'],
+  'G19':['ADC2_CH8','USB_D-','RTC_GPIO19','CLK_OUT2'],
+  'G20':['ADC2_CH9','USB_D+','RTC_GPIO20','CLK_OUT1'],
+  'G21':['RTC_GPIO21','SPI_CD'],
+  'G35':['SPIIO6'],'G36':['SPIIO7'],'G37':['SPIDQS'],
+  'G38':['SPIIO4'],'G39':['SPIIO5'],'G40':['MTDO','CLK_OUT2'],
+  'G41':['MTDI','CLK_OUT1'],'G42':['MTMS'],'G43':['U0TXD','CLK_OUT1'],
+  'G44':['U0RXD'],'G45':['VDDSDIO strapping'],'G46':['Must stay LOW at boot'],
+  'G47':['SPICLK_P_DIFF'],'G48':['SPICLK_N_DIFF'],
+};
+
+var PINS=[
+  {id:'3V3',  lbl:'3V3',name:'3.3V Power Output',    type:'PWR', funcs:['PWR'], volt:'3.3V',curr:'500mA',note:'3.3V regulated output from AMS1117-3.3 LDO. Max ~500mA. Primary supply for all peripherals.',cx:LX,cy:LY[0]},
+  {id:'3V3b', lbl:'3V3',name:'3.3V Power Output',    type:'PWR', funcs:['PWR'], volt:'3.3V',curr:'500mA',note:'Second 3.3V output — same rail as the first 3V3 pin.',cx:LX,cy:LY[1]},
+  {id:'GND0', lbl:'GND',name:'Ground',               type:'GND', funcs:['GND'], volt:'0V',  curr:'N/A',  note:'Ground. Internally connected to all other GND pins on the board.',cx:LX,cy:LY[2]},
+  {id:'G5',   lbl:'5',  name:'GPIO5',                type:'GPIO',funcs:['GPIO','PWM','ADC','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO5 — ADC1_CH4, TOUCH5, RTC_GPIO5.',cx:LX,cy:LY[3]},
+  {id:'G6',   lbl:'6',  name:'GPIO6',                type:'GPIO',funcs:['GPIO','PWM','ADC','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO6 — ADC1_CH5, TOUCH6, RTC_GPIO6.',cx:LX,cy:LY[4]},
+  {id:'G7',   lbl:'7',  name:'GPIO7',                type:'GPIO',funcs:['GPIO','PWM','ADC','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO7 — ADC1_CH6, TOUCH7, RTC_GPIO7.',cx:LX,cy:LY[5]},
+  {id:'G15',  lbl:'15', name:'GPIO15',               type:'GPIO',funcs:['GPIO','PWM','ADC'], volt:'0/3.3V',curr:'40mA',note:'GPIO15 — ADC2_CH4, XTAL_32K_P, RTC_GPIO15. Supports 32 kHz crystal.',cx:LX,cy:LY[6]},
+  {id:'G16',  lbl:'16', name:'GPIO16 / UART0 RX',    type:'UART',funcs:['GPIO','PWM','ADC','UART'],volt:'0/3.3V',curr:'40mA',note:'GPIO16 — ADC2_CH5, UART0 RX (U0RXD), XTAL_32K_N, RTC_GPIO16.',cx:LX,cy:LY[7]},
+  {id:'G17',  lbl:'17', name:'GPIO17 / UART1 TX',    type:'UART',funcs:['GPIO','PWM','ADC','UART'],volt:'0/3.3V',curr:'40mA',note:'GPIO17 — ADC2_CH6, UART1 TX, DAC_1 output, RTC_GPIO17.',cx:LX,cy:LY[8]},
+  {id:'G18',  lbl:'18', name:'GPIO18 / UART1 RX',    type:'UART',funcs:['GPIO','PWM','ADC','UART'],volt:'0/3.3V',curr:'40mA',note:'GPIO18 — ADC2_CH7, UART1 RX, DAC_2 output, RTC_GPIO18.',cx:LX,cy:LY[9]},
+  {id:'G8',   lbl:'8',  name:'GPIO8',                type:'GPIO',funcs:['GPIO','PWM','ADC','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO8 — ADC1_CH7, TOUCH8, RTC_GPIO8. Drives onboard WS2812 RGB LED on some boards.',cx:LX,cy:LY[10]},
+  {id:'G3',   lbl:'3',  name:'GPIO3',                type:'GPIO',funcs:['GPIO','PWM','ADC','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO3 — ADC1_CH2, TOUCH3, RTC_GPIO3.',cx:LX,cy:LY[11]},
+  {id:'G46',  lbl:'46', name:'GPIO46 — Input Only',  type:'ADC', funcs:['ADC'], volt:'0–3.3V',curr:'N/A',note:'INPUT ONLY — no pull-up/down, no drive capability. Strapping pin: must be LOW at boot. Do not drive HIGH.',cx:LX,cy:LY[12]},
+  {id:'G9',   lbl:'9',  name:'GPIO9',                type:'GPIO',funcs:['GPIO','PWM','ADC','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO9 — ADC1_CH8, TOUCH9, RTC_GPIO9, SUBSPICS0.',cx:LX,cy:LY[13]},
+  {id:'G10',  lbl:'10', name:'GPIO10',               type:'GPIO',funcs:['GPIO','PWM','ADC','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO10 — ADC1_CH9, TOUCH10, RTC_GPIO10, SUBSPICS2.',cx:LX,cy:LY[14]},
+  {id:'G11',  lbl:'11', name:'GPIO11 / OSPI Data',   type:'SPI', funcs:['GPIO','PWM','SPI','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO11 — SUBSPID (Octal SPI Data), TOUCH11, RTC_GPIO11.',cx:LX,cy:LY[15]},
+  {id:'G12',  lbl:'12', name:'GPIO12 / OSPI CLK',    type:'SPI', funcs:['GPIO','PWM','SPI','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO12 — SUBSPICLK (Octal SPI Clock), TOUCH12, RTC_GPIO12.',cx:LX,cy:LY[16]},
+  {id:'G13',  lbl:'13', name:'GPIO13 / OSPI Q',      type:'SPI', funcs:['GPIO','PWM','SPI','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO13 — SUBSPIQ (Octal SPI), TOUCH13, RTC_GPIO13.',cx:LX,cy:LY[17]},
+  {id:'G14',  lbl:'14', name:'GPIO14 / OSPI WP',     type:'SPI', funcs:['GPIO','PWM','SPI','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO14 — SUBSPIWP (Octal SPI WP), TOUCH14, RTC_GPIO14.',cx:LX,cy:LY[18]},
+  {id:'G21',  lbl:'21', name:'GPIO21',               type:'GPIO',funcs:['GPIO','PWM'], volt:'0/3.3V',curr:'40mA',note:'GPIO21 — RTC_GPIO21, SPI_CD. General purpose.',cx:LX,cy:LY[19]},
+  {id:'G47',  lbl:'47', name:'GPIO47 / SPICLK_P',    type:'SPI', funcs:['GPIO','PWM','SPI'],volt:'0/3.3V',curr:'40mA',note:'GPIO47 — SPICLK_P_DIFF. Differential clock positive for high-speed SPI.',cx:LX,cy:LY[20]},
+  {id:'G48',  lbl:'48', name:'GPIO48 / SPICLK_N',    type:'SPI', funcs:['GPIO','PWM','SPI'],volt:'0/3.3V',curr:'40mA',note:'GPIO48 — SPICLK_N_DIFF. Differential clock negative. Drives RGB LED on some DevKitC boards.',cx:LX,cy:LY[21]},
+  {id:'GND1', lbl:'GND',name:'Ground',               type:'GND', funcs:['GND'], volt:'0V',  curr:'N/A',  note:'Ground pin.',cx:RX,cy:RY[0]},
+  {id:'G43',  lbl:'43', name:'GPIO43 / UART0 TX',    type:'UART',funcs:['GPIO','PWM','UART'],volt:'0/3.3V',curr:'40mA',note:'GPIO43 — UART0 TX (U0TXD). Shared with USB-UART chip. Used for Serial.print().',cx:RX,cy:RY[1]},
+  {id:'G44',  lbl:'44', name:'GPIO44 / UART0 RX',    type:'UART',funcs:['GPIO','PWM','UART'],volt:'0/3.3V',curr:'40mA',note:'GPIO44 — UART0 RX (U0RXD). Shared with USB-UART chip. Used for Serial.read().',cx:RX,cy:RY[2]},
+  {id:'G1',   lbl:'1',  name:'GPIO1',                type:'GPIO',funcs:['GPIO','PWM','ADC','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO1 — ADC1_CH0, TOUCH1, RTC_GPIO1.',cx:RX,cy:RY[3]},
+  {id:'G2',   lbl:'2',  name:'GPIO2',                type:'GPIO',funcs:['GPIO','PWM','ADC','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO2 — ADC1_CH1, TOUCH2, RTC_GPIO2.',cx:RX,cy:RY[4]},
+  {id:'G42',  lbl:'42', name:'GPIO42 / MTMS',        type:'GPIO',funcs:['GPIO','PWM'], volt:'0/3.3V',curr:'40mA',note:'GPIO42 — JTAG MTMS. Available as GPIO when JTAG is not in use.',cx:RX,cy:RY[5]},
+  {id:'G41',  lbl:'41', name:'GPIO41 / MTDI',        type:'GPIO',funcs:['GPIO','PWM'], volt:'0/3.3V',curr:'40mA',note:'GPIO41 — JTAG MTDI, CLK_OUT1. Available as GPIO when JTAG is not active.',cx:RX,cy:RY[6]},
+  {id:'G40',  lbl:'40', name:'GPIO40 / MTDO',        type:'GPIO',funcs:['GPIO','PWM'], volt:'0/3.3V',curr:'40mA',note:'GPIO40 — JTAG MTDO, CLK_OUT2. Available as GPIO when JTAG is not active.',cx:RX,cy:RY[7]},
+  {id:'G39',  lbl:'39', name:'GPIO39 / SPIIO5',      type:'SPI', funcs:['GPIO','PWM','SPI'],volt:'0/3.3V',curr:'40mA',note:'GPIO39 — SPIIO5 (Octal SPI). Flexible GPIO.',cx:RX,cy:RY[8]},
+  {id:'G38',  lbl:'38', name:'GPIO38 / SPIIO4',      type:'SPI', funcs:['GPIO','PWM','SPI'],volt:'0/3.3V',curr:'40mA',note:'GPIO38 — SPIIO4 (Octal SPI). Flexible GPIO.',cx:RX,cy:RY[9]},
+  {id:'G37',  lbl:'37', name:'GPIO37 / SPIDQS',      type:'SPI', funcs:['GPIO','PWM','SPI'],volt:'0/3.3V',curr:'40mA',note:'GPIO37 — SPIDQS (Data Strobe for Octal PSRAM).',cx:RX,cy:RY[10]},
+  {id:'G36',  lbl:'36', name:'GPIO36 / SPIIO7',      type:'SPI', funcs:['GPIO','PWM','SPI'],volt:'0/3.3V',curr:'40mA',note:'GPIO36 — SPIIO7 (Octal SPI). May be used for on-board PSRAM.',cx:RX,cy:RY[11]},
+  {id:'G35',  lbl:'35', name:'GPIO35 / SPIIO6',      type:'SPI', funcs:['GPIO','PWM','SPI'],volt:'0/3.3V',curr:'40mA',note:'GPIO35 — SPIIO6 (Octal SPI). May be used for on-board PSRAM.',cx:RX,cy:RY[12]},
+  {id:'G0',   lbl:'0',  name:'GPIO0 / BOOT',         type:'GPIO',funcs:['GPIO','PWM'], volt:'0/3.3V',curr:'40mA',note:'BOOT strapping pin. Must be HIGH for normal boot. Pull LOW to enter download mode. Drives onboard RGB LED on some boards.',cx:RX,cy:RY[13]},
+  {id:'G45',  lbl:'45', name:'GPIO45 — Strapping',   type:'SPEC',funcs:['SPEC'], volt:'3.3V',curr:'N/A',note:'VDDSDIO strapping pin. Configures internal flash voltage (1.8 V or 3.3 V). Leave floating or tie to 3.3 V for default operation.',cx:RX,cy:RY[14]},
+  {id:'G4',   lbl:'4',  name:'GPIO4',                type:'GPIO',funcs:['GPIO','PWM','ADC','TOUCH'],volt:'0/3.3V',curr:'40mA',note:'GPIO4 — ADC1_CH3, TOUCH4, RTC_GPIO4.',cx:RX,cy:RY[15]},
+  {id:'G19',  lbl:'19', name:'GPIO19 / USB D−',      type:'USB', funcs:['GPIO','USB'], volt:'0/3.3V',curr:'40mA',note:'GPIO19 — USB OTG D− (USB_D-). ADC2_CH8, RTC_GPIO19. Used by native USB stack.',cx:RX,cy:RY[16]},
+  {id:'G20',  lbl:'20', name:'GPIO20 / USB D+',      type:'USB', funcs:['GPIO','USB'], volt:'0/3.3V',curr:'40mA',note:'GPIO20 — USB OTG D+ (USB_D+). ADC2_CH9, RTC_GPIO20. Used by native USB stack for USB-OTG and CDC.',cx:RX,cy:RY[17]},
+  {id:'SDA',  lbl:'SDA',name:'GPIO8 / I2C SDA',      type:'I2C', funcs:['GPIO','I2C','PWM'],volt:'0/3.3V',curr:'40mA',note:'Default I2C SDA pin (Wire.begin(8,9)). Use a 4.7 kΩ pull-up to 3.3 V.',cx:RX,cy:RY[18]},
+  {id:'SCL',  lbl:'SCL',name:'GPIO9 / I2C SCL',      type:'I2C', funcs:['GPIO','I2C','PWM'],volt:'0/3.3V',curr:'40mA',note:'Default I2C SCL pin (Wire.begin(8,9)). Use a 4.7 kΩ pull-up to 3.3 V.',cx:RX,cy:RY[19]},
+  {id:'VIN',  lbl:'5V', name:'5V Power Input',       type:'PWR', funcs:['PWR'], volt:'5V',  curr:'N/A',  note:'5 V input from USB-C or external supply. Feeds AMS1117-3.3 LDO to produce 3.3 V rail.',cx:RX,cy:RY[20]},
+  {id:'GND2', lbl:'GND',name:'Ground',               type:'GND', funcs:['GND'], volt:'0V',  curr:'N/A',  note:'Ground pin.',cx:RX,cy:RY[21]},
+];
+
+/* ── Draw pins ──────────────────────────────────────────────────────────── */
+var PS=13;
+PINS.forEach(function(p){
+  var c=col(p.type),onR=p.cx>130;
+  var g=mk('g',{'data-id':p.id});g.style.cursor='pointer';
+  /* solder pad surround */
+  ap(g,mk('rect',{x:p.cx-PS/2-2,y:p.cy-PS/2-2,width:PS+4,height:PS+4,rx:'2',
+    fill:'rgba(120,100,40,0.2)',stroke:'rgba(140,120,50,0.4)','stroke-width':'0.5'}));
+  /* pin body */
+  var sq=mk('rect',{x:p.cx-PS/2,y:p.cy-PS/2,width:PS,height:PS,rx:'2',
+    fill:c.bg,stroke:c.c,'stroke-width':'1.5','class':'psq'});
+  ap(g,sq);
+  /* pin hole */
+  ap(g,mk('circle',{cx:p.cx,cy:p.cy,r:'2',fill:'#030810','pointer-events':'none'}));
+  /* silk label on board */
+  ap(svg,tx(p.lbl.length>4?p.lbl.slice(0,4):p.lbl,{
+    x:onR?p.cx-PS/2-3:p.cx+PS/2+4, y:p.cy+4,
+    'text-anchor':onR?'end':'start',
+    fill:'rgba(120,180,255,0.55)','font-size':'8','font-family':'monospace','font-weight':'bold','pointer-events':'none'
+  }));
+  /* hit area */
+  ap(g,mk('rect',{x:p.cx-12,y:p.cy-12,width:24,height:24,fill:'transparent'}));
+  g.addEventListener('click',function(e){e.stopPropagation();pickPin(p.id);});
+  g.addEventListener('mouseenter',function(e){showTT(p,e);});
+  g.addEventListener('mousemove',moveTT);
+  g.addEventListener('mouseleave',hideTT);
+  svg.appendChild(g);
+});
+
+/* ── State ──────────────────────────────────────────────────────────────── */
+var selId=null,listOpen=false,filterType=null;
+
+var FILTERS=[
+  {lbl:'DIGITAL', key:'GPIO', fn:function(p){return p.funcs.indexOf('GPIO')>=0;}},
+  {lbl:'PWM',     key:'PWM',  fn:function(p){return p.funcs.indexOf('PWM')>=0;}},
+  {lbl:'ANALOG',  key:'ADC',  fn:function(p){return p.funcs.indexOf('ADC')>=0;}},
+  {lbl:'TOUCH',   key:'TOUCH',fn:function(p){return p.funcs.indexOf('TOUCH')>=0;}},
+  {lbl:'UART',    key:'UART', fn:function(p){return p.funcs.indexOf('UART')>=0;}},
+  {lbl:'SPI',     key:'SPI',  fn:function(p){return p.funcs.indexOf('SPI')>=0;}},
+  {lbl:'I2C',     key:'I2C',  fn:function(p){return p.funcs.indexOf('I2C')>=0;}},
+  {lbl:'USB-OTG', key:'USB',  fn:function(p){return p.funcs.indexOf('USB')>=0;}},
+  {lbl:'GND',     key:'GND',  fn:function(p){return p.type==='GND';}},
+  {lbl:'POWER',   key:'PWR',  fn:function(p){return p.type==='PWR';}},
+];
+
+function fclr(k){return (C[k]||C.SPEC).c;}
+function match(p){if(!filterType)return true;var f=FILTERS.find(function(x){return x.key===filterType;});return f?f.fn(p):true;}
+
+function buildBtns(){
+  document.getElementById('fBtns').innerHTML=FILTERS.map(function(f){
+    var c=fclr(f.key),ia=filterType===f.key;
+    return '<button class="fbtn'+(ia?' active':'')+'" data-key="'+f.key+'" style="color:'+c+
+      ';background:'+(ia?'rgba('+hexToRgb(c)+',.12)':'var(--surface2)')+
+      ';border-color:'+(ia?c:'var(--border2)')+'">'+f.lbl+'</button>';
+  }).join('');
+  document.querySelectorAll('.fbtn').forEach(function(b){
+    b.addEventListener('click',function(){
+      var k=b.getAttribute('data-key');filterType=(filterType===k)?null:k;
+      buildBtns();updateBoard();updateList();
+    });
+  });
+}
+function hexToRgb(hex){
+  var r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return r+','+g+','+b;
+}
+
+function pickPin(id){selId=(selId===id)?null:id;updateBoard();updateDetail();updateList();}
+
+function updateBoard(){
+  var hf=!!filterType;
+  document.querySelectorAll('[data-id]').forEach(function(g){
+    var p=PINS.find(function(x){return x.id===g.getAttribute('data-id');});
+    if(!p)return;
+    var c=col(p.type),sq=g.querySelector('.psq'),lbl=g.querySelector('text'),
+        act=selId===p.id,ok=match(p);
+    if(act){
+      sq.setAttribute('fill',c.c);sq.setAttribute('stroke',c.c);
+      sq.setAttribute('stroke-width','2.5');sq.setAttribute('filter','url(#pinGlow)');
+      if(lbl)lbl.setAttribute('fill','#060c1a');g.style.opacity='1';
+    } else if(hf&&!ok){
+      sq.setAttribute('fill','rgba(10,18,30,0.5)');sq.setAttribute('stroke','rgba(30,45,74,0.3)');
+      sq.setAttribute('stroke-width','1');sq.removeAttribute('filter');
+      if(lbl)lbl.setAttribute('fill','rgba(40,60,100,0.4)');g.style.opacity='0.18';
+    } else if(hf&&ok){
+      sq.setAttribute('fill',c.c);sq.setAttribute('stroke',c.c);
+      sq.setAttribute('stroke-width','2');sq.setAttribute('filter','url(#pinGlow)');
+      if(lbl)lbl.setAttribute('fill','#060c1a');g.style.opacity='1';
+    } else {
+      sq.setAttribute('fill',c.bg);sq.setAttribute('stroke',c.c);
+      sq.setAttribute('stroke-width','1.5');sq.removeAttribute('filter');
+      if(lbl)lbl.setAttribute('fill',c.c);g.style.opacity='1';
+    }
+  });
+}
+
+function updateDetail(){
+  var empty=document.getElementById('detEmpty'),content=document.getElementById('detContent');
+  if(!selId){empty.style.display='block';content.className='detail-content';return;}
+  var p=PINS.find(function(x){return x.id===selId;}),c=col(p.type);
+  empty.style.display='none';content.className='detail-content show';
+  var badge=document.getElementById('detBadge');
+  badge.style.cssText='background:'+c.bg+';border-color:'+c.c+';color:'+c.c+';width:54px;height:54px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;border-width:2px;border-style:solid;font-family:var(--mono);';
+  badge.textContent=p.lbl;
+  var di=document.getElementById('detId');di.style.color=c.c;di.textContent=p.id;
+  document.getElementById('detFull').textContent=p.name;
+  document.getElementById('detFuncs').innerHTML=p.funcs.map(function(f){
+    return '<span class="func-chip" style="background:'+c.bg+';color:'+c.c+';border-color:'+c.bd+'">'+f+'</span>';
+  }).join('');
+  document.getElementById('detGrid').innerHTML=
+    '<div class="info-cell"><span class="info-label">Type</span><span class="info-val" style="color:'+c.c+'">'+p.type+'</span></div>'+
+    '<div class="info-cell"><span class="info-label">Voltage</span><span class="info-val">'+p.volt+'</span></div>'+
+    '<div class="info-cell"><span class="info-label">Max Current</span><span class="info-val">'+p.curr+'</span></div>'+
+    '<div class="info-cell"><span class="info-label">Board</span><span class="info-val" style="color:var(--accent)">ESP32-S3 DevKitC-1</span></div>';
+  var alts=ALT[p.id]||[],as=document.getElementById('detAlt');
+  if(alts.length){as.style.display='block';document.getElementById('detAltChips').innerHTML=alts.map(function(a){return '<span class="alt-chip">'+a+'</span>';}).join('');}
+  else{as.style.display='none';}
+  document.getElementById('detNote').innerHTML='<span class="note-icon">&#9432;</span>'+p.note;
+}
+
+function updateList(){
+  var pins=PINS.filter(match);
+  document.getElementById('listRows').innerHTML=pins.map(function(p){
+    var c=col(p.type),on=selId===p.id;
+    return '<div class="prow'+(on?' on':'')+'" data-id="'+p.id+'">'
+      +'<div class="pbadge" style="background:'+c.bg+';color:'+c.c+';border:1px solid '+c.bd+'">'+p.lbl+'</div>'
+      +'<div class="pname">'+p.name+'</div>'
+      +'<span class="ptag" style="background:'+c.bg+';color:'+c.c+'">'+p.type+'</span>'
+      +'</div>';
+  }).join('');
+  document.getElementById('listCnt').textContent=pins.length+(pins.length<PINS.length?' / '+PINS.length:'');
+  document.querySelectorAll('.prow').forEach(function(r){
+    r.addEventListener('click',function(){pickPin(r.dataset.id);});
+  });
+}
+
+/* ── Legend ─────────────────────────────────────────────────────────────── */
+(function(){
+  var types=[];PINS.forEach(function(p){if(types.indexOf(p.type)<0)types.push(p.type);});
+  document.getElementById('legend').innerHTML=types.map(function(t){
+    var c=col(t);return '<div class="leg"><span class="ldot" style="background:'+c.c+'"></span>'+t+'</div>';
+  }).join('');
+})();
+
+buildBtns();updateList();
+
+/* ── List toggle ─────────────────────────────────────────────────────────── */
+window.toggleList=function(){
+  listOpen=!listOpen;
+  document.getElementById('pinList').className='pinlist'+(listOpen?' open':'');
+  document.getElementById('toggleIcon').innerHTML=listOpen?'▲ HIDE':'▼ SHOW ALL';
+};
+
+/* ── Tooltip ─────────────────────────────────────────────────────────────── */
+var ttEl=document.getElementById('tt');
+function showTT(p,e){
+  var c=col(p.type);
+  ttEl.innerHTML='<span class="ttn" style="color:'+c.c+'">'+p.id+' — '+p.name+'</span>'
+    +'<span class="ttnote">'+p.funcs.join(' · ')+' | '+p.volt+' | '+p.curr+'</span>';
+  ttEl.className='tt show';moveTT(e);
+}
+function moveTT(e){ttEl.style.left=(e.clientX+14)+'px';ttEl.style.top=(e.clientY-10)+'px';}
+function hideTT(){ttEl.className='tt';}
+})();
+</script>
+
+<!-------------->
+
+<div>Explore the ESP32-S3 DevKitC-1 with this interactive web tool. Click pins for deep specs, filter by function, and access an instant visual datasheet.</div>
+<div class="separator" style="display:none;"><a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiBI8ABvJ10g1gzvaVl19KiwP_-8OJBaHbAhLSeyTtWbdDACR4thmGqvH27c5GgJao3bZQCHV1izQn5s5JU8RqHgsihgmcmqUj23xmJyY47O46Q6aPXbnTlOkVcW7SZH_AwjvqZKKsZRHEyaxbJcMdzQGZvg3wK5UAfRkNpL4gc0p1wrljrsMsXC05IKqI2/s1600/ESP32-S3%20DevKitC-1.png" style="display: block; padding: 1em 0; text-align: center; "><img alt="ESP32-S3 DevKitC-1" border="0" data-original-height="608" data-original-width="911" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiBI8ABvJ10g1gzvaVl19KiwP_-8OJBaHbAhLSeyTtWbdDACR4thmGqvH27c5GgJao3bZQCHV1izQn5s5JU8RqHgsihgmcmqUj23xmJyY47O46Q6aPXbnTlOkVcW7SZH_AwjvqZKKsZRHEyaxbJcMdzQGZvg3wK5UAfRkNpL4gc0p1wrljrsMsXC05IKqI2/s1600/ESP32-S3%20DevKitC-1.png"/></a></div>

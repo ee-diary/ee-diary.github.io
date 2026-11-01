@@ -1,0 +1,1210 @@
+---
+layout: post
+title: "Netlist Connectivity Checker"
+date: 2026-05-05 21:05:00 +0000
+description: "N NetCheck Netlist Connectivity Checker — Union-Find Algorithm v1.0 / EDA Netlist Input ⬆ Drop netlist file here or click to browse KiCad .net Altium .csv"
+---
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&display=swap');
+
+:root {
+  --bg:        #080c10;
+  --bg2:       #0d1218;
+  --bg3:       #111820;
+  --border:    #1e2d3d;
+  --border2:   #243447;
+  --text:      #c8d8e8;
+  --text2:     #6a8aaa;
+  --text3:     #3d5570;
+  --accent:    #00d4ff;
+  --accent2:   #0099cc;
+  --green:     #00e676;
+  --green2:    #00c853;
+  --red:       #ff3d57;
+  --red2:      #c62828;
+  --yellow:    #ffd740;
+  --orange:    #ff6d00;
+  --purple:    #b388ff;
+  --mono:      'JetBrains Mono', monospace;
+  --sans:      'Syne', sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+.app { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 24px 20px; }
+
+/* Header */
+.header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  margin-bottom: 28px; padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.header-left {}
+.logo {
+  font-family: var(--sans);
+  font-size: 22px; font-weight: 800;
+  color: #fff; letter-spacing: -.5px;
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  border: 1.5px solid var(--accent);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 0 12px rgba(0,212,255,.3);
+}
+.logo-sub { font-size: 11px; color: var(--text2); font-weight: 400; margin-top: 2px; letter-spacing: .05em; }
+.header-badge {
+  font-size: 10px; padding: 3px 8px;
+  border: 1px solid var(--border2);
+  border-radius: 4px; color: var(--text3);
+  letter-spacing: .1em; text-transform: uppercase;
+}
+
+/* Main layout */
+.layout { display: grid; grid-template-columns: 340px 1fr; gap: 16px; align-items: start; }
+
+/* Panels */
+.panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden;
+}
+.panel-hdr {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg3);
+}
+.panel-hdr-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+.panel-hdr-title { font-family: var(--sans); font-size: 12px; font-weight: 700; color: #fff; letter-spacing: .05em; text-transform: uppercase; }
+.panel-hdr-count { margin-left: auto; font-size: 10px; color: var(--text3); }
+.panel-body { padding: 14px; }
+
+/* Upload zone */
+.upload-zone {
+  border: 1.5px dashed var(--border2);
+  border-radius: 8px; padding: 28px 16px;
+  text-align: center; cursor: pointer;
+  transition: all .2s; position: relative;
+  background: rgba(0,212,255,.02);
+}
+.upload-zone:hover, .upload-zone.drag { border-color: var(--accent); background: rgba(0,212,255,.06); }
+.upload-icon { font-size: 28px; margin-bottom: 8px; }
+.upload-title { font-family: var(--sans); font-size: 13px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+.upload-sub { font-size: 10px; color: var(--text3); line-height: 1.5; }
+.upload-formats {
+  display: flex; gap: 6px; justify-content: center; margin-top: 10px; flex-wrap: wrap;
+}
+.fmt-tag {
+  font-size: 9px; padding: 2px 7px;
+  border: 1px solid var(--border2); border-radius: 3px;
+  color: var(--text3); letter-spacing: .08em;
+}
+#file-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+
+/* Or divider */
+.or-divider {
+  display: flex; align-items: center; gap: 8px;
+  margin: 12px 0; font-size: 10px; color: var(--text3);
+}
+.or-divider::before, .or-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* Textarea */
+.netlist-input {
+  width: 100%; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 6px;
+  color: var(--text); font-family: var(--mono); font-size: 11px;
+  padding: 10px 12px; resize: vertical; min-height: 160px;
+  line-height: 1.6; outline: none;
+  transition: border-color .2s;
+}
+.netlist-input:focus { border-color: var(--accent2); }
+.netlist-input::placeholder { color: var(--text3); }
+
+/* Format selector */
+.format-row { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.fmt-btn {
+  font-family: var(--mono); font-size: 10px;
+  padding: 4px 10px; border-radius: 4px; cursor: pointer;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--text2); transition: all .15s;
+}
+.fmt-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,.08); }
+.fmt-btn:hover:not(.active) { border-color: var(--border2); color: var(--text); }
+
+/* Example buttons */
+.example-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.ex-btn {
+  font-family: var(--mono); font-size: 10px;
+  padding: 4px 10px; border-radius: 4px; cursor: pointer;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text3); transition: all .15s;
+}
+.ex-btn:hover { color: var(--accent); border-color: var(--accent2); }
+
+/* Run button */
+.run-btn {
+  width: 100%; margin-top: 12px;
+  font-family: var(--sans); font-size: 13px; font-weight: 700;
+  padding: 12px; border-radius: 7px; cursor: pointer;
+  border: 1.5px solid var(--accent);
+  background: linear-gradient(135deg, rgba(0,212,255,.15), rgba(0,153,204,.08));
+  color: var(--accent);
+  letter-spacing: .08em; text-transform: uppercase;
+  transition: all .2s; position: relative; overflow: hidden;
+}
+.run-btn:hover { background: linear-gradient(135deg, rgba(0,212,255,.25), rgba(0,153,204,.15)); box-shadow: 0 0 20px rgba(0,212,255,.2); }
+.run-btn:active { transform: scale(.98); }
+
+/* Right column stacked panels */
+.right-col { display: flex; flex-direction: column; gap: 16px; }
+
+/* Summary cards */
+.summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; padding: 14px; }
+.stat-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 7px; padding: 12px 10px; text-align: center;
+}
+.stat-val { font-family: var(--sans); font-size: 24px; font-weight: 800; display: block; }
+.stat-lbl { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: .1em; margin-top: 2px; display: block; }
+.stat-ok   .stat-val { color: var(--green); }
+.stat-err  .stat-val { color: var(--red); }
+.stat-warn .stat-val { color: var(--yellow); }
+.stat-info .stat-val { color: var(--accent); }
+
+/* Issues list */
+.issues-list { padding: 0 14px 14px; max-height: 240px; overflow-y: auto; }
+.issue-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 10px; border-radius: 6px; margin-bottom: 6px;
+  border: 1px solid transparent; font-size: 11px; line-height: 1.5;
+}
+.issue-item.error   { background: rgba(255,61,87,.08);  border-color: rgba(255,61,87,.25); }
+.issue-item.warning { background: rgba(255,215,64,.06); border-color: rgba(255,215,64,.2); }
+.issue-item.ok      { background: rgba(0,230,118,.06);  border-color: rgba(0,230,118,.2); }
+.issue-icon { font-size: 13px; flex-shrink: 0; margin-top: 1px; }
+.issue-text { flex: 1; }
+.issue-text strong { color: #fff; font-weight: 600; display: block; font-size: 11px; }
+.issue-text span   { color: var(--text2); font-size: 10px; }
+.issue-nets { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+.net-chip {
+  font-size: 9px; padding: 1px 6px;
+  border-radius: 3px; border: 1px solid;
+}
+.net-chip.error   { color: var(--red);    border-color: rgba(255,61,87,.4);  background: rgba(255,61,87,.1); }
+.net-chip.warning { color: var(--yellow); border-color: rgba(255,215,64,.4); background: rgba(255,215,64,.08); }
+.net-chip.ok      { color: var(--green);  border-color: rgba(0,230,118,.4);  background: rgba(0,230,118,.08); }
+.net-chip.info    { color: var(--accent); border-color: rgba(0,212,255,.3);  background: rgba(0,212,255,.08); }
+
+/* Nets table */
+.nets-table-wrap { padding: 0 14px 14px; max-height: 280px; overflow-y: auto; }
+.nets-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+.nets-table th {
+  text-align: left; padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text3); font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
+  position: sticky; top: 0; background: var(--bg2);
+}
+.nets-table td { padding: 6px 8px; border-bottom: 1px solid rgba(30,45,61,.5); vertical-align: top; }
+.nets-table tr:hover td { background: rgba(255,255,255,.02); }
+.net-name { color: var(--accent); font-weight: 600; }
+.net-status { display: inline-flex; align-items: center; gap: 4px; }
+.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.pin-list { color: var(--text2); font-size: 10px; line-height: 1.6; }
+.pin-tag {
+  display: inline-block; margin: 1px 2px;
+  padding: 0px 5px; border-radius: 3px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text); font-size: 10px;
+}
+
+/* Graph canvas */
+.graph-wrap { padding: 14px; }
+#graph-canvas {
+  width: 100%; border-radius: 7px;
+  border: 1px solid var(--border);
+  background: var(--bg); display: block;
+  cursor: grab;
+}
+#graph-canvas:active { cursor: grabbing; }
+
+/* Filter bar */
+.filter-bar {
+  display: flex; gap: 8px; padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  align-items: center; flex-wrap: wrap;
+}
+.filter-bar label { font-size: 10px; color: var(--text3); letter-spacing: .05em; }
+.filter-input {
+  font-family: var(--mono); font-size: 11px;
+  padding: 4px 8px; border-radius: 4px;
+  border: 1px solid var(--border2); background: var(--bg);
+  color: var(--text); flex: 1; min-width: 100px; outline: none;
+}
+.filter-input:focus { border-color: var(--accent2); }
+.filter-btns { display: flex; gap: 4px; }
+.filter-tag {
+  font-size: 9px; padding: 3px 8px;
+  border: 1px solid var(--border2); border-radius: 3px;
+  cursor: pointer; color: var(--text3); background: transparent;
+  font-family: var(--mono); transition: all .15s;
+}
+.filter-tag.active { border-color: var(--accent); color: var(--accent); background: rgba(0,212,255,.08); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* Empty state */
+.empty-state {
+  padding: 40px 20px; text-align: center;
+  color: var(--text3); font-size: 11px; line-height: 2;
+}
+.empty-state .big { font-size: 32px; display: block; margin-bottom: 8px; }
+
+/* Tooltip */
+.tooltip {
+  position: fixed; pointer-events: none;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 6px; padding: 8px 12px; font-size: 11px;
+  color: var(--text); z-index: 999; display: none;
+  max-width: 220px; line-height: 1.5;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+
+/* Raw netlist preview */
+.raw-preview {
+  padding: 10px 14px; font-size: 10px; color: var(--text2);
+  border-top: 1px solid var(--border); line-height: 1.7;
+  max-height: 80px; overflow-y: auto; font-family: var(--mono);
+  white-space: pre; overflow-x: auto;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.animate-in { animation: fadeIn .25s ease forwards; }
+
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  .summary-grid { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">
+        <div class="logo-icon">N</div>
+        NetCheck
+      </div>
+      <div class="logo-sub">Netlist Connectivity Checker &mdash; Union-Find Algorithm</div>
+    </div>
+    <div class="header-badge">v1.0 / EDA</div>
+  </div>
+
+  <div class="layout">
+
+    <!-- LEFT: Input panel -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-hdr-dot"></div>
+          <div class="panel-hdr-title">Netlist Input</div>
+        </div>
+        <div class="panel-body">
+
+          <!-- Upload zone -->
+          <div class="upload-zone" id="drop-zone">
+            <input type="file" id="file-input" accept=".net,.txt,.kicad_pcb,.csv,.asc,.dsn,.netlist,.xml">
+            <div class="upload-icon">&#x2B06;</div>
+            <div class="upload-title">Drop netlist file here</div>
+            <div class="upload-sub">or click to browse</div>
+            <div class="upload-formats">
+              <span class="fmt-tag">KiCad .net</span>
+              <span class="fmt-tag">Altium .csv</span>
+              <span class="fmt-tag">PADS .asc</span>
+              <span class="fmt-tag">Generic .txt</span>
+              <span class="fmt-tag">OrCAD .dsn</span>
+            </div>
+          </div>
+
+          <div class="or-divider">or paste netlist</div>
+
+          <!-- Format picker -->
+          <div class="format-row" id="fmt-row">
+            <button class="fmt-btn active" data-fmt="auto" onclick="setFmt(this)">Auto-detect</button>
+            <button class="fmt-btn" data-fmt="kicad" onclick="setFmt(this)">KiCad</button>
+            <button class="fmt-btn" data-fmt="pads" onclick="setFmt(this)">PADS</button>
+            <button class="fmt-btn" data-fmt="altium" onclick="setFmt(this)">Altium CSV</button>
+            <button class="fmt-btn" data-fmt="simple" onclick="setFmt(this)">Simple</button>
+          </div>
+
+          <textarea class="netlist-input" id="netlist-input"
+            placeholder="Paste your netlist here...
+
+Examples:
+  KiCad:   (net 1 GND)(net 2 VCC)...
+  PADS:    *NET* GND U1-1 U2-4 C1-1
+  Simple:  NET_NAME pin1 pin2 pin3
+  Altium:  Net Name,Component,Pin"></textarea>
+
+          <!-- Examples -->
+          <div class="example-row">
+            <span style="font-size:10px;color:var(--text3);align-self:center;">Load example:</span>
+            <button class="ex-btn" onclick="loadExample('arduino')">Arduino UNO</button>
+            <button class="ex-btn" onclick="loadExample('555timer')">555 Timer</button>
+            <button class="ex-btn" onclick="loadExample('opamp')">Op-Amp circuit</button>
+            <button class="ex-btn" onclick="loadExample('errors')">With errors</button>
+          </div>
+
+          <button class="run-btn" onclick="runCheck()">&#x25B6; Run Connectivity Check</button>
+        </div>
+      </div>
+
+      <!-- Info panel -->
+      <div class="panel" id="info-panel" style="display:none;">
+        <div class="panel-hdr">
+          <div class="panel-hdr-dot" style="background:var(--purple)"></div>
+          <div class="panel-hdr-title">Parsed File</div>
+        </div>
+        <div class="raw-preview" id="raw-preview"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Results -->
+    <div class="right-col">
+
+      <!-- Summary -->
+      <div class="panel" id="panel-summary">
+        <div class="panel-hdr">
+          <div class="panel-hdr-dot" style="background:var(--green)"></div>
+          <div class="panel-hdr-title">Summary</div>
+          <div class="panel-hdr-count" id="summary-time"></div>
+        </div>
+        <div class="summary-grid" id="summary-grid">
+          <div class="stat-card stat-info"><span class="stat-val" id="s-nets">--</span><span class="stat-lbl">Nets</span></div>
+          <div class="stat-card stat-info"><span class="stat-val" id="s-pins">--</span><span class="stat-lbl">Pins</span></div>
+          <div class="stat-card stat-err"><span class="stat-val" id="s-err">--</span><span class="stat-lbl">Errors</span></div>
+          <div class="stat-card stat-warn"><span class="stat-val" id="s-warn">--</span><span class="stat-lbl">Warnings</span></div>
+        </div>
+      </div>
+
+      <!-- Issues -->
+      <div class="panel" id="panel-issues">
+        <div class="panel-hdr">
+          <div class="panel-hdr-dot" style="background:var(--red)"></div>
+          <div class="panel-hdr-title">Issues &amp; Diagnostics</div>
+          <div class="panel-hdr-count" id="issues-count"></div>
+        </div>
+        <div class="issues-list" id="issues-list">
+          <div class="empty-state">
+            <span class="big">&#x26A1;</span>
+            Load a netlist and run the check.<br>
+            Issues will appear here.
+          </div>
+        </div>
+      </div>
+
+      <!-- Net table -->
+      <div class="panel" id="panel-nets">
+        <div class="panel-hdr">
+          <div class="panel-hdr-dot" style="background:var(--accent)"></div>
+          <div class="panel-hdr-title">Net Details</div>
+          <div class="panel-hdr-count" id="net-count"></div>
+        </div>
+        <div class="filter-bar">
+          <label>Filter:</label>
+          <input class="filter-input" id="net-filter" placeholder="net name or pin..." oninput="filterNets()">
+          <div class="filter-btns">
+            <button class="filter-tag active" data-f="all"   onclick="setFilter(this)">All</button>
+            <button class="filter-tag"        data-f="error" onclick="setFilter(this)">Errors</button>
+            <button class="filter-tag"        data-f="warn"  onclick="setFilter(this)">Warn</button>
+            <button class="filter-tag"        data-f="ok"    onclick="setFilter(this)">OK</button>
+          </div>
+        </div>
+        <div class="nets-table-wrap" id="nets-table-wrap">
+          <div class="empty-state">
+            <span class="big">&#x1F5A7;</span>
+            No netlist loaded yet.
+          </div>
+        </div>
+      </div>
+
+      <!-- Graph -->
+      <div class="panel">
+        <div class="panel-hdr">
+          <div class="panel-hdr-dot" style="background:var(--yellow)"></div>
+          <div class="panel-hdr-title">Connectivity Graph</div>
+          <div class="panel-hdr-count" style="color:var(--text3);font-size:10px;">drag to pan / scroll to zoom</div>
+        </div>
+        <div class="graph-wrap">
+          <canvas id="graph-canvas" height="320"></canvas>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// =============================================================================
+// UNION-FIND (Weighted Quick-Union with Path Compression)
+// Sedgewick & Wayne, Algorithms 4th Edition - Chapter 1.5
+// =============================================================================
+class UnionFind {
+  constructor(n) {
+    this.parent = Array.from({length:n},(_,i)=>i);
+    this.rank   = new Array(n).fill(0);
+    this.count  = n;
+  }
+  find(x) {
+    while (this.parent[x] !== x) {
+      this.parent[x] = this.parent[this.parent[x]]; // path compression
+      x = this.parent[x];
+    }
+    return x;
+  }
+  union(a,b) {
+    const ra=this.find(a), rb=this.find(b);
+    if (ra===rb) return false;
+    if (this.rank[ra]<this.rank[rb]) this.parent[ra]=rb;
+    else if (this.rank[ra]>this.rank[rb]) this.parent[rb]=ra;
+    else { this.parent[rb]=ra; this.rank[ra]++; }
+    this.count--;
+    return true;
+  }
+  connected(a,b) { return this.find(a)===this.find(b); }
+}
+
+// =============================================================================
+// NETLIST PARSERS
+// =============================================================================
+function detectFormat(text) {
+  if (/\(nets/.test(text)||/\(net\s+\d/.test(text)) return 'kicad';
+  if (/\*NET\*/.test(text)||/\*SIGNAL\*/.test(text)) return 'pads';
+  if (/^Net Name,/.i||text.split('\n').filter(l=>l.includes(',')).length > 3 && text.includes(',')) return 'altium';
+  return 'simple';
+}
+
+function parseKiCad(text) {
+  const nets = [];
+  // (net (code N)(name "NAME")(node (ref U1)(pin 1))...)
+  const netBlocks = text.match(/\(net\s+[^)]*\([^)]*\)[^(]*(?:\(node[^)]+\))*[^(]*/g) || [];
+  // Try full format first
+  const netRx = /\(net\s+\(code\s+(\d+)\)\s*\(name\s+"?([^")]+)"?\)((?:\s*\(node[^)]+\))*)/g;
+  const nodeRx = /\(node\s+\(ref\s+"?([^")]+)"?\)\s*\(pin\s+"?([^")]+)"?\)/g;
+  let m;
+  while ((m=netRx.exec(text))!==null) {
+    const name=m[2].trim();
+    const pins=[];
+    let n;
+    const block=m[3];
+    while ((n=nodeRx.exec(block))!==null) pins.push(n[1]+'-'+n[2]);
+    nodeRx.lastIndex=0;
+    if (name&&pins.length) nets.push({name,pins});
+  }
+  if (nets.length) return nets;
+  // Simpler KiCad format: (net 1 "GND" U1 1 C1 1)
+  const rx2 = /\(net\s+\d+\s+"?([^"\s)]+)"?((?:\s+\S+\s+\S+)*)\s*\)/g;
+  while ((m=rx2.exec(text))!==null) {
+    const name=m[1];
+    const rest=m[2].trim().split(/\s+/);
+    const pins=[];
+    for(let i=0;i<rest.length-1;i+=2) pins.push(rest[i]+'-'+rest[i+1]);
+    if(name&&pins.length) nets.push({name,pins});
+  }
+  return nets;
+}
+
+function parsePADS(text) {
+  const nets=[];
+  const lines=text.split('\n');
+  let cur=null;
+  for(const raw of lines){
+    const line=raw.trim();
+    if(!line||line.startsWith('*')&&!line.startsWith('*NET*')&&!line.startsWith('*SIGNAL*')) continue;
+    if(line.startsWith('*NET*')||line.startsWith('*SIGNAL*')){
+      const parts=line.replace(/^\*(NET|SIGNAL)\*/,'').trim().split(/\s+/);
+      if(cur) nets.push(cur);
+      cur={name:parts[0]||'NET'+nets.length, pins:[]};
+      for(let i=1;i<parts.length;i++) if(parts[i]) cur.pins.push(parts[i]);
+    } else if(cur){
+      line.split(/\s+/).forEach(p=>{ if(p&&p!=='*') cur.pins.push(p); });
+    }
+  }
+  if(cur) nets.push(cur);
+  return nets;
+}
+
+function parseAltiumCSV(text) {
+  const nets={}; const lines=text.split('\n');
+  let header=true;
+  for(const raw of lines){
+    if(header){header=false;continue;}
+    const cols=raw.split(',').map(s=>s.trim().replace(/^"|"$/g,''));
+    if(cols.length<3) continue;
+    const [name,comp,pin]=cols;
+    if(!name) continue;
+    if(!nets[name]) nets[name]={name,pins:[]};
+    if(comp&&pin) nets[name].pins.push(comp+'-'+pin);
+  }
+  return Object.values(nets);
+}
+
+function parseSimple(text) {
+  const nets=[];
+  for(const raw of text.split('\n')){
+    const line=raw.trim();
+    if(!line||line.startsWith('#')||line.startsWith('//')||line.startsWith(';')) continue;
+    const parts=line.split(/[\s,]+/);
+    if(parts.length<2) continue;
+    nets.push({name:parts[0], pins:parts.slice(1).filter(Boolean)});
+  }
+  return nets;
+}
+
+function parseNetlist(text, fmt) {
+  const f = fmt==='auto' ? detectFormat(text) : fmt;
+  if(f==='kicad')  return {nets:parseKiCad(text),   fmt:'KiCad'};
+  if(f==='pads')   return {nets:parsePADS(text),    fmt:'PADS'};
+  if(f==='altium') return {nets:parseAltiumCSV(text),fmt:'Altium CSV'};
+  return {nets:parseSimple(text), fmt:'Simple'};
+}
+
+// =============================================================================
+// CONNECTIVITY ANALYSIS  (Union-Find based)
+// =============================================================================
+function analyzeNetlist(nets) {
+  const issues=[];
+  const pinToNet={};      // pin -> [netName, ...]  (detect multi-net pins)
+  const netStats=[];      // per-net results
+
+  // Build global pin index
+  nets.forEach(net=>{
+    net.pins.forEach(pin=>{
+      if(!pinToNet[pin]) pinToNet[pin]=[];
+      pinToNet[pin].push(net.name);
+    });
+  });
+
+  // Build Union-Find over all unique pins
+  const allPins=[...new Set(nets.flatMap(n=>n.pins))];
+  const pinIdx={}; allPins.forEach((p,i)=>pinIdx[p]=i);
+  const uf=new UnionFind(allPins.length);
+
+  // Union all pins within each net
+  nets.forEach(net=>{
+    for(let i=1;i<net.pins.length;i++){
+      uf.union(pinIdx[net.pins[0]], pinIdx[net.pins[i]]);
+    }
+  });
+
+  let totalErrors=0, totalWarns=0;
+
+  nets.forEach(net=>{
+    const errs=[], warns=[];
+
+    // --- Check 1: Single-pin net (unconnected pin / stub) ---
+    if(net.pins.length===0){
+      errs.push({type:'error', msg:'Empty net — no pins assigned', code:'E001'});
+    } else if(net.pins.length===1){
+      warns.push({type:'warning', msg:'Single-pin net (possible unconnected stub)', code:'W001'});
+    }
+
+    // --- Check 2: Pin assigned to multiple nets (short circuit) ---
+    const shorted=net.pins.filter(p=>pinToNet[p]&&pinToNet[p].length>1);
+    if(shorted.length){
+      shorted.forEach(pin=>{
+        const others=pinToNet[pin].filter(n=>n!==net.name);
+        errs.push({type:'error', msg:`Pin ${pin} is shared with net(s): ${others.join(', ')} — possible short circuit`, code:'E002', nets:[net.name,...others]});
+      });
+    }
+
+    // --- Check 3: Power net checks ---
+    const isPower = /^(VCC|VDD|V\d+V|VBUS|VMAIN|3V3|5V|12V|GND|AGND|DGND|PGND|VSS|PWR|AVCC|DVCC)/i.test(net.name);
+    if(isPower && net.pins.length<2){
+      warns.push({type:'warning', msg:`Power net "${net.name}" has only ${net.pins.length} connection(s)`, code:'W002'});
+    }
+
+    // --- Check 4: Duplicate pins in same net ---
+    const seen={}; const dups=[];
+    net.pins.forEach(p=>{
+      if(seen[p]) dups.push(p);
+      seen[p]=true;
+    });
+    if(dups.length){
+      errs.push({type:'error', msg:`Duplicate pin(s) in net: ${dups.join(', ')}`, code:'E003'});
+    }
+
+    // --- Check 5: Net naming conventions ---
+    if(/\s/.test(net.name)){
+      warns.push({type:'warning', msg:`Net name "${net.name}" contains spaces — may cause issues in some EDA tools`, code:'W003'});
+    }
+
+    // --- Check 6: Large nets ---
+    if(net.pins.length>20){
+      warns.push({type:'warning', msg:`Net has ${net.pins.length} pins — unusually large, verify this is intentional`, code:'W004'});
+    }
+
+    const status = errs.length ? 'error' : warns.length ? 'warning' : 'ok';
+    totalErrors  += errs.length;
+    totalWarns   += warns.length;
+
+    netStats.push({
+      name: net.name,
+      pins: net.pins,
+      pinCount: net.pins.length,
+      status,
+      issues: [...errs, ...warns]
+    });
+  });
+
+  // --- Global checks ---
+  // Detect disconnected components across nets (islands)
+  const rootCount = new Set(allPins.map(p=>uf.find(pinIdx[p]))).size;
+  const netCount  = nets.length;
+  if(rootCount > netCount && nets.length > 1) {
+    // Some pins are in multiple disjoint groups even within declared nets - informational
+  }
+
+  // Check for nets with same pins (duplicate nets)
+  const netSigs={};
+  nets.forEach(net=>{
+    const sig=[...net.pins].sort().join('|');
+    if(!netSigs[sig]) netSigs[sig]=[];
+    netSigs[sig].push(net.name);
+  });
+  Object.values(netSigs).forEach(group=>{
+    if(group.length>1){
+      issues.push({type:'warning',msg:`Nets appear identical (possible duplicates): ${group.join(', ')}`,code:'W005',nets:group});
+      totalWarns++;
+    }
+  });
+
+  return {netStats, issues, totalErrors, totalWarns, allPins, pinToNet, uf, pinIdx};
+}
+
+// =============================================================================
+// STATE
+// =============================================================================
+let state = {
+  nets: [],
+  result: null,
+  fmt: 'auto',
+  filterMode: 'all',
+  filterText: ''
+};
+
+// =============================================================================
+// UI HELPERS
+// =============================================================================
+function setFmt(btn){
+  document.querySelectorAll('.fmt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  state.fmt = btn.dataset.fmt;
+}
+
+function setFilter(btn){
+  document.querySelectorAll('.filter-tag').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  state.filterMode = btn.dataset.f;
+  renderNetsTable();
+}
+
+function filterNets(){
+  state.filterText = document.getElementById('net-filter').value.toLowerCase();
+  renderNetsTable();
+}
+
+// =============================================================================
+// EXAMPLES
+// =============================================================================
+const EXAMPLES = {
+  arduino: `; Arduino UNO simplified netlist (Simple format)
+; Net_Name  Pin1  Pin2  ...
+VCC       U1-7  U1-20  C1-1  C2-1  R1-1  LED1-A  U2-VCC
+GND       U1-8  U1-22  C1-2  C2-2  R2-2  U2-GND  CONN1-2
+RESET     U1-1  R3-1  C3-1  CONN1-3
+XTAL1     U1-9  Y1-1  C4-1
+XTAL2     U1-10 Y1-2  C5-1
+D0_RX     U1-2  U3-TX
+D1_TX     U1-3  U3-RX
+D2        U1-4  BTN1-1
+D3_PWM    U1-5  R4-1
+D13_SCK   U1-19 LED1-K  R1-2
+A0        U1-23 POT1-W
+A4_SDA    U1-27 U2-SDA  R5-1
+A5_SCL    U1-28 U2-SCL  R6-1
+SDA_PU    R5-2  VCC
+SCL_PU    R6-2  VCC
+VIN       CONN1-1  D1-A
+V5_UNREG  D1-K  U4-IN
+V5_REG    U4-OUT  VCC`,
+
+  '555timer': `; 555 Timer Astable Circuit (Simple format)
+VCC       U1-8  U1-4  C1-1  R1-1
+GND       U1-1  C2-1  C3-1
+TRIG_THR  U1-2  U1-6  C2-2  R2-2
+DISCH     U1-7  R2-1  R1-2
+OUTPUT    U1-3  R3-1  CONN1-SIG
+CTRL      U1-5  C3-2
+BYPASS    C1-2  GND`,
+
+  opamp: `; Op-Amp Inverting Amplifier (Simple format)
+VCC_POS   U1-7  C1-1
+VCC_NEG   U1-4  C2-2
+GND       C1-2  C2-1  R1-2  R3-1
+IN_SIG    CONN1-1  R1-1
+INV_IN    R1-2  R2-1  U1-2
+NON_INV   U1-3  R3-2
+OUTPUT    U1-6  R2-2  CONN2-1`,
+
+  errors: `; Netlist with intentional errors for testing
+; E001: Short circuit - same pin on two nets
+VCC       U1-14  U2-14  C1-1  C2-1
+GND       U1-7   U2-7   C1-2  C2-2
+; W001: Single pin net
+FLOATING_NODE  U3-12
+; E002: Pin U4-3 appears in two nets below (short)
+NET_A     U4-1  U4-2  U4-3  R1-1
+NET_B     U4-3  R2-1  U5-6
+; W003: Net with spaces in name
+My Net    U6-1  U6-2
+; W004: Very large net
+BIG_BUS   U7-1 U7-2 U7-3 U7-4 U7-5 U7-6 U7-7 U7-8 U8-1 U8-2 U8-3 U8-4 U8-5 U8-6 U8-7 U8-8 U9-1 U9-2 U9-3 U9-4 U9-5
+; OK nets
+CLK       U1-1  U2-1  U3-1
+DATA      U1-2  U2-2`
+};
+
+function loadExample(key){
+  document.getElementById('netlist-input').value = EXAMPLES[key];
+  // Auto select simple format
+  document.querySelectorAll('.fmt-btn').forEach(b=>{ if(b.dataset.fmt==='simple') b.click(); });
+  runCheck();
+}
+
+// =============================================================================
+// FILE UPLOAD
+// =============================================================================
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+fileInput.addEventListener('change', e=>{
+  if(e.target.files[0]) readFile(e.target.files[0]);
+});
+dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e=>{
+  e.preventDefault(); dropZone.classList.remove('drag');
+  if(e.dataTransfer.files[0]) readFile(e.dataTransfer.files[0]);
+});
+
+function readFile(file){
+  const reader = new FileReader();
+  reader.onload = e=>{
+    const text = e.target.result;
+    document.getElementById('netlist-input').value = text;
+    document.getElementById('info-panel').style.display='block';
+    document.getElementById('raw-preview').textContent = text.slice(0,400)+(text.length>400?'\n...':'');
+    runCheck();
+  };
+  reader.readAsText(file);
+}
+
+// =============================================================================
+// MAIN RUN
+// =============================================================================
+function runCheck(){
+  const text = document.getElementById('netlist-input').value.trim();
+  if(!text){ alert('Please enter or upload a netlist first.'); return; }
+
+  const t0 = performance.now();
+  const {nets, fmt} = parseNetlist(text, state.fmt);
+
+  if(!nets.length){
+    showError('Could not parse any nets from the input. Check the format and try again.');
+    return;
+  }
+
+  state.nets = nets;
+  const result = analyzeNetlist(nets);
+  state.result = result;
+  const t1 = performance.now();
+
+  renderSummary(nets, result, fmt, t1-t0);
+  renderIssues(result);
+  renderNetsTable();
+  renderGraph(nets, result);
+}
+
+function showError(msg){
+  document.getElementById('issues-list').innerHTML =
+    `<div class="issue-item error"><div class="issue-icon">&#x274C;</div><div class="issue-text"><strong>Parse Error</strong><span>${msg}</span></div></div>`;
+}
+
+// =============================================================================
+// RENDER: SUMMARY
+// =============================================================================
+function renderSummary(nets, result, fmt, ms){
+  const totalPins = nets.reduce((s,n)=>s+n.pins.length,0);
+  document.getElementById('s-nets').textContent = nets.length;
+  document.getElementById('s-pins').textContent = totalPins;
+  document.getElementById('s-err').textContent  = result.totalErrors;
+  document.getElementById('s-warn').textContent = result.totalWarns;
+
+  // Color summary cards
+  const errCard = document.getElementById('s-err').parentElement;
+  errCard.className = 'stat-card ' + (result.totalErrors>0 ? 'stat-err' : 'stat-ok');
+  const warnCard = document.getElementById('s-warn').parentElement;
+  warnCard.className = 'stat-card ' + (result.totalWarns>0 ? 'stat-warn' : 'stat-ok');
+
+  document.getElementById('summary-time').textContent = `${fmt} / ${ms.toFixed(1)}ms`;
+  document.getElementById('net-count').textContent = `${nets.length} nets`;
+}
+
+// =============================================================================
+// RENDER: ISSUES
+// =============================================================================
+function renderIssues(result){
+  const {netStats, issues} = result;
+  const all = [...issues];
+  netStats.forEach(n=>n.issues.forEach(i=>all.push({...i, netName:n.name})));
+
+  const errCount = all.filter(i=>i.type==='error').length;
+  const warnCount= all.filter(i=>i.type==='warning').length;
+
+  document.getElementById('issues-count').textContent =
+    `${errCount} error${errCount!==1?'s':''}, ${warnCount} warning${warnCount!==1?'s':''}`;
+
+  if(!all.length){
+    document.getElementById('issues-list').innerHTML =
+      `<div class="issue-item ok animate-in">
+        <div class="issue-icon">&#x2705;</div>
+        <div class="issue-text"><strong>All checks passed</strong><span>No errors or warnings found in the netlist.</span></div>
+      </div>`;
+    return;
+  }
+
+  // Sort: errors first
+  all.sort((a,b)=> a.type==='error'&&b.type!=='error'?-1:1);
+
+  const html = all.map(issue=>{
+    const icon = issue.type==='error' ? '&#x274C;' : '&#x26A0;&#xFE0F;';
+    const nets = issue.nets ? `<div class="issue-nets">${issue.nets.map(n=>`<span class="net-chip ${issue.type==='error'?'error':'warning'}">${escHtml(n)}</span>`).join('')}</div>` : '';
+    const net  = issue.netName ? `<span class="net-chip info">${escHtml(issue.netName)}</span> ` : '';
+    return `<div class="issue-item ${issue.type} animate-in">
+      <div class="issue-icon">${icon}</div>
+      <div class="issue-text">
+        <strong>[${issue.code}] ${escHtml(issue.msg)}</strong>
+        <span>${net}</span>
+        ${nets}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('issues-list').innerHTML = html;
+}
+
+// =============================================================================
+// RENDER: NETS TABLE
+// =============================================================================
+function renderNetsTable(){
+  if(!state.result) return;
+  const {netStats} = state.result;
+  const fText = state.filterText;
+  const fMode = state.filterMode;
+
+  const filtered = netStats.filter(n=>{
+    if(fMode==='error'   && n.status!=='error')   return false;
+    if(fMode==='warn'    && n.status!=='warning')  return false;
+    if(fMode==='ok'      && n.status!=='ok')       return false;
+    if(fText && !n.name.toLowerCase().includes(fText) && !n.pins.join(' ').toLowerCase().includes(fText)) return false;
+    return true;
+  });
+
+  if(!filtered.length){
+    document.getElementById('nets-table-wrap').innerHTML =
+      `<div class="empty-state">No nets match the current filter.</div>`;
+    return;
+  }
+
+  const statusColor = {ok:'#00e676', warning:'#ffd740', error:'#ff3d57'};
+  const statusLabel = {ok:'OK', warning:'WARN', error:'ERROR'};
+
+  const rows = filtered.map(n=>{
+    const dotColor = statusColor[n.status];
+    const pins = n.pins.slice(0,12).map(p=>`<span class="pin-tag">${escHtml(p)}</span>`).join('');
+    const more = n.pins.length>12 ? `<span class="pin-tag" style="color:var(--text3)">+${n.pins.length-12} more</span>` : '';
+    const issueStr = n.issues.map(i=>`<small style="color:${i.type==='error'?'var(--red)':'var(--yellow)'}">[${i.code}]</small>`).join(' ');
+    return `<tr>
+      <td class="net-name">${escHtml(n.name)}</td>
+      <td><div class="net-status"><div class="status-dot" style="background:${dotColor};box-shadow:0 0 4px ${dotColor}"></div><span style="color:${dotColor};font-size:10px;">${statusLabel[n.status]}</span></div></td>
+      <td style="color:var(--text2)">${n.pinCount}</td>
+      <td class="pin-list">${pins}${more}</td>
+      <td>${issueStr}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('nets-table-wrap').innerHTML =
+    `<table class="nets-table">
+      <thead><tr>
+        <th>Net Name</th><th>Status</th><th>Pins</th><th>Connected Pins</th><th>Issues</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// =============================================================================
+// RENDER: GRAPH (Force-directed layout)
+// =============================================================================
+let graphState = {
+  nodes:[], edges:[], pan:{x:0,y:0}, zoom:1,
+  dragging:false, dragStart:{x:0,y:0}, panStart:{x:0,y:0},
+  hoveredNode: null, animFrame: null
+};
+
+function renderGraph(nets, result){
+  const canvas = document.getElementById('graph-canvas');
+  const W = canvas.parentElement.clientWidth - 28;
+  canvas.width  = W;
+  canvas.height = 320;
+
+  // Build nodes (nets) and edges (shared component)
+  const nodes=[], edges=[];
+  const netIdx={};
+  result.netStats.forEach((n,i)=>{
+    netIdx[n.name]=i;
+    nodes.push({
+      id:i, name:n.name, status:n.status,
+      pinCount:n.pinCount,
+      x: 60 + Math.random()*(W-120),
+      y: 60 + Math.random()*240,
+      vx:0, vy:0
+    });
+  });
+
+  // Edges between nets that share a component (same ref prefix)
+  const compNets={}; // comp -> [net indices]
+  result.netStats.forEach((n,ni)=>{
+    n.pins.forEach(pin=>{
+      const comp=pin.split('-')[0];
+      if(!compNets[comp]) compNets[comp]=new Set();
+      compNets[comp].add(ni);
+    });
+  });
+  Object.values(compNets).forEach(set=>{
+    const arr=[...set];
+    for(let i=0;i<arr.length;i++)
+      for(let j=i+1;j<arr.length;j++)
+        edges.push({a:arr[i],b:arr[j]});
+  });
+
+  // Deduplicate edges
+  const edgeSet=new Set();
+  const uniqueEdges=edges.filter(e=>{
+    const k=Math.min(e.a,e.b)+'-'+Math.max(e.a,e.b);
+    if(edgeSet.has(k)) return false;
+    edgeSet.add(k); return true;
+  });
+
+  graphState.nodes=nodes; graphState.edges=uniqueEdges;
+  graphState.pan={x:0,y:0}; graphState.zoom=1;
+
+  // Run force simulation
+  simulateForces(60, ()=>{ drawGraph(); setupGraphInteraction(canvas); });
+}
+
+function simulateForces(steps, cb){
+  const {nodes,edges}=graphState;
+  const N=nodes.length;
+  if(!N){cb();return;}
+
+  const canvas=document.getElementById('graph-canvas');
+  const W=canvas.width, H=canvas.height;
+  const K=Math.sqrt((W*H)/Math.max(N,1));
+
+  for(let step=0;step<steps;step++){
+    // Repulsion
+    for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+      const dx=nodes[j].x-nodes[i].x, dy=nodes[j].y-nodes[i].y;
+      const d=Math.max(Math.sqrt(dx*dx+dy*dy),1);
+      const f=(K*K)/(d*d)*18;
+      nodes[i].vx-=dx/d*f; nodes[i].vy-=dy/d*f;
+      nodes[j].vx+=dx/d*f; nodes[j].vy+=dy/d*f;
+    }
+    // Attraction
+    edges.forEach(e=>{
+      const a=nodes[e.a],b=nodes[e.b];
+      const dx=b.x-a.x,dy=b.y-a.y;
+      const d=Math.max(Math.sqrt(dx*dx+dy*dy),1);
+      const f=(d*d)/K*0.06;
+      a.vx+=dx/d*f; a.vy+=dy/d*f;
+      b.vx-=dx/d*f; b.vy-=dy/d*f;
+    });
+    // Center gravity
+    nodes.forEach(n=>{
+      n.vx+=(W/2-n.x)*0.008;
+      n.vy+=(H/2-n.y)*0.008;
+    });
+    // Apply
+    const cool=1-step/steps;
+    nodes.forEach(n=>{
+      n.x+=n.vx*cool; n.y+=n.vy*cool;
+      n.vx*=0.6; n.vy*=0.6;
+      n.x=Math.max(28,Math.min(W-28,n.x));
+      n.y=Math.max(18,Math.min(H-18,n.y));
+    });
+  }
+  cb();
+}
+
+function drawGraph(){
+  const canvas=document.getElementById('graph-canvas');
+  const ctx=canvas.getContext('2d');
+  const {nodes,edges,pan,zoom,hoveredNode}=graphState;
+  const W=canvas.width, H=canvas.height;
+
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#080c10'; ctx.fillRect(0,0,W,H);
+
+  ctx.save();
+  ctx.translate(pan.x,pan.y);
+  ctx.scale(zoom,zoom);
+
+  const statusColor={ok:'#00e676',warning:'#ffd740',error:'#ff3d57',default:'#4da6ff'};
+
+  // Draw edges
+  edges.forEach(e=>{
+    const a=nodes[e.a],b=nodes[e.b];
+    ctx.save();
+    ctx.strokeStyle='rgba(30,45,61,.8)';
+    ctx.lineWidth=1/zoom;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+    ctx.restore();
+  });
+
+  // Draw nodes
+  nodes.forEach(n=>{
+    const col=statusColor[n.status]||statusColor.default;
+    const r=Math.max(6, Math.min(14, 6+n.pinCount*0.8));
+    const isHov=hoveredNode===n.id;
+
+    // Glow
+    if(isHov||n.status==='error'){
+      const grd=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,r*3);
+      grd.addColorStop(0,col+'55');
+      grd.addColorStop(1,'transparent');
+      ctx.fillStyle=grd;
+      ctx.beginPath();ctx.arc(n.x,n.y,r*3,0,Math.PI*2);ctx.fill();
+    }
+
+    // Node circle
+    ctx.save();
+    ctx.beginPath(); ctx.arc(n.x,n.y,isHov?r*1.3:r,0,Math.PI*2);
+    ctx.fillStyle=col+'22';
+    ctx.strokeStyle=col;
+    ctx.lineWidth=(isHov?2:1)/zoom;
+    ctx.fill(); ctx.stroke();
+    ctx.restore();
+
+    // Label
+    const fontSize=Math.max(8,Math.min(11,9/zoom));
+    ctx.save();
+    ctx.font=`${fontSize}px JetBrains Mono, monospace`;
+    ctx.fillStyle=isHov?'#fff':col;
+    ctx.textAlign='center';
+    const label=n.name.length>14?n.name.slice(0,12)+'..':n.name;
+    ctx.fillText(label,n.x,n.y+r+fontSize+1);
+    ctx.restore();
+  });
+
+  ctx.restore();
+}
+
+function setupGraphInteraction(canvas){
+  const tip=document.getElementById('tooltip');
+  const {nodes}=graphState;
+
+  function nodeAt(mx,my){
+    const {pan,zoom}=graphState;
+    const wx=(mx-pan.x)/zoom, wy=(my-pan.y)/zoom;
+    for(let i=nodes.length-1;i>=0;i--){
+      const n=nodes[i];
+      const r=Math.max(6,Math.min(14,6+n.pinCount*0.8))*1.5;
+      const dx=wx-n.x, dy=wy-n.y;
+      if(dx*dx+dy*dy<r*r) return i;
+    }
+    return -1;
+  }
+
+  // Remove old listeners by cloning
+  const newCanvas=canvas.cloneNode(true);
+  canvas.parentNode.replaceChild(newCanvas,canvas);
+  const c=newCanvas;
+
+  c.addEventListener('mousemove',e=>{
+    const rect=c.getBoundingClientRect();
+    const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+    if(graphState.dragging){
+      graphState.pan.x=graphState.panStart.x+(e.clientX-graphState.dragStart.x);
+      graphState.pan.y=graphState.panStart.y+(e.clientY-graphState.dragStart.y);
+      drawGraph(); return;
+    }
+    const idx=nodeAt(mx,my);
+    graphState.hoveredNode=idx>=0?idx:null;
+    if(idx>=0){
+      const n=nodes[idx];
+      const ns=state.result?.netStats[idx];
+      const issStr=ns&&ns.issues.length ? ns.issues.map(i=>`${i.type==='error'?'ERROR':'WARN'}: ${i.msg}`).join('<br>') : 'No issues';
+      tip.style.display='block';
+      tip.style.left=(e.clientX+14)+'px';
+      tip.style.top =(e.clientY-10)+'px';
+      tip.innerHTML=`<strong style="color:#fff">${n.name}</strong><br><span style="color:#6a8aaa">${n.pinCount} pins</span><br>${issStr}`;
+      c.style.cursor='pointer';
+    } else {
+      tip.style.display='none';
+      c.style.cursor='grab';
+    }
+    drawGraph();
+  });
+
+  c.addEventListener('mouseleave',()=>{ tip.style.display='none'; graphState.hoveredNode=null; drawGraph(); });
+
+  c.addEventListener('mousedown',e=>{
+    graphState.dragging=true;
+    graphState.dragStart={x:e.clientX,y:e.clientY};
+    graphState.panStart={...graphState.pan};
+  });
+  window.addEventListener('mouseup',()=>{ graphState.dragging=false; });
+
+  c.addEventListener('wheel',e=>{
+    e.preventDefault();
+    const rect=c.getBoundingClientRect();
+    const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+    const delta=e.deltaY>0?0.85:1.15;
+    const newZoom=Math.max(0.3,Math.min(4,graphState.zoom*delta));
+    graphState.pan.x=mx-(mx-graphState.pan.x)*(newZoom/graphState.zoom);
+    graphState.pan.y=my-(my-graphState.pan.y)*(newZoom/graphState.zoom);
+    graphState.zoom=newZoom;
+    drawGraph();
+  },{passive:false});
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Load Arduino example on start
+window.addEventListener('load', ()=>{ loadExample('arduino'); });
+</script>
+

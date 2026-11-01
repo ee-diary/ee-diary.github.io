@@ -1,0 +1,665 @@
+---
+layout: post
+title: "Arduino Mega 2560"
+date: 2026-03-26 04:09:00 +0000
+description: "Arduino Mega 2560: interactive pinout explorer with pin functions, design files and datasheet."
+---
+<!--Arduino Mega 2560 Interactive Pinout icexplorer.online-->
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&amp;family=Orbitron:wght@700;900&amp;display=swap');
+#mega2560wrap{all:initial;display:block;position:relative;width:100%;box-sizing:border-box;font-family:'Share Tech Mono',monospace;color:#d0d0d0;}
+#mega2560wrap *{box-sizing:border-box;margin:0;padding:0;}
+.mg-w{width:100%;overflow:hidden;margin:0 auto;background:#161b22;border-radius:12px;padding:12px;border:1px solid #30363d;}
+.mg-hdr{display:flex;align-items:center;justify-content:space-between;background:#1c2128;border:1px solid #30363d;border-radius:8px;padding:9px 14px;margin-bottom:10px;position:relative;overflow:hidden;}
+.mg-hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#4da6ff,#88ccff,#4da6ff,transparent);}
+.mg-hdr-l{display:flex;align-items:center;gap:10px;}
+.mg-logo{width:28px;height:28px;color:#4da6ff;}
+.mg-title{font-family:'Orbitron',sans-serif;font-size:16px;font-weight:900;color:#e6edf3;letter-spacing:.12em;display:block;}
+.mg-sub{font-size:13px;color:#8b949e;margin-top:2px;display:block;}
+.mg-dot{width:7px;height:7px;border-radius:50%;background:#4da6ff;box-shadow:0 0 8px #4da6ff;animation:pu 2s infinite;}
+@keyframes pu{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.6);}}
+.mg-main{display:flex;flex-direction:row;gap:14px;align-items:stretch;}
+.mg-bwrap{flex:0 0 50%;width:50%;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:8px;box-sizing:border-box;}
+.mg-rhs{flex:0 0 calc(50% - 14px);width:calc(50% - 14px);display:flex;flex-direction:column;gap:8px;box-sizing:border-box;}
+.mg-det{background:#1c2128;border:1px solid #30363d;border-radius:8px;overflow:hidden;}
+.mg-det-empty{padding:22px 16px;text-align:center;}
+.det-empty .mg-arr{font-size:22px;display:block;margin-bottom:6px;animation:ar 1.8s infinite;}
+@keyframes ar{0%,100%{opacity:.2;transform:translateX(-4px);}50%{opacity:.8;transform:translateX(4px);}}
+.det-empty p{font-size:13px;color:#8b949e;line-height:1.6;}
+.mg-dc{display:none;}.mg-dc.show{display:block;}
+.mg-dbar{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #21262d;}
+.mg-dbadge{width:56px;height:56px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;border:2px solid;text-align:center;line-height:1.2;}
+.mg-dpid{font-family:'Orbitron',sans-serif;font-size:19px;font-weight:900;color:#e6edf3;display:block;line-height:1;}
+.mg-dfull{font-size:13px;color:#8b949e;margin-top:3px;display:block;}
+.mg-funcs{display:flex;flex-wrap:wrap;gap:4px;padding:7px 12px;border-bottom:1px solid #21262d;}
+.mg-chip{padding:4px 10px;border-radius:3px;font-size:12px;font-weight:700;border:1px solid;letter-spacing:.05em;}
+.mg-igrid{display:grid;grid-template-columns:1fr 1fr;}
+.mg-icell{padding:6px 12px;border-bottom:1px solid #21262d;border-right:1px solid #21262d;}
+.mg-icell:nth-child(2n){border-right:none;}.mg-icell:nth-last-child(-n+2){border-bottom:none;}
+.mg-ilbl{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;display:block;}
+.mg-ival{font-size:14px;color:#e6edf3;font-weight:700;display:block;}
+.mg-alts{padding:7px 12px;border-top:1px solid #21262d;}
+.mg-albl{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;display:block;}
+.mg-achips{display:flex;flex-wrap:wrap;gap:3px;}
+.mg-ac{padding:4px 9px;border-radius:2px;font-size:12px;background:#21262d;border:1px solid #30363d;color:#9cdcfe;}
+.mg-note{padding:9px 12px;border-top:1px solid #21262d;font-size:12px;color:#6a9fb5;line-height:1.5;}
+.mg-ni{color:#4da6ff;margin-right:4px;}
+.mg-filt{background:#1c2128;border:1px solid #30363d;border-radius:8px;overflow:hidden;padding:8px 8px 0;}
+.mg-fpbox{border:1px solid #4da6ff;border-radius:5px;padding:7px;background:#0d1117;margin-bottom:7px;}
+.mg-fplbl{font-size:11px;color:#4da6ff;letter-spacing:.12em;text-transform:uppercase;margin-bottom:7px;display:block;font-weight:700;}
+.mg-fbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
+.mg-fb{display:flex;align-items:center;justify-content:center;height:32px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:.06em;font-family:'Share Tech Mono',monospace;cursor:pointer;border:1px solid rgba(255,255,255,0.16);background:#1c2128;transition:all .1s;}
+.mg-fb:hover{filter:brightness(1.3);}
+.mg-fb.on{border-color:currentColor!important;box-shadow:0 0 6px currentColor;transform:translateY(1px);}
+.mg-ltog{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;cursor:pointer;background:#161b22;border-top:1px solid #21262d;}
+.mg-ltog:hover{background:#1c2128;}
+.mg-ltog span{font-size:13px;color:#8b949e;}.mg-ltog b{color:#4da6ff;}
+.mg-plist{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+.mg-plist.open{max-height:420px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#30363d transparent;}
+.mg-prow{display:flex;align-items:center;gap:6px;padding:4px 8px;cursor:pointer;border-bottom:1px solid rgba(48,54,61,.5);}
+.mg-prow:hover{background:rgba(255,255,255,.025);}
+.mg-prow.on{background:rgba(77,166,255,.07);border-left:2px solid #4da6ff;padding-left:6px;}
+.mg-pbadge{min-width:44px;height:26px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.mg-pname{font-size:12px;flex:1;color:#8b949e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mg-ptag{padding:3px 7px;border-radius:2px;font-size:11px;font-weight:700;flex-shrink:0;}
+.mg-leg{display:flex;flex-wrap:wrap;gap:4px;padding:6px 12px;border-top:1px solid #21262d;background:#161b22;}
+.mg-li{display:flex;align-items:center;gap:4px;font-size:12px;color:#8b949e;}
+.mg-ld{width:8px;height:8px;border-radius:1px;flex-shrink:0;}
+.mg-tt{position:absolute;background:#1c2128;border:1px solid #30363d;border-radius:7px;padding:9px 13px;font-size:12px;pointer-events:none;z-index:9999;display:none;min-width:180px;max-width:280px;box-shadow:0 4px 20px rgba(0,0,0,.9);font-family:'Share Tech Mono',monospace;}
+.mg-tt.show{display:block;}
+.mg-tt .mg-tn{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:900;margin-bottom:4px;display:block;}
+.mg-tt .mg-td{color:#6a9fb5;font-size:12px;line-height:1.5;display:block;}
+/* pin hover */
+.mega-pin .psq{transition:filter .12s,stroke-width .12s;}
+.mega-pin:hover .psq{filter:brightness(1.6) drop-shadow(0 0 5px currentColor);stroke-width:2.5px !important;}
+
+@media(max-width:720px){
+  .mg-main{flex-direction:column;}
+  .mg-bwrap{flex:none;width:100%;}
+  .mg-rhs{flex:none;width:100%;}
+}
+</style>
+
+<div id="mega2560wrap">
+<div class="mg-w">
+  <div class="mg-hdr">
+    <div class="mg-hdr-l">
+      <svg class="mg-logo" viewbox="-4 -4 258 258" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="125" cy="125" fill="none" r="128" stroke-width="6" stroke="currentColor">
+        <g fill="currentColor">
+          <path d="M30.9,110.8C32.3,96.8,37.6,84.1,45.5,72.6C84.4,16.4,164.7,16.3,202.3,67.6c9.2,12.5,16.7,25.6,19.3,41.1c0.1,0.8,0.1,1.6,0.2,2.8c-2.8,0-5.4,0-8.5,0c-4.6-26.3-17.9-47.3-41.2-61.5c-16.4-10-34.1-14.9-53.4-13c-42.1,4-72.3,32.2-81.1,75.7c-1.9,0-3.8,0-6.2-0.4C30.9,111.6,30.9,111.2,30.9,110.8z">
+          <path d="M39,145c3.9,22,15.2,39.4,32.5,53.4c42.1,34.2,105.9,21.8,131.3-26.1c4.7-8.9,7.6-18.7,11.7-29.1c0.7,0,2.6,0,5,0.3c0.5,0.7,0.5,1.1,0.4,1.9c-0.4,1.3-0.7,2.3-0.9,3.2c-10,44.6-52.8,80.5-102.6,74.5c-40.5-4.9-71.6-30.2-82.3-73.2c-0.4-1.6-0.1-3.3,0.3-4.9C36.2,145,37.6,145,39,145z">
+          <path d="M93.3,62.3C75.7,74.5,66.4,91.3,64,112.4c-6.4,0-12.6,0-19.6,0C49.9,84.1,66.6,65.3,91.1,52.2c23.2-12.3,59.7-8.2,76.6,4.7C142.1,47.2,117.3,46.5,93.3,62.3z">
+          <path d="M189,143.4c5.8,0,11.6,0,18.3,0c-5.2,24.6-18.5,43-39.5,55.7c-25.2,15.2-51.2,14.5-77.3,1.8c1.6,0.3,3.2,0.5,4.7,1c28.5,7.4,53.9,2.4,74.9-19.2c10-10.2,14.6-23.2,17.8-37.4C188.5,144.3,188.8,143.8,189,143.4z">
+          <path d="M47,143.4c6.3,0,12.7,0,19.6,0.2c1,0.6,1.5,0.9,2,1.2c4.5,7.6,9.1,15.3,13.7,23c-4.8,4.6-10.4,10.1-16.4,15.8C55.4,173.6,48.9,160.7,46,145.4C46.5,144.4,46.7,143.9,47,143.4z">
+          <path d="M183.9,111.1c-4.7-8-9.4-15.9-14.3-24.3c5.1-4.7,10.9-10.1,17-15.8c9.3,9.7,16,22.1,19.2,36.9c-1.8,1.5-3.3,3-4.9,3.1C195.2,111.3,189.5,111.1,183.9,111.1z">
+        </path></path></path></path></path></path></g>
+      </circle></svg>
+      <div>
+        <span class="mg-title">ARDUINO MEGA 2560</span>
+        <span class="mg-sub">Interactive Pinout · 70 pins · Click any pin</span>
+      </div>
+    </div>
+    <div class="mg-dot"></div>
+  </div>
+  <div class="mg-main">
+    <div class="mg-bwrap">
+      <svg id="S" style="display: block; height: auto; max-width: 100%; overflow: hidden;" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="mg-rhs">
+      <div class="mg-det" id="mgDET">
+        <div class="mg-det-empty" id="mgEMPTY"><span class="mg-arr">←</span><p>Click any pin on the board<br />to see full details</p></div>
+        <div class="mg-dc" id="mgDC">
+          <div class="mg-dbar"><div class="mg-dbadge" id="mgBADGE"></div><div><span class="mg-dpid" id="mgDID"></span><span class="mg-dfull" id="mgDFULL"></span></div></div>
+          <div class="mg-funcs" id="mgFUNCS"></div>
+          <div class="mg-igrid" id="mgIGRID"></div>
+          <div class="mg-alts" id="mgALTS" style="display: none;"><span class="mg-albl">Alt Functions</span><div class="mg-achips" id="mgACHIPS"></div></div>
+          <div class="mg-note" id="mgNOTE"></div>
+        </div>
+      </div>
+      <div class="mg-filt">
+        <div class="mg-fpbox"><span class="fplbl">◆ Highlight by Function</span><div class="mg-fbtns" id="mgFBTNS"></div></div>
+        <div class="mg-ltog" onclick="togList()"><span>PIN LIST &nbsp;<b id="mgCNT"></b></span><span id="mgTICON" style="color: #4da6ff;">▼ SHOW</span></div>
+        <div class="mg-plist" id="mgPLIST"><div id="mgROWS"></div></div>
+        <div class="mg-leg" id="mgLEG"></div>
+      </div>
+    </div>
+  </div>
+<div class="mg-tt" id="mgTT"></div>
+</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+'use strict';
+
+/*
+  PORTRAIT  W=420  H=660
+
+  LEFT edge x=18:
+    Power  7 pins  y=46,64,82,100,118,136,154   step=18
+    Analog 16 pins y=168..168+15*26=558          step=26   A13=y506  A15=y558
+
+  RIGHT edge x=402:
+    TOP GROUP  18 pins  step=16  y=100..100+17*16=372
+      [0] unused1  y=100
+      [1] unused2  y=116
+      [2] AREF     y=132
+      [3] GND      y=148
+      [4] D13      y=164
+      [5] D12      y=180
+      ...
+      [17] D0      y=372
+    PHYSICAL GAP  y=372→394  (22px)
+    BOTTOM GROUP  8 pins  step=16  y=394..394+7*16=506
+      [0] D14      y=394
+      [1] D15      y=410
+      ...
+      [7] D21      y=506   ← equals A13=506  ✓ aligned
+
+  BOTTOM double-row:
+    BY_A=602  BY_B=618
+    D22 x=396 (rightmost), D53 x=66 (leftmost)  step=22
+
+  Right drill hole: between D21(y=506) and BY_A(y=602) → y=554, x=W-14=406
+
+  Housing widths: left housings flush to board left edge
+                  right housing flush to board right edge
+*/
+
+var W=460, H=840, PS=16;
+/* UNIVERSAL STEP S=24px — all headers same spacing, gap=8px between pins
+   LX=18  = center of left  housing (0..36)
+   RX=W-18 = center of right housing */
+var LX=18, RX=W-18;
+var S=24;
+var DIG_TOP_Y=88;
+var DIG_BOT_Y=DIG_TOP_Y+18*S;
+var D21_Y=DIG_BOT_Y+7*S;
+var ANA_Y0=D21_Y-13*S;
+var PWR_Y0=ANA_Y0-7*S;
+var BY_A=ANA_Y0+15*S+S;      // 1S below A15, keeps silk labels on board
+var BY_B=BY_A+S;
+/* BX0=RX: D22 (rightmost bottom pin) aligned with right side header */
+var BX0=RX, BSTEP=S;
+
+var svg=document.getElementById('S');
+svg.setAttribute('width','100%'); svg.setAttribute('height','auto'); svg.style.display='block';
+svg.setAttribute('viewBox','0 0 '+W+' '+H);
+
+var NS='http://www.w3.org/2000/svg';
+function mk(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+function tx(s,a){var e=mk('text',a);e.textContent=s;return e;}
+function ap(p,c){p.appendChild(c);return c;}
+
+/* DEFS */
+var defs=ap(svg,mk('defs',{}));
+function lg(id,x1,y1,x2,y2,stops){
+  var g=mk('linearGradient',{id:id,x1:x1,y1:y1,x2:x2,y2:y2,gradientUnits:'userSpaceOnUse'});
+  stops.forEach(function(s){var t=mk('stop',{offset:s[0]});t.setAttribute('stop-color',s[1]);g.appendChild(t);});
+  defs.appendChild(g);
+}
+lg('pcb', 0,0,W,H,[['0%','#1040a0'],['45%','#0e3690'],['100%','#0a2870']]);
+lg('chip',0,0,1,1,[['0%','#1e1e1e'],['100%','#080808']]);
+lg('silv',0,0,0,1,[['0%','#d8d8d8'],['100%','#808080']]);
+lg('usbc',0,0,0,1,[['0%','#888'],['100%','#444']]);
+lg('dcc', 0,0,1,0,[['0%','#555'],['100%','#333']]);
+var pat=mk('pattern',{id:'dots',width:'18',height:'18',patternUnits:'userSpaceOnUse'});
+ap(pat,mk('circle',{cx:'9',cy:'9',r:'0.7',fill:'rgba(160,200,255,0.11)'}));
+defs.appendChild(pat);
+var gf=mk('filter',{id:'glow',x:'-80%',y:'-80%',width:'260%',height:'260%'});
+ap(gf,mk('feGaussianBlur',{stdDeviation:'4',result:'b'}));
+var fm=mk('feMerge',{});ap(fm,mk('feMergeNode',{in:'b'}));ap(fm,mk('feMergeNode',{in:'SourceGraphic'}));
+gf.appendChild(fm);defs.appendChild(gf);
+
+/* BOARD — notch at BOTTOM-LEFT corner */
+ap(svg,mk('path',{d:'M0,0 L'+W+',0 L'+W+','+H+' L28,'+H+' L0,'+(H-28)+' Z',fill:'url(#pcb)',stroke:'#09205a','stroke-width':'2.5'}));
+ap(svg,mk('path',{d:'M0,0 L'+W+',0 L'+W+','+H+' L28,'+H+' L0,'+(H-28)+' Z',fill:'url(#dots)'}));
+ap(svg,mk('path',{d:'M1,1 L'+(W-1)+',1 L'+(W-1)+','+(H-1)+' L29,'+(H-1)+' L1,'+(H-29)+' Z',fill:'none',stroke:'rgba(140,190,255,0.10)','stroke-width':'1'}));
+
+/* MOUNTING HOLES: top-left (14,14), top-right (W-20,14) */
+[{x:14,y:14},{x:W-20,y:14}].forEach(function(h){
+  ap(svg,mk('circle',{cx:h.x,cy:h.y,r:'10',fill:'#060e28',stroke:'#0c1e50','stroke-width':'1.5'}));
+  ap(svg,mk('circle',{cx:h.x,cy:h.y,r:'4.5',fill:'#040a18'}));
+});
+/* Drill hole between D21 (right header bottom) and D22 (bottom row rightmost) */
+ap(svg,mk('circle',{cx:RX,cy:Math.round((D21_Y+BY_A)/2),r:'10',fill:'#060e28',stroke:'#0c1e50','stroke-width':'1.5'}));
+ap(svg,mk('circle',{cx:RX,cy:Math.round((D21_Y+BY_A)/2),r:'4.5',fill:'#040a18'}));
+/* Drill hole between A15, notch corner (bottom-left), and D52 — close to cutoff edge */
+ap(svg,mk('circle',{cx:22,cy:640,r:'10',fill:'#060e28',stroke:'#0c1e50','stroke-width':'1.5'}));
+ap(svg,mk('circle',{cx:22,cy:640,r:'4.5',fill:'#040a18'}));
+
+/* USB-B top — shifted left */
+var UX=270;
+ap(svg,mk('rect',{x:UX,y:-60,width:70,height:76,rx:'4',fill:'url(#usbc)',stroke:'#3a3a3a','stroke-width':'1.5'}));
+ap(svg,mk('rect',{x:UX+4,y:-56,width:62,height:68,rx:'3',fill:'#262626'}));
+ap(svg,mk('rect',{x:UX+8,y:-10,width:54,height:24,rx:'3',fill:'#1a1a1a',stroke:'#444','stroke-width':'1'}));
+ap(svg,mk('rect',{x:UX+14,y:-2,width:42,height:16,rx:'2',fill:'#1e1e1e'}));
+[UX+10,UX+24,UX+38,UX+52].forEach(function(xx){ap(svg,mk('rect',{x:xx,y:-44,width:8,height:10,rx:'1',fill:'#b87333'}));});
+ap(svg,tx('USB-B',{fill:'#555','font-family':'monospace','font-size':'10.1','text-anchor':'middle',x:UX+35,y:22}));
+
+/* DC Barrel top-left */
+ap(svg,mk('rect',{x:32,y:-56,width:62,height:72,rx:'4',fill:'url(#dcc)',stroke:'#3a3a3a','stroke-width':'1.5'}));
+ap(svg,mk('rect',{x:36,y:-52,width:54,height:64,rx:'3',fill:'#2a2a2a'}));
+ap(svg,mk('circle',{cx:63,cy:-22,r:'16',fill:'#111',stroke:'#555','stroke-width':'1.5'}));
+ap(svg,mk('circle',{cx:63,cy:-22,r:'10',fill:'#090909',stroke:'#444','stroke-width':'1'}));
+ap(svg,mk('circle',{cx:63,cy:-22,r:'4',fill:'#1a1a1a'}));
+ap(svg,mk('circle',{cx:63,cy:-22,r:'2',fill:'#888'}));
+ap(svg,tx('DC 7-12V',{fill:'#555','font-family':'monospace','font-size':'8.8','text-anchor':'middle',x:63,y:22}));
+
+/* ATmega16U2 — beside USB, moved down 40px */
+ap(svg,mk('rect',{x:UX-70,y:74,width:54,height:54,rx:'3',fill:'url(#chip)',stroke:'#161616','stroke-width':'1.5'}));
+ap(svg,mk('circle',{cx:UX-64,cy:80,r:'2.5',fill:'#1e1e1e'}));
+ap(svg,tx('ATmega',{fill:'#242424','font-family':'monospace','font-size':'10.1','font-weight':'bold','text-anchor':'middle',x:UX-43,y:97}));
+ap(svg,tx('16U2',  {fill:'#242424','font-family':'monospace','font-size':'10.1','font-weight':'bold','text-anchor':'middle',x:UX-43,y:109}));
+ap(svg,tx('USB-SER',{fill:'#1c1c1c','font-family':'monospace','font-size':'7.4','text-anchor':'middle',x:UX-43,y:119}));
+/* LEDs moved down 40px */
+[[UX-106,76,'#00cc44','ON'],[UX-106,90,'#ddbb00','L'],[UX-106,104,'#ff8800','TX'],[UX-106,118,'#ff8800','RX']].forEach(function(l){
+  ap(svg,mk('rect',{x:l[0],y:l[1],width:l[3]==='ON'?13:10,height:7,rx:'3',fill:l[2]}));
+  ap(svg,tx(l[3],{fill:'rgba(200,220,255,0.38)','font-family':'monospace','font-size':'8.1',x:l[0]-3,y:l[1]+5.5,'text-anchor':'end'}));
+});
+
+/* Crystal — between DC jack and USB, closer to USB; protrudes above board */
+var CX=242;
+ap(svg,mk('rect',{x:CX-10,y:-50,width:20,height:66,rx:'9',fill:'url(#silv)',stroke:'#888','stroke-width':'1.5'}));
+ap(svg,mk('rect',{x:CX-6, y:-42,width:12,height:22,rx:'4',fill:'#c0c0c0'}));
+ap(svg,tx('16MHz',{fill:'#555','font-family':'monospace','font-size':'8.1','text-anchor':'middle',x:CX,y:22}));
+
+/* ATmega2560 — centered on board W/2, H/2 */
+var ICx=165, ICy=355, ICw=130, ICh=130;
+ap(svg,mk('rect',{x:ICx,y:ICy,width:ICw,height:ICh,rx:'5',fill:'url(#chip)',stroke:'#1a1a1a','stroke-width':'2.5'}));
+ap(svg,mk('rect',{x:ICx+4,y:ICy+4,width:ICw-8,height:ICh-8,rx:'3',fill:'none',stroke:'#151515','stroke-width':'1','stroke-dasharray':'4,4'}));
+ap(svg,mk('circle',{cx:ICx+9,cy:ICy+9,r:'4',fill:'#1e1e1e'}));
+ap(svg,tx('ATmega',{fill:'#282828','font-family':'monospace','font-size':'17.6','font-weight':'bold','text-anchor':'middle',x:ICx+ICw/2,y:ICy+ICh/2-6}));
+ap(svg,tx('2560',  {fill:'#282828','font-family':'monospace','font-size':'17.6','font-weight':'bold','text-anchor':'middle',x:ICx+ICw/2,y:ICy+ICh/2+11}));
+ap(svg,tx('ARDUINO',{fill:'#1e1e1e','font-family':'monospace','font-size':'10.8','text-anchor':'middle',x:ICx+ICw/2,y:ICy+ICh/2+25}));
+for(var i=0;i<5;i++){
+  ap(svg,mk('line',{x1:ICx,     y1:ICy+18+i*22,x2:ICx-8,     y2:ICy+18+i*22,stroke:'#2a2a2a','stroke-width':'2.5'}));
+  ap(svg,mk('line',{x1:ICx+ICw, y1:ICy+18+i*22,x2:ICx+ICw+8, y2:ICy+18+i*22,stroke:'#2a2a2a','stroke-width':'2.5'}));
+  ap(svg,mk('line',{x1:ICx+12+i*24,y1:ICy,    x2:ICx+12+i*24,y2:ICy-8,    stroke:'#2a2a2a','stroke-width':'2.5'}));
+  ap(svg,mk('line',{x1:ICx+12+i*24,y1:ICy+ICh,x2:ICx+12+i*24,y2:ICy+ICh+8,stroke:'#2a2a2a','stroke-width':'2.5'}));
+}
+
+/* RST moved down with IC */
+var RSTx=W/2-14, RSTy=550;
+ap(svg,mk('rect',{x:RSTx,y:RSTy,width:28,height:28,rx:'5',fill:'#2e2e2e',stroke:'#1e1e1e','stroke-width':'1'}));
+ap(svg,mk('circle',{cx:RSTx+14,cy:RSTy+14,r:'12',fill:'#bb2020',stroke:'#881010','stroke-width':'1.5'}));
+ap(svg,mk('circle',{cx:RSTx+14,cy:RSTy+14,r:'8', fill:'#cc2222'}));
+ap(svg,mk('circle',{cx:RSTx+10,cy:RSTy+10,r:'2.5',fill:'rgba(255,150,150,0.35)'}));
+ap(svg,tx('RST',{fill:'rgba(180,220,255,0.28)','font-family':'monospace','font-size':'9.5','text-anchor':'middle',x:RSTx+14,y:RSTy-6}));
+
+/* Caps + regulator */
+[[ICx+ICw+18,ICy+20,10,'47µF'],[ICx+ICw+18,ICy+ICh-30,13,'100µF']].forEach(function(c){
+  ap(svg,mk('ellipse',{cx:c[0],cy:c[1],rx:c[2],ry:c[2],fill:'#222',stroke:'#181818','stroke-width':'1.5'}));
+  ap(svg,mk('ellipse',{cx:c[0],cy:c[1],rx:c[2]-3,ry:c[2]-3,fill:'#2a2a2a'}));
+  ap(svg,mk('line',{x1:c[0]-4,y1:c[1]-c[2]+3,x2:c[0]-4,y2:c[1]+c[2]-3,stroke:'#444','stroke-width':'1.2'}));
+  ap(svg,tx(c[3],{fill:'rgba(160,200,255,0.18)','font-family':'monospace','font-size':'7.4','text-anchor':'middle',x:c[0],y:c[1]+c[2]+11}));
+});
+ap(svg,mk('rect',{x:ICx-40,y:ICy+ICh-34,width:26,height:34,rx:'2',fill:'#111',stroke:'#181818','stroke-width':'1.5'}));
+ap(svg,tx('5V', {fill:'rgba(160,200,255,0.18)','font-family':'monospace','font-size':'8.8','text-anchor':'middle',x:ICx-27,y:ICy+ICh-20}));
+ap(svg,tx('REG',{fill:'rgba(160,200,255,0.15)','font-family':'monospace','font-size':'8.8','text-anchor':'middle',x:ICx-27,y:ICy+ICh-8}));
+
+/* Arduino logo — above IC center */
+var lg2=mk('g',{opacity:'0.25'});
+ap(lg2,mk('circle',{cx:ICx+ICw/2-22,cy:ICy-50,r:'17',fill:'none',stroke:'rgba(160,210,255,0.8)','stroke-width':'3'}));
+ap(lg2,mk('circle',{cx:ICx+ICw/2+22,cy:ICy-50,r:'17',fill:'none',stroke:'rgba(160,210,255,0.8)','stroke-width':'3'}));
+ap(lg2,mk('line',{x1:ICx+ICw/2-31,y1:ICy-50,x2:ICx+ICw/2-13,y2:ICy-50,stroke:'rgba(160,210,255,0.9)','stroke-width':'2.5','stroke-linecap':'round'}));
+ap(lg2,mk('line',{x1:ICx+ICw/2-22,y1:ICy-58,x2:ICx+ICw/2-22,y2:ICy-42,stroke:'rgba(160,210,255,0.9)','stroke-width':'2.5','stroke-linecap':'round'}));
+ap(lg2,mk('line',{x1:ICx+ICw/2+13,y1:ICy-50,x2:ICx+ICw/2+31,y2:ICy-50,stroke:'rgba(160,210,255,0.9)','stroke-width':'2.5','stroke-linecap':'round'}));
+svg.appendChild(lg2);
+ap(svg,tx('Arduino',  {fill:'rgba(160,210,255,0.26)','font-family':'Georgia,serif','font-size':'16.2','font-style':'italic','font-weight':'bold','text-anchor':'middle',x:ICx+ICw/2,y:ICy-28}));
+ap(svg,tx('MEGA 2560',{fill:'rgba(140,190,255,0.14)','font-family':'monospace','font-size':'12.2','font-weight':'900','letter-spacing':'2','text-anchor':'middle',x:ICx+ICw/2,y:ICy-14}));
+
+/* ICSP headers:
+   ICSP1 → near AREF pin, rotated 90° (2-row becomes 2-col vertical layout)
+   ICSP2 → centered below ATmega2560 */
+(function(){
+  // ICSP2 — normal horizontal, centered below IC
+  var p2x=W/2-25, p2y=ICy+ICh+50;
+  ap(svg,mk('rect',{x:p2x,y:p2y,width:50,height:28,rx:'2',fill:'#0a0a0a',stroke:'#1e1e1e','stroke-width':'1'}));
+  [[p2x+3,p2y+4],[p2x+17,p2y+4],[p2x+31,p2y+4],[p2x+3,p2y+15],[p2x+17,p2y+15],[p2x+31,p2y+15]].forEach(function(pt){
+    ap(svg,mk('rect',{x:pt[0],y:pt[1],width:10,height:9,rx:'1',fill:'#1a1a1a',stroke:'#3a3a3a','stroke-width':'0.6'}));
+  });
+  ap(svg,tx('ICSP2',{fill:'rgba(160,200,255,0.26)','font-family':'monospace','font-size':'9.5','text-anchor':'middle',x:p2x+25,y:p2y-5}));
+
+  // ICSP1 — rotated 90° around its center, near AREF (y=DIG_TOP_Y+2*S)
+  // Original: 50w x 28h → after 90° rotation appears 28w x 50h
+  var cx1=278+25, cy1=112+14;  // center of original placement
+  var g1=mk('g',{transform:'rotate(90,'+cx1+','+cy1+')'});
+  ap(g1,mk('rect',{x:cx1-25,y:cy1-14,width:50,height:28,rx:'2',fill:'#0a0a0a',stroke:'#1e1e1e','stroke-width':'1'}));
+  [[cx1-22,cy1-10],[cx1-8,cy1-10],[cx1+6,cy1-10],[cx1-22,cy1+1],[cx1-8,cy1+1],[cx1+6,cy1+1]].forEach(function(pt){
+    ap(g1,mk('rect',{x:pt[0],y:pt[1],width:10,height:9,rx:'1',fill:'#1a1a1a',stroke:'#3a3a3a','stroke-width':'0.6'}));
+  });
+  svg.appendChild(g1);
+  ap(svg,tx('ICSP1',{fill:'rgba(160,200,255,0.26)','font-family':'monospace','font-size':'9.5','text-anchor':'middle',x:cx1-34,y:cy1+2}));
+})();
+ap(svg,tx('MADE IN ITALY',{fill:'rgba(160,200,255,0.09)','font-family':'monospace','font-size':'9.5','text-anchor':'middle',x:W/2,y:H-7}));
+
+/* ═══════════════════════════════════════════
+   CONNECTOR HOUSINGS — 28px wide each side
+   Left  pins at LX=14  → housing x=0..28
+   Right pins at RX=406 → housing x=392..420
+   Pins sit exactly at the center of each housing
+═══════════════════════════════════════════ */
+var HW=36;   // housing width
+var HP=PS/2+4;  // 11px — pad beyond outermost pin edge
+
+/* Left power housing: 7 pins */
+ap(svg,mk('rect',{x:0, y:PWR_Y0-HP, width:HW, height:6*S+PS+8, rx:'2',fill:'#080c1e',stroke:'#0d1330','stroke-width':'1.2'}));
+
+/* Left analog housing: 16 pins */
+ap(svg,mk('rect',{x:0, y:ANA_Y0-HP, width:HW, height:15*S+PS+8, rx:'2',fill:'#080c1e',stroke:'#0d1330','stroke-width':'1.2'}));
+
+/* Right TOP housing: 18 pins */
+ap(svg,mk('rect',{x:W-HW, y:DIG_TOP_Y-HP, width:HW, height:17*S+PS+8, rx:'2',fill:'#080c1e',stroke:'#0d1330','stroke-width':'1.2'}));
+
+/* Right BOTTOM housing: 8 pins */
+ap(svg,mk('rect',{x:W-HW, y:DIG_BOT_Y-HP, width:HW, height:7*S+PS+8, rx:'2',fill:'#080c1e',stroke:'#0d1330','stroke-width':'1.2'}));
+
+/* Bottom double-row housing */
+var BB_x0=BX0-15*BSTEP-HP, BB_y0=BY_A-HP, BB_w=15*BSTEP+PS+8, BB_h=(BY_B-BY_A)+PS+8;
+ap(svg,mk('rect',{x:BB_x0, y:BB_y0, width:BB_w, height:BB_h, rx:'2',fill:'#080c1e',stroke:'#0d1330','stroke-width':'1.2'}));
+
+/* Silk labels */
+function slk(t,x,y,rot){
+  var e=tx(t,{fill:'rgba(160,200,255,0.38)','font-family':'monospace','font-size':'14.9','font-weight':'bold','text-anchor':'middle'});
+  e.setAttribute('x',x);e.setAttribute('y',y);
+  if(rot)e.setAttribute('transform','rotate('+rot+','+x+','+y+')');
+  svg.appendChild(e);
+}
+slk('POWER',    HW/2, PWR_Y0+3*S,       90);
+slk('ANALOG IN',HW/2, ANA_Y0+7.5*S,     90);
+slk('DIGITAL 0-21', W-HW/2, DIG_TOP_Y+8.5*S, -90);
+slk('D14-21',       W-HW/2, DIG_BOT_Y+3.5*S, -90);
+slk('DIGITAL 22-53', (BB_x0+BX0)/2, BB_y0-6, 0);
+
+/* ═══════════════════════════════════════════
+   PIN COLOR PALETTE
+═══════════════════════════════════════════ */
+var C={
+  PWR: {c:'#ff6b6b',bg:'rgba(255,107,107,.14)',bd:'rgba(255,107,107,.35)'},
+  GND: {c:'#a8a8a8',bg:'rgba(168,168,168,.11)',bd:'rgba(168,168,168,.28)'},
+  GPIO:{c:'#78c878',bg:'rgba(100,200,100,.10)',bd:'rgba(100,200,100,.27)'},
+  ADC: {c:'#c8a850',bg:'rgba(200,168,80,.12)', bd:'rgba(200,168,80,.30)'},
+  SPI: {c:'#4a9aee',bg:'rgba(74,154,238,.11)', bd:'rgba(74,154,238,.28)'},
+  I2C: {c:'#9898d8',bg:'rgba(152,152,216,.11)',bd:'rgba(152,152,216,.28)'},
+  UART:{c:'#cc6888',bg:'rgba(204,104,136,.11)',bd:'rgba(204,104,136,.28)'},
+  PWM: {c:'#50c8c8',bg:'rgba(80,200,200,.10)', bd:'rgba(80,200,200,.27)'},
+  SPEC:{c:'#7090a8',bg:'rgba(112,144,168,.11)',bd:'rgba(112,144,168,.28)'},
+  UNU: {c:'#3a4a5a',bg:'rgba(40,55,70,.12)',   bd:'rgba(40,55,70,.28)'},
+};
+function cl(t){return C[t]||C.SPEC;}
+
+var ALT={}, PINS=[];
+function addP(o){PINS.push(o);}
+
+/* ═══════════════════════════════════════════
+   PIN DATA
+═══════════════════════════════════════════ */
+
+/* LEFT POWER (7 pins, y=46..154) */
+[
+  {id:'IOV',   lbl:'IOREF',name:'I/O Reference', type:'SPEC',funcs:['SPEC'],volt:'5V',    curr:'N/A',  note:'Shields read this to know the board runs at 5V I/O.'},
+  {id:'RST_P', lbl:'RST',  name:'Reset',         type:'SPEC',funcs:['SPEC'],volt:'5V',    curr:'N/A',  note:'Pull LOW to reset MCU.'},
+  {id:'3V3',   lbl:'3V3',  name:'3.3V Output',   type:'PWR', funcs:['PWR'], volt:'3.3V',  curr:'50mA', note:'3.3V regulated. Max 50mA.'},
+  {id:'5V',    lbl:'5V',   name:'5V Output',      type:'PWR', funcs:['PWR'], volt:'5V',    curr:'800mA',note:'5V regulated output.'},
+  {id:'GND_P1',lbl:'GND',  name:'Ground',         type:'GND', funcs:['GND'], volt:'0V',    curr:'N/A',  note:'Power ground.'},
+  {id:'GND_P2',lbl:'GND',  name:'Ground',         type:'GND', funcs:['GND'], volt:'0V',    curr:'N/A',  note:'Power ground.'},
+  {id:'VIN',   lbl:'VIN',  name:'Voltage Input',  type:'PWR', funcs:['PWR'], volt:'7-12V', curr:'N/A',  note:'External power 7-12V.'},
+].forEach(function(d,i){addP({id:d.id,lbl:d.lbl,name:d.name,type:d.type,funcs:d.funcs,volt:d.volt,curr:d.curr,note:d.note,cx:LX,cy:PWR_Y0+i*S});});
+
+/* LEFT ANALOG (16 pins, A0=168..A15=558) */
+[
+  {id:'A0', lbl:'A0', note:'10-bit ADC. analogRead(A0).'},
+  {id:'A1', lbl:'A1', note:'10-bit ADC. analogRead(A1).'},
+  {id:'A2', lbl:'A2', note:'10-bit ADC. analogRead(A2).'},
+  {id:'A3', lbl:'A3', note:'10-bit ADC. analogRead(A3).'},
+  {id:'A4', lbl:'A4', note:'10-bit ADC. Mega I2C is on D20/D21.'},
+  {id:'A5', lbl:'A5', note:'10-bit ADC. analogRead(A5).'},
+  {id:'A6', lbl:'A6', note:'10-bit ADC. analogRead(A6).'},
+  {id:'A7', lbl:'A7', note:'10-bit ADC. analogRead(A7).'},
+  {id:'A8', lbl:'A8', note:'10-bit ADC. analogRead(A8).'},
+  {id:'A9', lbl:'A9', note:'10-bit ADC. analogRead(A9).'},
+  {id:'A10',lbl:'A10',note:'10-bit ADC. analogRead(A10).'},
+  {id:'A11',lbl:'A11',note:'10-bit ADC. analogRead(A11).'},
+  {id:'A12',lbl:'A12',note:'10-bit ADC. analogRead(A12).'},
+  {id:'A13',lbl:'A13',note:'10-bit ADC. Aligns horizontally with D21.'},
+  {id:'A14',lbl:'A14',note:'10-bit ADC. analogRead(A14).'},
+  {id:'A15',lbl:'A15',note:'10-bit ADC. Near D53 at bottom-left.'},
+].forEach(function(d,i){addP({id:d.id,lbl:d.lbl,name:'Analog '+i,type:'ADC',funcs:['ADC','GPIO'],volt:'0-5V',curr:'N/A',note:d.note,cx:LX,cy:ANA_Y0+i*S});});
+
+/* RIGHT TOP GROUP: [unused,unused,AREF,GND,D13..D0]  18 pins  y=100..372 */
+var rightTop=[
+  {id:'UNU1',lbl:'---',name:'Unused',          type:'UNU', funcs:['UNU'], volt:'N/A',curr:'N/A',note:'Unused pin.'},
+  {id:'UNU2',lbl:'---',name:'Unused',          type:'UNU', funcs:['UNU'], volt:'N/A',curr:'N/A',note:'Unused pin.'},
+  {id:'AREF',lbl:'AREF',name:'Analog Reference',type:'SPEC',funcs:['SPEC'],volt:'0-5V',curr:'N/A',note:'Analog reference voltage for ADC. Default=AVcc.'},
+  {id:'GND_R',lbl:'GND',name:'Ground',          type:'GND', funcs:['GND'], volt:'0V', curr:'N/A',note:'Digital header ground.'},
+  {id:'D13',lbl:'~13',name:'D13 / SCK',  type:'SPI', funcs:['GPIO','PWM','SPI'],note:'SPI Clock. Drives onboard L LED.',alt:['SPI_SCK','LED_BUILTIN','OC4A']},
+  {id:'D12',lbl:'~12',name:'D12 (PWM)',   type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC1B.',alt:['OC1B']},
+  {id:'D11',lbl:'~11',name:'D11 (PWM)',   type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC1A.',alt:['OC1A']},
+  {id:'D10',lbl:'~10',name:'D10 (PWM)',   type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC2B.',alt:['OC2B']},
+  {id:'D9', lbl:'~9', name:'D9 (PWM)',    type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC2A.',alt:['OC2A']},
+  {id:'D8', lbl:'~8', name:'D8 (PWM)',    type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC4C.',alt:['OC4C']},
+  {id:'D7', lbl:'~7', name:'D7 (PWM)',    type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC4B.',alt:['OC4B']},
+  {id:'D6', lbl:'~6', name:'D6 (PWM)',    type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC4A.',alt:['OC4A']},
+  {id:'D5', lbl:'~5', name:'D5 (PWM)',    type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC3C.',alt:['OC3C']},
+  {id:'D4', lbl:'~4', name:'D4 (PWM)',    type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC0B.',alt:['OC0B']},
+  {id:'D3', lbl:'~3', name:'D3 + INT5',   type:'PWM', funcs:['GPIO','PWM'],note:'PWM OC3C + INT5.',alt:['OC3C','INT5']},
+  {id:'D2', lbl:'~2', name:'D2 + INT4',   type:'PWM', funcs:['GPIO','PWM'],note:'PWM OC3B + INT4.',alt:['OC3B','INT4']},
+  {id:'TX0',lbl:'TX', name:'D1 / TX0',    type:'UART',funcs:['GPIO','UART'],note:'UART0 TX. Shared with USB.',alt:['Serial.print()']},
+  {id:'RX0',lbl:'RX', name:'D0 / RX0',    type:'UART',funcs:['GPIO','UART'],note:'UART0 RX. Shared with USB.',alt:['Serial.read()']},
+];
+rightTop.forEach(function(d,i){
+  addP({id:d.id,lbl:d.lbl,name:d.name,type:d.type,funcs:d.funcs,volt:d.volt,curr:d.curr,note:d.note,cx:RX,cy:DIG_TOP_Y+i*S});
+  if(d.alt&&d.alt.length)ALT[d.id]=d.alt;
+});
+
+/* RIGHT BOTTOM GROUP: D14..D21  8 pins  y=394..506 */
+var rightBot=[
+  {id:'D14',lbl:'14',name:'D14 / TX3',  type:'UART',funcs:['GPIO','UART'],note:'UART3 TX (Serial3).',alt:['Serial3.print()']},
+  {id:'D15',lbl:'15',name:'D15 / RX3',  type:'UART',funcs:['GPIO','UART'],note:'UART3 RX (Serial3).',alt:['Serial3.read()']},
+  {id:'D16',lbl:'16',name:'D16 / TX2',  type:'UART',funcs:['GPIO','UART'],note:'UART2 TX (Serial2).',alt:['Serial2.print()']},
+  {id:'D17',lbl:'17',name:'D17 / RX2',  type:'UART',funcs:['GPIO','UART'],note:'UART2 RX (Serial2).',alt:['Serial2.read()']},
+  {id:'D18',lbl:'18',name:'D18 / TX1',  type:'UART',funcs:['GPIO','UART'],note:'UART1 TX (Serial1).',alt:['Serial1.print()','INT7']},
+  {id:'D19',lbl:'19',name:'D19 / RX1',  type:'UART',funcs:['GPIO','UART'],note:'UART1 RX (Serial1).',alt:['Serial1.read()','INT6']},
+  {id:'D20',lbl:'20',name:'D20 / SDA',  type:'I2C', funcs:['GPIO','I2C'], note:'I2C Data (Wire). INT3.',alt:['Wire SDA','INT3']},
+  {id:'D21',lbl:'21',name:'D21 / SCL',  type:'I2C', funcs:['GPIO','I2C'], note:'I2C Clock. Aligned with A13.',alt:['Wire SCL','INT2']},
+];
+rightBot.forEach(function(d,i){
+  addP({id:d.id,lbl:d.lbl,name:d.name,type:d.type,funcs:d.funcs,volt:'0/5V',curr:'40mA',note:d.note,cx:RX,cy:DIG_BOT_Y+i*S});
+  if(d.alt&&d.alt.length)ALT[d.id]=d.alt;
+});
+
+/* BOTTOM D22-D53 */
+var botTop=[
+  {id:'D22',lbl:'22',name:'Digital 22',type:'GPIO',funcs:['GPIO'],note:'PORTA bit0. Rightmost, near D21.'},
+  {id:'D24',lbl:'24',name:'Digital 24',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D26',lbl:'26',name:'Digital 26',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D28',lbl:'28',name:'Digital 28',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D30',lbl:'30',name:'Digital 30',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D32',lbl:'32',name:'Digital 32',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D34',lbl:'34',name:'Digital 34',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D36',lbl:'36',name:'Digital 36',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D38',lbl:'38',name:'Digital 38',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D40',lbl:'40',name:'Digital 40',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D42',lbl:'42',name:'Digital 42',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D44',lbl:'~44',name:'D44 PWM',  type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC5C.',alt:['OC5C']},
+  {id:'D46',lbl:'~46',name:'D46 PWM',  type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC5A.',alt:['OC5A']},
+  {id:'D48',lbl:'48', name:'Digital 48',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D50',lbl:'50', name:'D50/MISO', type:'SPI', funcs:['GPIO','SPI'],note:'SPI MISO.',alt:['SPI_MISO']},
+  {id:'D52',lbl:'52', name:'D52/SCK',  type:'SPI', funcs:['GPIO','SPI'],note:'SPI Clock.',alt:['SPI_SCK']},
+];
+var botBot=[
+  {id:'D23',lbl:'23',name:'Digital 23',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D25',lbl:'25',name:'Digital 25',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D27',lbl:'27',name:'Digital 27',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D29',lbl:'29',name:'Digital 29',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D31',lbl:'31',name:'Digital 31',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D33',lbl:'33',name:'Digital 33',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D35',lbl:'35',name:'Digital 35',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D37',lbl:'37',name:'Digital 37',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D39',lbl:'39',name:'Digital 39',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D41',lbl:'41',name:'Digital 41',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D43',lbl:'43',name:'Digital 43',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D45',lbl:'~45',name:'D45 PWM',  type:'PWM', funcs:['GPIO','PWM'],note:'PWM via OC5B.',alt:['OC5B']},
+  {id:'D47',lbl:'47', name:'Digital 47',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D49',lbl:'49', name:'Digital 49',type:'GPIO',funcs:['GPIO'],note:'General purpose I/O.'},
+  {id:'D51',lbl:'51', name:'D51/MOSI', type:'SPI', funcs:['GPIO','SPI'],note:'SPI MOSI.',alt:['SPI_MOSI']},
+  {id:'D53',lbl:'53', name:'D53/SS',   type:'SPI', funcs:['GPIO','SPI'],note:'SPI SS. Leftmost, near A15.',alt:['SPI_SS']},
+];
+botTop.forEach(function(d,i){addP({id:d.id,lbl:d.lbl,name:d.name,type:d.type,funcs:d.funcs,volt:'0/5V',curr:'40mA',note:d.note,cx:BX0-i*BSTEP,cy:BY_A});if(d.alt&&d.alt.length)ALT[d.id]=d.alt;});
+botBot.forEach(function(d,i){addP({id:d.id,lbl:d.lbl,name:d.name,type:d.type,funcs:d.funcs,volt:'0/5V',curr:'40mA',note:d.note,cx:BX0-i*BSTEP,cy:BY_B});if(d.alt&&d.alt.length)ALT[d.id]=d.alt;});
+
+/* ═══════════════════════════════════════════
+   DRAW PINS
+═══════════════════════════════════════════ */
+PINS.forEach(function(p){
+  var col=cl(p.type);
+  var g=mk('g',{'class':'mega-pin','data-id':p.id});
+  g.style.cursor='pointer';
+  /* outer pad ring */
+  ap(g,mk('rect',{x:p.cx-PS/2-2,y:p.cy-PS/2-2,width:PS+4,height:PS+4,rx:'2',
+    fill:'rgba(100,150,255,0.07)',stroke:'rgba(100,150,255,0.15)','stroke-width':'0.5'}));
+  /* pin square */
+  var sq=mk('rect',{x:p.cx-PS/2,y:p.cy-PS/2,width:PS,height:PS,rx:'2',
+    fill:col.bg,stroke:col.c,'stroke-width':'1.5','class':'psq'});
+  sq.style.color=col.c;   /* used by :hover filter */
+  ap(g,sq);
+  /* through-hole */
+  ap(g,mk('rect',{x:p.cx-3,y:p.cy-3,width:6,height:6,rx:'1.5',fill:'#04080f','pointer-events':'none'}));
+  /* number */
+  var lb=p.lbl.replace('~','');
+  var lt=mk('text',{x:p.cx,y:p.cy+3,'text-anchor':'middle',fill:col.c,
+    'font-size':'9.5','font-family':'monospace','font-weight':'bold','pointer-events':'none'});
+  lt.textContent=lb.length>3?lb.slice(0,3):lb;
+  ap(g,lt);
+  /* silk label */
+  var isBot=(p.cy>=BY_A-5);
+  var isR=(p.cx>W/2&&!isBot);
+  var sk=mk('text',{fill:'rgba(210,230,255,0.80)','font-size':'12.2','font-family':'monospace',
+    'font-weight':'bold','pointer-events':'none'});
+  if(isBot){
+    var inner=(p.cy<=BY_A);
+    var sy=inner?p.cy-13:p.cy+20;
+    sk.setAttribute('text-anchor','middle');sk.setAttribute('x',p.cx);sk.setAttribute('y',sy);
+    sk.setAttribute('transform','rotate(-90,'+p.cx+','+sy+')');
+  } else if(isR){
+    sk.setAttribute('text-anchor','end');sk.setAttribute('x',p.cx-PS/2-PS/2-3);sk.setAttribute('y',p.cy+3.5);
+  } else {
+    sk.setAttribute('text-anchor','start');sk.setAttribute('x',p.cx+PS/2+PS/2+4);sk.setAttribute('y',p.cy+3.5);
+  }
+  sk.textContent=lb;
+  svg.appendChild(sk);
+  /* hit area */
+  ap(g,mk('rect',{x:p.cx-14,y:p.cy-14,width:28,height:28,fill:'transparent'}));
+  g.addEventListener('click',function(e){e.stopPropagation();pick(p.id);});
+  g.addEventListener('mouseenter',function(e){hoverPin(g,p,true);showTT(p,e);});
+  g.addEventListener('mousemove',moveTT);
+  g.addEventListener('mouseleave',function(){hoverPin(g,p,false);hideTT();});
+  svg.appendChild(g);
+});
+
+/* ═══════════════════════════════════════════
+   HOVER highlight (JS-driven, works on SVG)
+═══════════════════════════════════════════ */
+function hoverPin(g,p,on){
+  var sq=g.querySelector('.psq');
+  var col=cl(p.type);
+  if(on){
+    sq.setAttribute('fill',col.c);
+    sq.setAttribute('stroke-width','2.5');
+    sq.setAttribute('filter','url(#glow)');
+    g.querySelector('text').setAttribute('fill','#02050c');
+  } else {
+    // restore to current state (selected or normal)
+    if(selId===p.id){
+      sq.setAttribute('fill',col.c);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','2.5');
+      sq.setAttribute('filter','url(#glow)');g.querySelector('text').setAttribute('fill','#02050c');
+    } else {
+      sq.setAttribute('fill',col.bg);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','1.5');
+      sq.removeAttribute('filter');g.querySelector('text').setAttribute('fill',col.c);
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════
+   INTERACTION
+═══════════════════════════════════════════ */
+var selId=null,listOpen=false,fType=null;
+var FILTS=[
+  {l:'DIGITAL',k:'GPIO',fn:function(p){return p.funcs.indexOf('GPIO')>=0;}},
+  {l:'PWM',    k:'PWM', fn:function(p){return p.funcs.indexOf('PWM')>=0;}},
+  {l:'ANALOG', k:'ADC', fn:function(p){return p.funcs.indexOf('ADC')>=0;}},
+  {l:'UART',   k:'UART',fn:function(p){return p.funcs.indexOf('UART')>=0;}},
+  {l:'SPI',    k:'SPI', fn:function(p){return p.funcs.indexOf('SPI')>=0;}},
+  {l:'I2C',    k:'I2C', fn:function(p){return p.funcs.indexOf('I2C')>=0;}},
+  {l:'GND',    k:'GND', fn:function(p){return p.type==='GND';}},
+  {l:'PWR',    k:'PWR', fn:function(p){return p.type==='PWR';}},
+];
+var FCLR={GPIO:'#78c878',PWM:'#50c8c8',ADC:'#c8a850',SPI:'#4a9aee',I2C:'#9898d8',UART:'#cc6888',GND:'#a8a8a8',PWR:'#ff6b6b'};
+
+function buildBtns(){
+  document.getElementById('mgFBTNS').innerHTML=FILTS.map(function(f){
+    var c=FCLR[f.k],on=fType===f.k;
+    return '<button class="mg-fb'+(on?' on':'')+'" data-k="'+f.k+'" style="color:'+c+';background:'+(on?'#0d1117':'#1c2128')+';border-color:'+(on?c:'rgba(255,255,255,.14)')+'">'+f.l+'</button>';
+  }).join('');
+  document.querySelectorAll('.mg-fb').forEach(function(b){b.addEventListener('click',function(){fType=(fType===b.dataset.k)?null:b.dataset.k;buildBtns();upBoard();upList();});});
+}
+
+function pick(id){selId=(selId===id)?null:id;upBoard();upDetail();upList();}
+function matches(p){if(!fType)return true;var f=FILTS.filter(function(x){return x.k===fType;})[0];return f?f.fn(p):true;}
+
+function upBoard(){
+  var hf=!!fType;
+  document.querySelectorAll('.mega-pin').forEach(function(g){
+    var p=PINS.filter(function(x){return x.id===g.dataset.id;})[0];
+    var col=cl(p.type),sq=g.querySelector('.psq'),act=selId===p.id,mt=matches(p);
+    if(act){sq.setAttribute('fill',col.c);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','2.5');sq.setAttribute('filter','url(#glow)');g.querySelector('text').setAttribute('fill','#02050c');g.style.opacity='1';}
+    else if(hf&&!mt){sq.setAttribute('fill','rgba(4,8,20,0.5)');sq.setAttribute('stroke','rgba(20,30,60,0.35)');sq.setAttribute('stroke-width','1');sq.removeAttribute('filter');g.querySelector('text').setAttribute('fill','rgba(40,55,90,0.4)');g.style.opacity='0.13';}
+    else if(hf&&mt){sq.setAttribute('fill',col.c);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','2');sq.setAttribute('filter','url(#glow)');g.querySelector('text').setAttribute('fill','#02050c');g.style.opacity='1';}
+    else{sq.setAttribute('fill',col.bg);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','1.5');sq.removeAttribute('filter');g.querySelector('text').setAttribute('fill',col.c);g.style.opacity='1';}
+  });
+}
+
+function upDetail(){
+  var em=document.getElementById('mgEMPTY'),dc=document.getElementById('mgDC');
+  if(!selId){em.style.display='block';dc.className='mg-dc';return;}
+  var p=PINS.filter(function(x){return x.id===selId;})[0],col=cl(p.type);
+  em.style.display='none';dc.className='mg-dc show';
+  var b=document.getElementById('mgBADGE');b.style.background=col.bg;b.style.borderColor=col.c;b.style.color=col.c;b.textContent=p.lbl;
+  var di=document.getElementById('mgDID');di.style.color=col.c;di.textContent=p.id;
+  document.getElementById('mgDFULL').textContent=p.name;
+  document.getElementById('mgFUNCS').innerHTML=p.funcs.map(function(f){return '<span class="mg-chip" style="background:'+col.bg+';color:'+col.c+';border-color:'+col.bd+'">'+f+'</span>';}).join('');
+  document.getElementById('mgIGRID').innerHTML='<div class="icell"><span class="mg-ilbl">Type</span><span class="mg-ival" style="color:'+col.c+'">'+p.type+'</span></div><div class="icell"><span class="mg-ilbl">Voltage</span><span class="mg-ival">'+p.volt+'</span></div><div class="icell"><span class="mg-ilbl">Max Current</span><span class="mg-ival">'+p.curr+'</span></div><div class="icell"><span class="mg-ilbl">Board</span><span class="mg-ival" style="color:#4da6ff">Mega 2560</span></div>';
+  var alts=ALT[p.id]||[],as=document.getElementById('mgALTS');
+  if(alts.length){as.style.display='block';document.getElementById('mgACHIPS').innerHTML=alts.map(function(a){return '<span class="mg-ac">'+a+'</span>';}).join('');}
+  else as.style.display='none';
+  document.getElementById('mgNOTE').innerHTML='<span class="mg-ni">&#128161;</span>'+p.note;
+}
+
+function upList(){
+  var ps=PINS.filter(matches);
+  document.getElementById('mgROWS').innerHTML=ps.map(function(p){var col=cl(p.type),on=selId===p.id;return '<div class="prow'+(on?' on':'')+'" data-id="'+p.id+'"><div class="mg-pbadge" style="background:'+col.bg+';color:'+col.c+';border:1px solid '+col.bd+'">'+p.lbl.replace('~','')+'</div><div class="mg-pname">'+p.name+'</div><span class="mg-ptag" style="background:'+col.bg+';color:'+col.c+'">'+p.type+'</span></div>';}).join('');
+  document.getElementById('mgCNT').textContent=ps.length+(ps.length<PINS.length?' / '+PINS.length:'');
+  document.querySelectorAll('.mg-prow').forEach(function(r){r.addEventListener('click',function(){pick(r.dataset.id);});});
+}
+
+(function(){var ts=[];PINS.forEach(function(p){if(ts.indexOf(p.type)<0)ts.push(p.type);});document.getElementById('mgLEG').innerHTML=ts.map(function(t){var c=cl(t);return '<div class="mg-li"><span class="mg-ld" style="background:'+c.c+'"></span>'+t+'</div>';}).join('');})();
+
+document.getElementById('mgCNT').textContent=PINS.length;
+buildBtns();upList();
+
+function togList(){listOpen=!listOpen;document.getElementById('mgPLIST').className='mg-plist'+(listOpen?' open':'');document.getElementById('mgTICON').innerHTML=listOpen?'&#9650; HIDE':'&#9660; SHOW';}
+window.togList=togList;
+
+var TT=document.getElementById('mgTT');
+function showTT(p,e){var col=cl(p.type);TT.innerHTML='<span class="mg-tn" style="color:'+col.c+'">'+p.id+' — '+p.name+'</span><span class="mg-td">'+p.funcs.join(' · ')+' | '+p.volt+' | '+p.curr+'</span>';TT.className='mg-tt show';moveTT(e);}
+function moveTT(e){var r=document.getElementById('mega2560wrap').getBoundingClientRect();TT.style.left=(e.clientX-r.left+14)+'px';TT.style.top=(e.clientY-r.top-8)+'px';}
+function hideTT(){TT.className='mg-tt';}
+})();
+</script>
+<!--End Arduino Mega 2560 Pinout Widget-->
+
+<div class="separator" style="display: none;"><a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiyYjNOKaJ3-SG1-yHgvB3EN0asVmODbqnFPK_meEnbl4brY_cgOwAl0HqvM141wqklrkfwUTB8H6mWRNeXXqdQSIWr0nsJKTMNmGA_LPq0Jv53BmVdPQItau2no5_zYFj9aDRS0_nnhECRbXg2fKACRG9Xw5fBZE15IvvRJH15RBMDYxNdJr9YidvgW3WM/s1600/arduino%20mega.png" style="display: block; padding: 1em 0px; text-align: center;"><img alt="" border="0" data-original-height="433" data-original-width="843" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiyYjNOKaJ3-SG1-yHgvB3EN0asVmODbqnFPK_meEnbl4brY_cgOwAl0HqvM141wqklrkfwUTB8H6mWRNeXXqdQSIWr0nsJKTMNmGA_LPq0Jv53BmVdPQItau2no5_zYFj9aDRS0_nnhECRbXg2fKACRG9Xw5fBZE15IvvRJH15RBMDYxNdJr9YidvgW3WM/s1600/arduino%20mega.png" /></a></div><div><br /></div><h2>🖥️ How to Use the Arduino Mega 2560 Pinout Tool</h2><h3>1. <strong>Navigate the Large Pin Map</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">The Mega 2560 has far more pins than the Uno or Nano (54 digital I/O, 16 analog inputs).</span></p></li><li><p><span style="white-space-collapse: preserve;">Use the interactive diagram to hover or click on pins — the tool will highlight their specific role.</span></p></li><li><p><span style="white-space-collapse: preserve;">This is especially useful when you need extra PWM outputs or multiple serial ports.</span></p></li></ul><h3>2. <strong>Identify Communication Options</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">The Mega offers <strong>four UART ports</strong> (Serial0–Serial3). The tool shows exactly which pins correspond to each.</span></p></li><li><p><span style="white-space-collapse: preserve;">It also highlights <strong>SPI</strong> and <strong>I2C</strong> pins, making it easier to connect multiple modules without confusion.</span></p></li></ul><h3>3. <strong>Check Power Distribution</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">The diagram shows <strong>5V, 3.3V, VIN, and GND pins</strong>.</span></p></li><li><p><span style="white-space-collapse: preserve;">With more peripherals connected, knowing where to draw power safely is critical.</span></p></li><li><p><span style="white-space-collapse: preserve;">Use the tool to plan how you’ll power sensors, shields, and external devices.</span></p></li></ul><h3>4. <strong>Plan Complex Projects</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">Because the Mega has so many pins, it’s easy to lose track.</span></p></li><li><p><span style="white-space-collapse: preserve;">Keep the tool open while wiring — it acts like a live reference sheet.</span></p></li><li><p><span style="white-space-collapse: preserve;">This is especially handy for robotics, 3D printers, or projects with multiple displays and sensors.</span></p></li></ul><h3>5. <strong>Learn Board Components</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">The page lists the <strong>ATmega2560 microcontroller</strong>, USB interface chip, oscillator, and regulators.</span></p></li><li><p><span style="white-space-collapse: preserve;">Understanding these helps you know the board’s capabilities and limits (e.g., current per pin, clock speed).</span></p></li></ul><h3>6. <strong>Educational Use</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">Teachers can use the tool to show students how a larger microcontroller board differs from smaller ones.</span></p></li><li><p><span style="white-space-collapse: preserve;">Beginners can visually grasp why the Mega is chosen for bigger projects.</span></p></li></ul><div></div><h2>✅ Why This Tool Stands Out</h2><ul><li><p><span style="white-space-collapse: preserve;">It simplifies working with a board that has <strong>many more pins</strong> than the Uno or Nano.</span></p></li><li><p><span style="white-space-collapse: preserve;">It reduces wiring mistakes in complex builds.</span></p></li><li><p><span style="white-space-collapse: preserve;">It’s a quick reference for advanced communication features (multiple UARTs).</span></p></li></ul><div></div><span style="white-space-collapse: preserve;">👉 In short: treat this Mega 2560 explorer as your </span><strong style="white-space-collapse: preserve;">project planning companion</strong><span style="white-space-collapse: preserve;">. It’s not just a pin map — it’s a way to manage complexity when your project grows beyond what smaller Arduinos can handle.</span><div><span style="white-space-collapse: preserve;"><br /></span></div><div><p><span style="white-space-collapse: preserve;"><strong>Related Web Tools for Other Arduino Boards</strong></span></p><ul><li><p><span style="white-space-collapse: preserve;"><a href="https://www.icexplorer.online/2026/03/arduino-uno.html">Arduino Uno Pinout Explorer</a></span></p></li><li><p><span style="white-space-collapse: preserve;"><a href="https://www.icexplorer.online/2026/03/arduino-nano.html">Arduino Nano Pinout Explorer</a></span></p></li><li><p><span style="white-space-collapse: preserve;"><a href="https://www.icexplorer.online/2026/03/arduino-mega-2560.html">Arduino Mega 2560 Pinout Explorer</a></span></p></li></ul></div>

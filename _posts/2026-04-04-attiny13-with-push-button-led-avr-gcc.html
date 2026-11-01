@@ -1,0 +1,51 @@
+---
+layout: post
+title: "Attiny13 with Push Button & LED - AVR-GCC toolchain (WinAVR)"
+date: 2026-04-04 04:42:00 +0000
+description: "In the previous Attiny13 tutorial it was shown how to make a LED blink (the hello world program). Here in this Attiny13 tutorial, we will turn on and off"
+---
+<div class="separator" style="display: none;"><a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhjFM9dnE9N5BQkfxPclz9jzPg7b1el38LC4dJ_KriHNHUqbxhiy3BRrP4hYgKMzCOZAKZrNVz41754w1A-6Lwq_dXTSYhL-BFoiJMI4HsWWFKsJ6GZAWqSc4YUqEq8-pKq0aJJ0W_32uSWyTFow8eH0KzTA_vybicg8EQ3iTm4pPnTHVs4c35FldBxSOQT/s1600/Gemini_Generated_Image_c1gphkc1gphkc1gp.png" style="display: block; padding: 1em 0px; text-align: center;"><img alt="Attiny13 with Push Button &amp; LED - AVR-GCC toolchain (WinAVR)" border="0" data-original-height="736" data-original-width="1455" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhjFM9dnE9N5BQkfxPclz9jzPg7b1el38LC4dJ_KriHNHUqbxhiy3BRrP4hYgKMzCOZAKZrNVz41754w1A-6Lwq_dXTSYhL-BFoiJMI4HsWWFKsJ6GZAWqSc4YUqEq8-pKq0aJJ0W_32uSWyTFow8eH0KzTA_vybicg8EQ3iTm4pPnTHVs4c35FldBxSOQT/s1600/Gemini_Generated_Image_c1gphkc1gphkc1gp.png" /></a></div>
+<p>In the previous Attiny13 tutorial it was shown how to make a <a href="https://www.icexplorer.online/2026/04/attiny13-led-blink-tutorial-code-pinout.html">LED blink</a>(the hello world program). Here in this Attiny13 tutorial, we will turn on and off a LED connected to the Attiny13 using a push button to demonstrates how it works. The programming language used is&nbsp;<strong>AVR-GCC toolchain</strong> (WinAVR or avr‑gcc) which is more efficient than Arduino language for Attiny13 like microcontroller which has small flash memory(1KB) for program memory.&nbsp;</p><p>Below is the <b>circuit diagram</b>.</p><div class="separator" style="clear: both; text-align: center;"><a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiG-GaDJKFzw6zyEtyp7MVu0GqOW-SMc9_tW6mOKuzA8wgfCxg5SiGG-u2ZLDPMEjYjxaCwFpBRKM3e0OTAJLLqpu4gqwT7gibiHBfUcMAmmQeKogVbu_do5zYL6yhKSBWowbuAihXXTKtWJXXRKGLzNFj0CkTITucciur3HLmtvmgwTy7kAJThHiM5F1fF/s1180/1.gif" style="margin-left: 1em; margin-right: 1em;"><img alt="attiny13 push button with LED circuit diagram" border="0" data-original-height="598" data-original-width="1180" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiG-GaDJKFzw6zyEtyp7MVu0GqOW-SMc9_tW6mOKuzA8wgfCxg5SiGG-u2ZLDPMEjYjxaCwFpBRKM3e0OTAJLLqpu4gqwT7gibiHBfUcMAmmQeKogVbu_do5zYL6yhKSBWowbuAihXXTKtWJXXRKGLzNFj0CkTITucciur3HLmtvmgwTy7kAJThHiM5F1fF/s16000/1.gif" title="attiny13 push button with LED circuit diagram" /></a></div><div><br /></div>As you can see the push button is connected to PB4 and the LED is connected to PB1 pin of Attiny13 microcontroller. We want the LED to turn on and off according to the state of the button. If you unsure about which pin to use, which pin supports digital input/output, which pins supports ADC etc, see the <a href="https://www.icexplorer.online/2026/03/attiny13.html">Attiny13 interactive chip explorer</a>.<div><br /></div><div class="separator" style="clear: both; text-align: center;"><a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjGLF-BxxKnoYfpII8GkVps2LOQekXryX21b4IJzet-aGDWKUtUFwUacM_JpYL9Bg9ti7DLbYMkbzGcSdOGb50wmzoTHQhDHLt02Edys76tmD0tGq7T1mwU1aW_0JH08QQBYTHotX0pdcDC-QAXZM1t2KjkhBghzkCE0bIR9S5m8_3QB9kHBJFd7kzjTFgd/s740/attiny%20explorer.png" style="margin-left: 1em; margin-right: 1em;"><img alt="attiny explorer" border="0" data-original-height="512" data-original-width="740" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjGLF-BxxKnoYfpII8GkVps2LOQekXryX21b4IJzet-aGDWKUtUFwUacM_JpYL9Bg9ti7DLbYMkbzGcSdOGb50wmzoTHQhDHLt02Edys76tmD0tGq7T1mwU1aW_0JH08QQBYTHotX0pdcDC-QAXZM1t2KjkhBghzkCE0bIR9S5m8_3QB9kHBJFd7kzjTFgd/s16000/attiny%20explorer.png" title="attiny explorer" /></a></div><div><div><br /><div><br /></div><div><b>Programming</b></div><div><br /></div><div>Below is program code to control the LED state using the push button.</div><div><br /></div><div><pre lang="cpp">#include &lt;avr/io.h&gt;
+#include &lt;util/delay.h&gt;
+
+#define BUTTON PB4   // push button input
+#define LED    PB1   // LED output
+
+int main(void) {
+    // Configure PB1 as output (LED)
+    DDRB |= (1&lt;&lt;LED);
+
+    // Configure PB4 as input with internal pull-up
+    DDRB &amp;= ~(1&lt;&lt;BUTTON);
+    PORTB |= (1&lt;&lt;BUTTON);   // enable pull-up
+
+    while (1) {
+        // Button pressed? (PB4 goes LOW)
+        if (!(PINB &amp; (1&lt;&lt;BUTTON))) {
+            PORTB |= (1&lt;&lt;LED);   // LED ON
+        } else {
+            PORTB &amp;= ~(1&lt;&lt;LED);  // LED OFF
+        }
+    }
+}
+<code></code></pre></div><div><p><span style="white-space-collapse: preserve;">Let’s break down the simple <strong>button + LED code</strong> line by line so you see exactly what’s happening:</span></p><div><div><div></div></div><div class="rounded-b-xl bg-background-static-850 px-4 pb-1.5 dark:bg-background-static-900"><div style="white-space: pre;"><pre lang="cpp"><code>#include &lt;avr/io.h&gt;
+#include &lt;util/delay.h&gt;
+
+#define BUTTON PB4   // push button input
+#define LED    PB1   // LED output
+</code></pre></div></div></div><ul><li><p><span style="white-space-collapse: preserve;">These #definegive names to the pins.</span></p></li><li><p><span style="white-space-collapse: preserve;">PB4 is the push button input, PB1 i</span><span style="white-space-collapse: preserve;">s the LED output.</span></p></li></ul><div><div><div></div></div><div class="rounded-b-xl bg-background-static-850 px-4 pb-1.5 dark:bg-background-static-900"><div style="white-space: pre;"><pre lang="cpp"><code>int main(void) {
+    // Configure PB1 as output (LED)
+    DDRB |= (1&lt;&lt;LED);
+</code></pre></div></div></div><ul><li><p><span style="white-space-collapse: preserve;">DDRB is the Data Direction Register for port B.</span></p></li><li><p><span style="white-space-collapse: preserve;">Setting bit LED (PB1) to 1 makes PB1 an <strong>output pin</strong> (so it can drive the LED).</span></p></li></ul><div><div><div></div></div><div class="rounded-b-xl bg-background-static-850 px-4 pb-1.5 dark:bg-background-static-900"><div style="white-space: pre;"><pre lang="cpp"><code>    // Configure PB4 as input with internal pull-up
+    DDRB &amp;= ~(1&lt;&lt;BUTTON);
+    PORTB |= (1&lt;&lt;BUTTON);   // enable pull-up
+</code></pre></div></div></div><ul><li><p><span style="white-space-collapse: preserve;">Clearing bit BUTTON(PB4) in DDRB makes PB4 an <strong>input pin</strong>.</span></p></li><li><p><span style="white-space-collapse: preserve;">Setting the same bit in PORTB enables the <strong>internal pull‑up resistor</strong>.</span></p></li><li><p><span style="white-space-collapse: preserve;">That means PB4 will read HIGH normally, and when the button is pressed (wired to GND), PB4 will read LOW.</span></p></li></ul><div><div><div></div></div><div class="rounded-b-xl bg-background-static-850 px-4 pb-1.5 dark:bg-background-static-900"><div style="white-space: pre;"><pre lang="cpp"><code>    while (1) {
+        // Button pressed? (PB4 goes LOW)
+        if (!(PINB &amp; (1&lt;&lt;BUTTON))) {
+            PORTB |= (1&lt;&lt;LED);   // LED ON
+        } else {
+            PORTB &amp;= ~(1&lt;&lt;LED);  // LED OFF
+        }
+    }
+}
+</code></pre></div></div></div><ul><li><p><span style="white-space-collapse: preserve;">PINB is the input register for port B.</span></p></li><li><p><span style="white-space-collapse: preserve;">PINB &amp; (1&lt;&lt;BUTTON) checks the state of PB4.</span></p></li><li><p><span style="white-space-collapse: preserve;">!(...) means “if PB4 is LOW” → button pressed.</span></p></li><li><p><span style="white-space-collapse: preserve;">If pressed, set PB1 HIGH → LED ON.</span></p></li><li><p><span style="white-space-collapse: preserve;">If not pressed, clear PB1 → LED OFF.</span></p></li><li><p><span style="white-space-collapse: preserve;">The loop runs forever, constantly checking the button.</span></p></li></ul><div></div><h3>⚙️ Behavior</h3><ul><li><p><span style="white-space-collapse: preserve;">Button released → PB4 HIGH → LED OFF.</span></p></li><li><p><span style="white-space-collapse: preserve;">Button pressed → PB4 LOW → LED ON.</span></p></li></ul><div></div><p><span style="white-space-collapse: preserve;">Video demonstration is below.</span></p><p></p><div class="separator" style="clear: both; text-align: center;"><iframe allowfullscreen="" class="BLOG_video_class" height="475" src="https://www.youtube.com/embed/OrTvsGpA_ng" width="571" youtube-src-id="OrTvsGpA_ng"></iframe></div><p></p><p><span style="white-space-collapse: preserve;">👉 This is the simplest way to verify your wiring: press the button, LED lights up; release, LED turns off. Once you have learned this, it is very easy to extend this logic, like using a buzzer instead of LED or control anything other than just a LED or buzzer.</span></p><p><br /></p></div></div></div>

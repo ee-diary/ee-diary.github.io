@@ -1,0 +1,757 @@
+---
+layout: post
+title: "Raspberry Pi 3"
+date: 2026-03-26 21:13:00 +0000
+description: "Raspberry Pi 3: interactive pinout explorer with pin functions, design files and datasheet."
+---
+<!--════════════════════════════════════════════════════════
+     RASPBERRY PI 3 PINOUT EXPLORER — adapted from Arduino Uno Explorer
+     ════════════════════════════════════════════════════════-->
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+.rpi-widget{all:initial;display:block;font-family:'Share Tech Mono','Courier New',monospace;color:#d0d0d0;background:#0D1117;border-radius:12px;padding:10px;max-width:980px;margin:0 auto;box-sizing:border-box;position:relative;}
+.rpi-widget *{box-sizing:border-box;}
+.rpi-widget a,.rpi-widget button{all:unset;}
+.rpi-hdr{display:flex;align-items:center;justify-content:space-between;background:#0D1117;border:1px solid #3c3c3c;border-radius:10px;padding:9px 14px;margin-bottom:10px;position:relative;overflow:hidden;}
+.rpi-hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#c0392b,#e74c3c,transparent);}
+.rpi-hdr-logo{display:flex;align-items:center;gap:10px;}
+.rpi-logo-svg{width:28px;height:28px;flex-shrink:0;color:#c0392b;}
+.rpi-hdr-title{font-family:'Orbitron','Arial Black',sans-serif;font-size:15px;font-weight:900;color:#d4d4d4;letter-spacing:.12em;display:block;}
+.rpi-hdr-sub{font-size:13px;color:#888;margin-top:2px;display:block;}
+.rpi-pulse{width:7px;height:7px;border-radius:50%;background:#c0392b;box-shadow:0 0 8px #c0392b;animation:rpiPulse 2s infinite;flex-shrink:0;}
+@keyframes rpiPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.rpi-main{display:flex;gap:10px;align-items:flex-start;}
+.rpi-board-wrap{flex:0 0 auto;width:380px;background:#0D1117;border:1px solid #2d2d2d;border-radius:10px;padding:8px;position:relative;}
+.rpi-board-wrap svg{width:100%;height:auto;display:block;touch-action:manipulation;}
+.rpi-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;}
+.rpi-detail{background:#0D1117;border:1px solid #3c3c3c;border-radius:10px;overflow:hidden;}
+.rpi-detail-empty{padding:28px 20px;text-align:center;color:#888;}
+.rpi-detail-empty .rpiArrow{font-size:28px;margin-bottom:10px;display:block;animation:rpiArrow 1.8s infinite;}
+@keyframes rpiArrow{0%,100%{opacity:.3;transform:translateX(-4px);}50%{opacity:.9;transform:translateX(4px);}}
+.rpi-detail-empty p{font-size:13px;line-height:1.6;color:#aaa;margin:0;}
+.rpi-detail-content{display:none;}
+.rpi-detail-content.show{display:block;}
+.rpi-det-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #2d2d2d;}
+.rpi-det-badge{width:56px;height:56px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;border:2px solid;font-family:'Share Tech Mono',monospace;}
+.rpi-det-name{flex:1;}
+.rpi-det-pinid{font-family:'Orbitron','Arial Black',sans-serif;font-size:20px;font-weight:900;line-height:1;color:#d4d4d4;display:block;}
+.rpi-det-fullname{font-size:13px;color:#6a6a6a;margin-top:3px;letter-spacing:.05em;display:block;}
+.rpi-funcs{display:flex;flex-wrap:wrap;gap:5px;padding:8px 14px;border-bottom:1px solid #2d2d2d;}
+.rpi-func-chip{padding:5px 12px;border-radius:4px;font-size:13px;font-weight:700;border:1px solid;letter-spacing:.06em;display:inline-block;}
+.rpi-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.rpi-info-cell{padding:8px 14px;border-bottom:1px solid #2d2d2d;border-right:1px solid #2d2d2d;}
+.rpi-info-cell:nth-child(2n){border-right:none;}
+.rpi-info-cell:nth-last-child(-n+2){border-bottom:none;}
+.rpi-info-label{font-size:11px;color:#6a6a6a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;display:block;}
+.rpi-info-value{font-size:14px;color:#d4d4d4;font-weight:700;display:block;}
+.rpi-alt-section{padding:8px 14px;border-top:1px solid #2d2d2d;}
+.rpi-alt-label{font-size:11px;color:#6a6a6a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;display:block;}
+.rpi-alt-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.rpi-alt-chip{padding:4px 10px;border-radius:3px;font-size:13px;background:#2d2d2d;border:1px solid #3c3c3c;color:#9cdcfe;display:inline-block;}
+.rpi-note{padding:10px 14px;border-top:1px solid #2d2d2d;font-size:13px;color:#6a9fb5;line-height:1.6;background:#0D1117;}
+.rpi-note-icon{color:#c0392b;margin-right:4px;}
+.rpi-filter-section{background:#0D1117;border:1px solid #3c3c3c;border-radius:10px;overflow:hidden;padding:10px 10px 0;}
+.rpi-filter-header-title{font-size:11px;color:#6a6a6a;letter-spacing:.1em;text-transform:uppercase;font-family:'Share Tech Mono',monospace;display:block;margin-bottom:8px;}
+.rpi-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.rpi-panel-box{border:1px solid #c0392b;border-radius:6px;padding:8px;background:#1a1a1e;}
+.rpi-panel-label{font-size:10px;color:#c0392b;letter-spacing:.12em;text-transform:uppercase;font-family:'Share Tech Mono',monospace;margin-bottom:8px;display:block;font-weight:700;}
+.rpi-fbtn{display:flex;align-items:center;justify-content:center;height:34px;width:100%;padding:0 4px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.08em;font-family:'Share Tech Mono',monospace;cursor:pointer;user-select:none;outline:none;border:1px solid rgba(255,255,255,0.22);transition:background .12s,border-color .12s,box-shadow .12s,transform .08s;box-shadow:0 2px 4px rgba(0,0,0,0.5);}
+.rpi-fbtn:hover{background:rgba(255,255,255,0.14) !important;border-color:rgba(255,255,255,0.5) !important;}
+.rpi-fbtn.active{border-color:currentColor !important;box-shadow:0 0 8px currentColor,0 1px 3px rgba(0,0,0,0.7) inset;transform:translateY(1px);}
+.rpi-pinlist{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+.rpi-pinlist.open{max-height:460px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#3c3c3c transparent;}
+.rpi-pinlist::-webkit-scrollbar{width:3px;}
+.rpi-pinlist::-webkit-scrollbar-thumb{background:#3c3c3c;}
+.rpi-prow{display:flex;align-items:center;gap:7px;padding:6px 10px;cursor:pointer;border-bottom:1px solid rgba(60,60,60,.5);}
+.rpi-prow:hover{background:rgba(255,255,255,.04);}
+.rpi-prow.on{background:rgba(192,57,43,.12);border-left:2px solid #c0392b;padding-left:8px;}
+.rpi-pbadge{min-width:44px;height:26px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.rpi-pname{font-size:13px;flex:1;color:#9d9d9d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rpi-ptag{padding:3px 7px;border-radius:2px;font-size:11px;font-weight:700;flex-shrink:0;display:inline-block;}
+.rpi-list-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;cursor:pointer;background:#0D1117;border-top:1px solid #2d2d2d;}
+.rpi-list-toggle:hover{background:#2a2d2e;}
+.rpi-list-toggle span{font-size:13px;color:#888;}
+.rpi-list-toggle b{color:#c0392b;}
+.rpi-legend{display:flex;flex-wrap:wrap;gap:5px;padding:7px 14px;border-top:1px solid #2d2d2d;background:#0D1117;}
+.rpi-leg{display:flex;align-items:center;gap:4px;font-size:12px;color:#888;}
+.rpi-ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0;display:inline-block;}
+.rpi-tt{position:fixed;background:#0D1117;border:1px solid #3c3c3c;border-radius:8px;padding:9px 13px;font-size:13px;pointer-events:none;z-index:99999;display:none;min-width:180px;max-width:280px;box-shadow:0 4px 24px rgba(0,0,0,.8);font-family:'Share Tech Mono',monospace;color:#d4d4d4;}
+.rpi-tt.show{display:block;}
+.rpi-tt .ttn{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:900;margin-bottom:4px;display:block;}
+.rpi-tt .ttnote{color:#6a9fb5;font-size:12px;line-height:1.5;display:block;}
+@media(max-width:640px){
+  .rpi-main{flex-direction:column;}
+  .rpi-board-wrap{width:100%;}
+  .rpi-detail-empty .rpiArrow{transform:rotate(90deg);display:inline-block;}
+}
+</style>
+
+<div class="rpi-widget" id="rpiWidget">
+  <div class="rpi-hdr">
+    <div class="rpi-hdr-logo">
+      <!--Raspberry Pi logo SVG-->
+      <svg class="rpi-logo-svg" fill="currentColor" viewbox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+        <path d="M25 3 C18 3 13 8 13 15 C13 17 13.6 18.8 14.5 20.3 C12.2 21.5 10 24 10 27.5 C10 31 12.5 34 16 35.2 L16 40 C16 43.3 18.7 46 22 46 L28 46 C31.3 46 34 43.3 34 40 L34 35.2 C37.5 34 40 31 40 27.5 C40 24 37.8 21.5 35.5 20.3 C36.4 18.8 37 17 37 15 C37 8 32 3 25 3 Z">
+      </path></svg>
+      <div>
+        <span class="rpi-hdr-title">RASPBERRY PI 3</span>
+        <span class="rpi-hdr-sub">Interactive GPIO Pinout · Click any pin for details</span>
+      </div>
+    </div>
+    <div class="rpi-pulse"></div>
+  </div>
+
+  <div class="rpi-main">
+    <div class="rpi-board-wrap">
+      <svg id="rpiSVG" viewbox="0 -13 413 636" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <div class="rpi-right">
+      <div class="rpi-detail" id="rpiDetail">
+        <div class="rpi-detail-empty" id="rpiEmpty">
+          <span class="rpiArrow">←</span>
+          <p>Click any pin on the board<br />to see its full details here</p>
+        </div>
+        <div class="rpi-detail-content" id="rpiDetailContent">
+          <div class="rpi-det-bar">
+            <div class="rpi-det-badge" id="rpiDetBadge"></div>
+            <div class="rpi-det-name">
+              <span class="rpi-det-pinid" id="rpiDetId"></span>
+              <span class="rpi-det-fullname" id="rpiDetFull"></span>
+            </div>
+          </div>
+          <div class="rpi-funcs" id="rpiFuncs"></div>
+          <div class="rpi-info-grid" id="rpiInfoGrid"></div>
+          <div class="rpi-alt-section" id="rpiAltSection">
+            <span class="rpi-alt-label">Alternative Functions / Notes</span>
+            <div class="rpi-alt-chips" id="rpiAltChips"></div>
+          </div>
+          <div class="rpi-note" id="rpiNote"></div>
+        </div>
+      </div>
+
+      <div class="rpi-filter-section">
+        <div class="rpi-panel-box">
+          <span class="rpi-panel-label">◆ Highlight Pins</span>
+          <div class="rpi-btns" id="rpiBtns"></div>
+        </div>
+        <div class="rpi-list-toggle" onclick="rpiToggleList()">
+          <span>PIN LIST &nbsp;<b id="rpiListCnt"></b></span>
+          <span id="rpiToggleIcon" style="color: #c0392b;">▼ SHOW</span>
+        </div>
+        <div class="rpi-pinlist" id="rpiPinList">
+          <div id="rpiRows"></div>
+        </div>
+        <div class="rpi-legend" id="rpiLegend"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="rpi-tt" id="rpiTT"></div>
+
+<script>
+//<![CDATA[
+(function(){
+'use strict';
+
+var NS='http://www.w3.org/2000/svg';
+var svg=document.getElementById('rpiSVG');
+
+function mk(tag,attrs){
+  var el=document.createElementNS(NS,tag);
+  for(var k in attrs) el.setAttribute(k,attrs[k]);
+  return el;
+}
+function txt(str,attrs){
+  var el=mk('text',attrs);
+  el.textContent=str;
+  return el;
+}
+function app(parent,child){parent.appendChild(child);return child;}
+
+/* ── DEFS ── */
+var defs=app(svg,mk('defs',{}));
+
+function linGrad(id,x1,y1,x2,y2,stops){
+  var g=mk('linearGradient',{id:id,x1:x1,y1:y1,x2:x2,y2:y2});
+  stops.forEach(function(s){
+    var st=mk('stop',{offset:s[0]});
+    st.setAttribute('stop-color',s[1]);
+    g.appendChild(st);
+  });
+  defs.appendChild(g);
+}
+linGrad('rpiPcbG','0','0','1','1',[['0%','#1a3a1a'],['50%','#122d12'],['100%','#0c1e0c']]);
+linGrad('rpiChipG','0','0','1','1',[['0%','#1e1e1e'],['100%','#080808']]);
+linGrad('rpiSilvG','0','0','0','1',[['0%','#d8d8d8'],['50%','#a8a8a8'],['100%','#787878']]);
+linGrad('rpiUsbG','0','0','1','0',[['0%','#e8e8e8'],['30%','#ffffff'],['60%','#d0d0d0'],['100%','#b8b8b8']]);
+linGrad('rpiMetalV','0','0','0','1',[['0%','#e8e8e8'],['30%','#ffffff'],['60%','#d0d0d0'],['100%','#b8b8b8']]);
+
+var pat=mk('pattern',{id:'rpiDots',width:'18',height:'18',patternUnits:'userSpaceOnUse'});
+app(pat,mk('circle',{cx:'9',cy:'9',r:'0.6',fill:'rgba(100,200,100,0.10)'}));
+defs.appendChild(pat);
+
+var filt=mk('filter',{id:'rpiPinGlow',x:'-50%',y:'-50%',width:'200%',height:'200%'});
+var fgb=mk('feGaussianBlur',{stdDeviation:'4',result:'blur'});
+filt.appendChild(fgb);
+var fm=mk('feMerge',{});
+app(fm,mk('feMergeNode',{in:'blur'}));
+app(fm,mk('feMergeNode',{in:'SourceGraphic'}));
+filt.appendChild(fm);
+defs.appendChild(filt);
+
+/* ── BOARD BODY ── */
+app(svg,mk('rect',{x:'0',y:'0',width:'400',height:'600',rx:'14',fill:'url(#rpiPcbG)',stroke:'#0a1f0a','stroke-width':'2'}));
+app(svg,mk('rect',{x:'0',y:'0',width:'400',height:'600',rx:'14',fill:'url(#rpiDots)'}));
+app(svg,mk('rect',{x:'1',y:'1',width:'398',height:'598',rx:'13',fill:'none',stroke:'rgba(100,220,100,0.10)','stroke-width':'1'}));
+
+/* ── Mounting holes ── */
+[{cx:20,cy:100},{cx:378,cy:100},{cx:22,cy:576},{cx:378,cy:578}].forEach(function(h){
+  app(svg,mk('circle',{cx:h.cx,cy:h.cy,r:'14',fill:'none',stroke:'#f0c020','stroke-width':'7'}));
+  app(svg,mk('circle',{cx:h.cx,cy:h.cy,r:'9',fill:'#0a1f0a',stroke:'#0d2f0d','stroke-width':'1.5'}));
+  app(svg,mk('circle',{cx:h.cx,cy:h.cy,r:'4.5',fill:'#061206'}));
+});
+
+/* ── USB ports (2x USB-A — clearly separate housings with gap) ── */
+app(svg,mk('rect',{x:'20',y:'-21',width:'98',height:'86',rx:'3',fill:'url(#rpiUsbG)',stroke:'#aaa','stroke-width':'2'}));
+app(svg,mk('rect',{x:'23',y:'-18',width:'92',height:'80',rx:'2',fill:'url(#rpiMetalV)'}));
+app(svg,txt('USB1',{fill:'#333','font-family':'monospace','font-size':'6','text-anchor':'middle',x:'69',y:'59'}));
+
+app(svg,mk('rect',{x:'154',y:'-21',width:'98',height:'86',rx:'3',fill:'url(#rpiUsbG)',stroke:'#aaa','stroke-width':'2'}));
+app(svg,mk('rect',{x:'157',y:'-18',width:'92',height:'80',rx:'2',fill:'url(#rpiMetalV)'}));
+app(svg,txt('USB2',{fill:'#333','font-family':'monospace','font-size':'6','text-anchor':'middle',x:'203',y:'59'}));
+
+/* ── Ethernet port ── */
+app(svg,mk('rect',{x:'282',y:'-21',width:'108',height:'100',rx:'3',fill:'url(#rpiUsbG)',stroke:'#aaa','stroke-width':'1.5'}));
+app(svg,mk('rect',{x:'285',y:'-18',width:'102',height:'94',rx:'2',fill:'url(#rpiMetalV)'}));
+app(svg,txt('ETH',{fill:'#333','font-family':'monospace','font-size':'8','text-anchor':'middle',x:'336',y:'25'}));
+app(svg,txt('100M',{fill:'#555','font-family':'monospace','font-size':'6','text-anchor':'middle',x:'336',y:'37'}));
+
+/* ── 3.5mm 4-pole AV jack — right edge ── */
+/* wide black plastic body protruding from board edge */
+app(svg,mk('rect',{x:'314',y:'144',width:'101',height:'40',rx:'4',fill:'#111',stroke:'#333','stroke-width':'1.5'}));
+/* top/bottom lips of plastic housing */
+app(svg,mk('rect',{x:'316',y:'144',width:'97',height:'5',rx:'2',fill:'#1a1a1a',stroke:'#2a2a2a','stroke-width':'1'}));
+app(svg,mk('rect',{x:'316',y:'179',width:'97',height:'5',rx:'2',fill:'#1a1a1a',stroke:'#2a2a2a','stroke-width':'1'}));
+/* front face plate */
+app(svg,mk('rect',{x:'408',y:'146',width:'7',height:'36',rx:'2',fill:'#222',stroke:'#444','stroke-width':'1'}));
+/* PCB solder pins poking left from body */
+[152,160,168,176].forEach(function(y){
+  app(svg,mk('rect',{x:'308',y:y,width:'8',height:'2',rx:'0.5',fill:'#c8a040',stroke:'#a08030','stroke-width':'0.3'}));
+});
+/* surface texture lines on body */
+app(svg,mk('line',{x1:'316',y1:'154',x2:'408',y2:'154',stroke:'#1e1e1e','stroke-width':'0.8'}));
+app(svg,mk('line',{x1:'316',y1:'174',x2:'408',y2:'174',stroke:'#1e1e1e','stroke-width':'0.8'}));
+/* label */
+app(svg,txt('AV',{fill:'rgba(100,200,100,0.5)','font-family':'monospace','font-size':'6','text-anchor':'end',x:'311',y:'161'}));
+app(svg,txt('3.5',{fill:'rgba(100,200,100,0.35)','font-family':'monospace','font-size':'5','text-anchor':'end',x:'311',y:'169'}));
+
+
+/* ── CSI Camera connector — below AV jack, right edge ── */
+/* main white plastic FPC connector body */
+app(svg,mk('rect',{x:'280',y:'220',width:'120',height:'36',rx:'3',fill:'#e8e8e0',stroke:'#aaa','stroke-width':'1.5'}));
+/* flip-lock actuator bar (darker top strip) */
+app(svg,mk('rect',{x:'280',y:'220',width:'120',height:'11',rx:'3',fill:'#c8c8c0',stroke:'#999','stroke-width':'1.2'}));
+/* actuator hinge line */
+app(svg,mk('line',{x1:'280',y1:'231',x2:'400',y2:'231',stroke:'#aaa','stroke-width':'1'}));
+/* black background for pin area */
+app(svg,mk('rect',{x:'283',y:'232',width:'114',height:'20',rx:'1',fill:'#111'}));
+/* FPC contact fingers — 15 silver pins on black */
+(function(){for(var i=0;i<15;i++){app(svg,mk('rect',{x:288+i*7,y:'234',width:'4',height:'16',rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#aaa','stroke-width':'0.4'}));}})();
+/* right edge retention wall */
+app(svg,mk('rect',{x:'397',y:'220',width:'3',height:'36',rx:'1',fill:'#bbb',stroke:'#999','stroke-width':'1'}));
+/* left edge retention wall */
+app(svg,mk('rect',{x:'280',y:'220',width:'3',height:'36',rx:'1',fill:'#bbb',stroke:'#999','stroke-width':'1'}));
+/* PCB mounting pins */
+app(svg,mk('rect',{x:'282',y:'256',width:'6',height:'7',rx:'0.8',fill:'#c8a040',stroke:'#a08030','stroke-width':'0.6'}));
+app(svg,mk('rect',{x:'392',y:'256',width:'6',height:'7',rx:'0.8',fill:'#c8a040',stroke:'#a08030','stroke-width':'0.6'}));
+/* lock tab indicators on actuator */
+app(svg,mk('rect',{x:'286',y:'221',width:'14',height:'8',rx:'1.5',fill:'#b0b0a8',stroke:'#888','stroke-width':'0.8'}));
+app(svg,mk('rect',{x:'380',y:'221',width:'14',height:'8',rx:'1.5',fill:'#b0b0a8',stroke:'#888','stroke-width':'0.8'}));
+/* centre label on actuator */
+app(svg,txt('CSI CAMERA',{fill:'#888','font-family':'monospace','font-size':'7','font-weight':'bold','text-anchor':'middle',x:'340',y:'229'}));
+/* label outside */
+app(svg,txt('CSI',{fill:'rgba(100,200,100,0.5)','font-family':'monospace','font-size':'6','text-anchor':'end',x:'277',y:'234'}));
+app(svg,txt('CAM',{fill:'rgba(100,200,100,0.35)','font-family':'monospace','font-size':'5','text-anchor':'end',x:'277',y:'243'}));
+
+
+app(svg,mk('rect',{x:'345',y:'308',width:'78',height:'83',rx:'3',fill:'url(#rpiUsbG)',stroke:'#aaa','stroke-width':'1.5'}));
+app(svg,mk('rect',{x:'347',y:'311',width:'74',height:'77',rx:'2',fill:'url(#rpiMetalV)'}));
+app(svg,txt('HDMI',{fill:'#333','font-family':'monospace','font-size':'7','text-anchor':'middle',x:'384',y:'353'}));
+/* silk screen HDMI label — rotated 90°, left side of port */
+app(svg,txt('HDMI',{fill:'rgba(180,255,180,0.55)','font-family':'Georgia,serif','font-size':'11','font-style':'italic','font-weight':'bold','text-anchor':'middle','letter-spacing':'2',transform:'rotate(-90,336,349)',x:'336',y:'349'}));
+
+/* ── Mini-USB power — right edge ── */
+/* outer metal shell */
+app(svg,mk('rect',{x:'374',y:'492',width:'32',height:'42',rx:'3',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'1.5'}));
+/* trapezoidal port opening using polygon - wider at top, narrower at bottom */
+app(svg,mk('polygon',{points:'378,496 402,496 404,530 376,530',fill:'#111',stroke:'#555','stroke-width':'1'}));
+/* inner dark recess */
+app(svg,mk('polygon',{points:'380,499 400,499 402,527 378,527',fill:'#0a0a0a'}));
+/* 5 mini-USB pins — horizontal */
+[0,1,2,3,4].forEach(function(i){
+  app(svg,mk('rect',{x:'383',y:503+i*4,width:'10',height:'2.5',rx:'0.5',fill:'#c8a040',stroke:'#a08030','stroke-width':'0.3'}));
+});
+/* strain relief ridge lines on shell */
+app(svg,mk('line',{x1:'374',y1:'502',x2:'374',y2:'526',stroke:'#aaa','stroke-width':'0.8'}));
+app(svg,mk('line',{x1:'406',y1:'502',x2:'406',y2:'526',stroke:'#666','stroke-width':'0.8'}));
+/* shell mounting tabs */
+app(svg,mk('rect',{x:'376',y:'488',width:'14',height:'5',rx:'1',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'1'}));
+app(svg,mk('rect',{x:'376',y:'533',width:'14',height:'5',rx:'1',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'1'}));
+/* label */
+app(svg,txt('PWR',{fill:'rgba(100,200,100,0.5)','font-family':'monospace','font-size':'6','text-anchor':'end',x:'371',y:'516'}));
+app(svg,txt('Mini',{fill:'rgba(100,200,100,0.35)','font-family':'monospace','font-size':'5','text-anchor':'end',x:'371',y:'524'}));
+
+/* ── MicroSD (bottom) — FPC style ── */
+/* main white plastic body */
+app(svg,mk('rect',{x:'140',y:'572',width:'120',height:'36',rx:'3',fill:'#e8e8e0',stroke:'#aaa','stroke-width':'1.5'}));
+/* flip-lock actuator bar (left strip) */
+app(svg,mk('rect',{x:'140',y:'572',width:'12',height:'36',rx:'3',fill:'#c8c8c0',stroke:'#999','stroke-width':'1.2'}));
+/* actuator hinge line */
+app(svg,mk('line',{x1:'152',y1:'572',x2:'152',y2:'608',stroke:'#aaa','stroke-width':'1'}));
+/* black background for pin area */
+app(svg,mk('rect',{x:'153',y:'575',width:'103',height:'30',rx:'1',fill:'#111'}));
+/* silver pins — 13 pins */
+(function(){for(var i=0;i<13;i++){app(svg,mk('rect',{x:157+i*7.5,y:'578',width:'4',height:'22',rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#aaa','stroke-width':'0.4'}));}})();
+/* right edge retention wall */
+app(svg,mk('rect',{x:'256',y:'572',width:'4',height:'36',rx:'1',fill:'#bbb',stroke:'#999','stroke-width':'1'}));
+/* PCB mounting tabs top */
+app(svg,mk('rect',{x:'147',y:'564',width:'8',height:'9',rx:'0.8',fill:'#c8a040',stroke:'#a08030','stroke-width':'0.6'}));
+app(svg,mk('rect',{x:'245',y:'564',width:'8',height:'9',rx:'0.8',fill:'#c8a040',stroke:'#a08030','stroke-width':'0.6'}));
+/* lock tab on actuator */
+app(svg,mk('rect',{x:'142',y:'580',width:'7',height:'16',rx:'1.5',fill:'#b0b0a8',stroke:'#888','stroke-width':'0.8'}));
+/* label on actuator */
+app(svg,txt('μSD',{fill:'#888','font-family':'monospace','font-size':'6','font-weight':'bold','text-anchor':'middle',x:'146',y:'592'}));
+/* label outside */
+app(svg,txt('microSD',{fill:'rgba(180,180,180,0.6)','font-family':'monospace','font-size':'11','text-anchor':'middle',x:'200',y:'568'}));
+
+/* ── SMD passives — area between BCM2837, HDMI, PWR, microSD ── */
+function smdR(x,y,w,h){
+  app(svg,mk('rect',{x:x,y:y,width:h*0.7,height:h,rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.3'}));
+  app(svg,mk('rect',{x:x+w-h*0.7,y:y,width:h*0.7,height:h,rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.3'}));
+  app(svg,mk('rect',{x:x+h*0.6,y:y,width:w-h*1.2,height:h,rx:'0.8',fill:'#2a2010',stroke:'#1a1508','stroke-width':'0.4'}));
+  app(svg,mk('rect',{x:x+h*0.6+2,y:y+1,width:Math.max(2,w-h*1.2-4),height:1,rx:'0.3',fill:'rgba(255,200,80,0.5)'}));
+}
+function smdC(x,y,w,h){
+  app(svg,mk('rect',{x:x,y:y,width:h*0.7,height:h,rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.3'}));
+  app(svg,mk('rect',{x:x+w-h*0.7,y:y,width:h*0.7,height:h,rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.3'}));
+  app(svg,mk('rect',{x:x+h*0.6,y:y,width:w-h*1.2,height:h,rx:'0.8',fill:'#c8a040',stroke:'#a08020','stroke-width':'0.4'}));
+}
+function smdRv(x,y,w,h){
+  app(svg,mk('rect',{x:x,y:y,width:w,height:w*0.7,rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.3'}));
+  app(svg,mk('rect',{x:x,y:y+h-w*0.7,width:w,height:w*0.7,rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.3'}));
+  app(svg,mk('rect',{x:x,y:y+w*0.6,width:w,height:h-w*1.2,rx:'0.8',fill:'#2a2010',stroke:'#1a1508','stroke-width':'0.4'}));
+  app(svg,mk('rect',{x:x+1,y:y+w*0.6+2,width:1,height:Math.max(2,h-w*1.2-4),rx:'0.3',fill:'rgba(255,200,80,0.5)'}));
+}
+function smdCv(x,y,w,h){
+  app(svg,mk('rect',{x:x,y:y,width:w,height:w*0.7,rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.3'}));
+  app(svg,mk('rect',{x:x,y:y+h-w*0.7,width:w,height:w*0.7,rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.3'}));
+  app(svg,mk('rect',{x:x,y:y+w*0.6,width:w,height:h-w*1.2,rx:'0.8',fill:'#c8a040',stroke:'#a08020','stroke-width':'0.4'}));
+}
+
+/* 22 components, randomly scattered, mix of orientations and sizes */
+smdR(260,405,18,7);    smdR(318,408,10,5);
+smdRv(345,403,6,10);   smdR(292,432,18,7);
+smdCv(325,426,6,10);   smdC(266,455,10,5);
+smdRv(285,452,6,10);   smdR(308,457,14,6);
+smdCv(363,451,6,10);   smdR(260,480,14,6);
+smdC(305,481,10,5);    smdRv(330,478,6,10);
+smdC(263,507,18,7);    smdCv(320,502,6,10);
+smdRv(340,505,6,10);   smdRv(262,530,6,10);
+smdR(278,533,18,7);    smdCv(310,529,6,10);
+smdC(328,532,14,6);    smdR(355,534,10,5);
+smdCv(263,556,6,10);   smdR(283,557,14,6);
+
+/* ── SMDs between BCM2837 and microSD ── */
+smdR(155,520,14,6);    smdCv(190,517,6,10);
+
+
+app(svg,mk('rect',{x:'130',y:'380',width:'120',height:'120',rx:'5',fill:'url(#rpiChipG)',stroke:'#1a2a1a','stroke-width':'2'}));
+app(svg,mk('rect',{x:'133',y:'383',width:'114',height:'114',rx:'3',fill:'none',stroke:'#1a1a1a','stroke-width':'1','stroke-dasharray':'4,4'}));
+app(svg,mk('circle',{cx:'138',cy:'388',r:'3',fill:'#1a3a1a'}));
+app(svg,txt('BCM2837',{fill:'rgba(255,255,255,0.85)','font-family':'monospace','font-size':'12','font-weight':'bold','text-anchor':'middle',x:'190',y:'435'}));
+app(svg,txt('BROADCOM',{fill:'rgba(255,255,255,0.65)','font-family':'monospace','font-size':'9','text-anchor':'middle',x:'190',y:'449'}));
+app(svg,txt('1.2GHz',{fill:'rgba(255,255,255,0.55)','font-family':'monospace','font-size':'8','text-anchor':'middle',x:'190',y:'462'}));
+app(svg,txt('Quad-Core',{fill:'rgba(255,255,255,0.45)','font-family':'monospace','font-size':'7','text-anchor':'middle',x:'190',y:'474'}));
+
+
+/* ── WiFi/BT chip ── */
+app(svg,mk('rect',{x:'125',y:'80',width:'80',height:'80',rx:'3',fill:'url(#rpiChipG)',stroke:'#1e2e1e','stroke-width':'1.5'}));
+app(svg,txt('BCM43438',{fill:'rgba(255,255,255,0.85)','font-family':'monospace','font-size':'8','font-weight':'bold','text-anchor':'middle',x:'165',y:'108'}));
+app(svg,txt('WiFi/BT',{fill:'rgba(255,255,255,0.65)','font-family':'monospace','font-size':'7','text-anchor':'middle',x:'165',y:'120'}));
+app(svg,txt('4.1',{fill:'rgba(255,255,255,0.50)','font-family':'monospace','font-size':'7','text-anchor':'middle',x:'165',y:'132'}));
+
+/* ── SMD passives around BCM43438 (chip: x:125-205, y:75-155) ── */
+/* below chip */
+smdC(130,188,18,7);   smdR(170,189,14,6);
+smdCv(196,186,6,10);  smdR(212,188,10,5);
+/* right of chip */
+smdR(212,87,10,5);    smdCv(228,85,6,10);   smdR(212,115,14,6);
+smdRv(228,112,6,10);  smdC(212,135,18,7);
+
+/* ── SOT-223 voltage regulators (3-terminal) ── */
+/* VReg 1 — near top-left of BCM43438, x:60, y:80 */
+/* tab / heatsink pad */
+app(svg,mk('rect',{x:'60',y:'82',width:'22',height:'16',rx:'1',fill:'#1a1a1a',stroke:'#444','stroke-width':'1'}));
+/* body */
+app(svg,mk('rect',{x:'62',y:'84',width:'18',height:'12',rx:'1',fill:'#2a2a2a',stroke:'#555','stroke-width':'0.8'}));
+/* 3 leads on bottom */
+[65,71,77].forEach(function(lx){
+  app(svg,mk('rect',{x:lx,y:'98',width:'4',height:'6',rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.4'}));
+});
+/* tab lead on top */
+app(svg,mk('rect',{x:'68',y:'76',width:'8',height:'7',rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.4'}));
+/* marking */
+app(svg,txt('3V3',{fill:'rgba(180,220,180,0.5)','font-family':'monospace','font-size':'4','text-anchor':'middle',x:'71',y:'92'}));
+
+/* VReg 2 — near right of BCM43438, x:240, y:130 */
+app(svg,mk('rect',{x:'240',y:'132',width:'22',height:'16',rx:'1',fill:'#1a1a1a',stroke:'#444','stroke-width':'1'}));
+app(svg,mk('rect',{x:'242',y:'134',width:'18',height:'12',rx:'1',fill:'#2a2a2a',stroke:'#555','stroke-width':'0.8'}));
+[245,251,257].forEach(function(lx){
+  app(svg,mk('rect',{x:lx,y:'148',width:'4',height:'6',rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.4'}));
+});
+app(svg,mk('rect',{x:'248',y:'126',width:'8',height:'7',rx:'0.5',fill:'url(#rpiSilvG)',stroke:'#888','stroke-width':'0.4'}));
+app(svg,txt('5V',{fill:'rgba(180,220,180,0.5)','font-family':'monospace','font-size':'4','text-anchor':'middle',x:'251',y:'142'}));
+
+/* ── LEDs removed ── */
+
+/* ── SMDs between BCM43438, CSI, pin header and Raspberry Pi text ── */
+smdR(200,171,18,7);
+smdC(178,223,10,5);   smdRv(240,222,6,10);
+smdR(165,252,14,6);   smdCv(225,249,6,10);
+smdRv(185,277,6,10);  smdCv(255,277,6,10);
+
+/* ── Raspberry Pi text ── */
+app(svg,txt('Raspberry Pi',{fill:'rgba(180,255,180,0.35)','font-family':'Georgia,serif','font-size':'18','font-style':'italic','font-weight':'bold','letter-spacing':'0.5','text-anchor':'middle',x:'175',y:'330'}));
+app(svg,txt('Model B',{fill:'rgba(140,220,140,0.25)','font-family':'monospace','font-size':'14','font-weight':'900','letter-spacing':'3','text-anchor':'middle',x:'175',y:'348'}));
+app(svg,txt('v1.2',{fill:'rgba(100,180,100,0.2)','font-family':'monospace','font-size':'11','letter-spacing':'2','text-anchor':'middle',x:'175',y:'362'}));
+
+
+
+/* ════════════════════════════════════════════
+   PIN DATA
+   ════════════════════════════════════════════ */
+var C={
+  PWR: {c:'#ff6b6b',bg:'rgba(255,107,107,.14)',border:'rgba(255,107,107,.35)'},
+  GND: {c:'#9e9e9e',bg:'rgba(158,158,158,.12)',border:'rgba(158,158,158,.3)'},
+  GPIO:{c:'#b07ee8',bg:'rgba(176,126,232,.10)', border:'rgba(176,126,232,.28)'},
+  SPI: {c:'#4a90d9',bg:'rgba(74,144,217,.12)', border:'rgba(74,144,217,.3)'},
+  I2C: {c:'#8888cc',bg:'rgba(136,136,204,.12)',border:'rgba(136,136,204,.3)'},
+  UART:{c:'#c06080',bg:'rgba(192,96,128,.12)', border:'rgba(192,96,128,.3)'},
+  PWM: {c:'#60b0b0',bg:'rgba(96,176,176,.12)', border:'rgba(96,176,176,.3)'},
+  SPEC:{c:'#7090a0',bg:'rgba(112,144,160,.12)',border:'rgba(112,144,160,.3)'},
+  CLK: {c:'#d4a017',bg:'rgba(212,160,23,.12)', border:'rgba(212,160,23,.3)'},
+};
+function cl(t){return C[t]||C.SPEC;}
+
+/* 40-pin GPIO header: 2 columns × 20 rows
+   Left col  = odd  pins (1,3,5,...,39)  at x=LX
+   Right col = even pins (2,4,6,...,40)  at x=RX
+   Row starts at y=130, spacing=22 */
+var LX=36, RX=54, PY0=130, PYS=22;
+function lx(){ return LX; }
+function rx(){ return RX; }
+function py(row){ return PY0 + row * PYS; } // row 0..19
+
+var ALT={
+  'GPIO2':['I2C1_SDA','BSC1'],'GPIO3':['I2C1_SCL','BSC1'],
+  'GPIO4':['GPCLK0'],'GPIO5':['GPCLK1'],'GPIO6':['GPCLK2'],
+  'GPIO7':['SPI0_CE1'],'GPIO8':['SPI0_CE0'],'GPIO9':['SPI0_MISO'],
+  'GPIO10':['SPI0_MOSI'],'GPIO11':['SPI0_SCLK'],
+  'GPIO12':['PWM0'],'GPIO13':['PWM1'],
+  'GPIO14':['UART0_TXD'],'GPIO15':['UART0_RXD'],
+  'GPIO16':['SPI1_CE2'],'GPIO17':['SPI1_CE1'],
+  'GPIO18':['SPI1_CE0','PCM_CLK'],'GPIO19':['SPI1_MISO','PCM_FS'],
+  'GPIO20':['SPI1_MOSI','PCM_DIN'],'GPIO21':['SPI1_SCLK','PCM_DOUT'],
+  'GPIO22':['SD1_CLK'],'GPIO23':['SD1_CMD'],
+  'GPIO24':['SD1_DAT0'],'GPIO25':['SD1_DAT1'],
+  'GPIO26':['SD1_DAT2'],'GPIO27':['SD1_DAT3'],
+};
+
+/* Physical pin → data */
+/* Each entry: id, lbl (pin# label), name, type, funcs, volt, curr, note, cx, cy */
+var PINS=[
+  /* Row 0 */
+  {id:'P3V3_1', lbl:'3V3', name:'3.3V Power',         type:'PWR', funcs:['PWR'],volt:'3.3V',curr:'~50mA max',note:'3.3V supply from onboard LDO. Shared total ~50mA budget with all 3V3 pins. Use for low-power sensors only.',cx:lx(),cy:py(0)},
+  {id:'P5V_2',  lbl:'5V',  name:'5V Power',            type:'PWR', funcs:['PWR'],volt:'5V',  curr:'depends on PSU',note:'5V input direct from micro-USB supply. Current limited only by your power supply (recommend 2.5A PSU).',cx:rx(),cy:py(0)},
+  /* Row 1 */
+  {id:'GPIO2',  lbl:'G2',  name:'GPIO 2 / SDA1',       type:'I2C', funcs:['GPIO','I2C'],volt:'3.3V',curr:'16mA',note:'I2C1 Data (SDA). Has 1.8kΩ pull-up to 3.3V on board. Use with smbus2 or RPi GPIO library.',cx:lx(),cy:py(1)},
+  {id:'P5V_4',  lbl:'5V',  name:'5V Power',            type:'PWR', funcs:['PWR'],volt:'5V',  curr:'depends on PSU',note:'Second 5V pin. Same net as pin 2.',cx:rx(),cy:py(1)},
+  /* Row 2 */
+  {id:'GPIO3',  lbl:'G3',  name:'GPIO 3 / SCL1',       type:'I2C', funcs:['GPIO','I2C'],volt:'3.3V',curr:'16mA',note:'I2C1 Clock (SCL). Has 1.8kΩ pull-up to 3.3V on board.',cx:lx(),cy:py(2)},
+  {id:'GND_6',  lbl:'GND', name:'Ground',               type:'GND', funcs:['GND'],volt:'0V',curr:'N/A',note:'Ground reference.',cx:rx(),cy:py(2)},
+  /* Row 3 */
+  {id:'GPIO4',  lbl:'G4',  name:'GPIO 4 / GPCLK0',     type:'CLK', funcs:['GPIO','CLK'],volt:'3.3V',curr:'16mA',note:'General clock output GPCLK0. Also BOOT mode via CONFIG.TXT.',cx:lx(),cy:py(3)},
+  {id:'GPIO14', lbl:'G14', name:'GPIO 14 / TXD0',      type:'UART',funcs:['GPIO','UART'],volt:'3.3V',curr:'16mA',note:'UART0 transmit. Disable Linux console in raspi-config to free this pin.',cx:rx(),cy:py(3)},
+  /* Row 4 */
+  {id:'GND_9',  lbl:'GND', name:'Ground',               type:'GND', funcs:['GND'],volt:'0V',curr:'N/A',note:'Ground reference.',cx:lx(),cy:py(4)},
+  {id:'GPIO15', lbl:'G15', name:'GPIO 15 / RXD0',      type:'UART',funcs:['GPIO','UART'],volt:'3.3V',curr:'16mA',note:'UART0 receive. Has pull-up. Disable Linux serial console first.',cx:rx(),cy:py(4)},
+  /* Row 5 */
+  {id:'GPIO17', lbl:'G17', name:'GPIO 17',              type:'GPIO',funcs:['GPIO'],volt:'3.3V',curr:'16mA',note:'General purpose I/O. Default input with no pull.',cx:lx(),cy:py(5)},
+  {id:'GPIO18', lbl:'G18', name:'GPIO 18 / PCM_CLK',   type:'PWM', funcs:['GPIO','PWM','SPI'],volt:'3.3V',curr:'16mA',note:'Hardware PWM0 (shared with GPIO12). Also PCM Clock and SPI1 CE0.',cx:rx(),cy:py(5)},
+  /* Row 6 */
+  {id:'GPIO27', lbl:'G27', name:'GPIO 27',              type:'GPIO',funcs:['GPIO'],volt:'3.3V',curr:'16mA',note:'General purpose I/O.',cx:lx(),cy:py(6)},
+  {id:'GND_14', lbl:'GND', name:'Ground',               type:'GND', funcs:['GND'],volt:'0V',curr:'N/A',note:'Ground reference.',cx:rx(),cy:py(6)},
+  /* Row 7 */
+  {id:'GPIO22', lbl:'G22', name:'GPIO 22',              type:'GPIO',funcs:['GPIO'],volt:'3.3V',curr:'16mA',note:'General purpose I/O.',cx:lx(),cy:py(7)},
+  {id:'GPIO23', lbl:'G23', name:'GPIO 23',              type:'GPIO',funcs:['GPIO'],volt:'3.3V',curr:'16mA',note:'General purpose I/O.',cx:rx(),cy:py(7)},
+  /* Row 8 */
+  {id:'P3V3_17',lbl:'3V3', name:'3.3V Power',          type:'PWR', funcs:['PWR'],volt:'3.3V',curr:'~50mA max',note:'Second 3.3V supply pin. Same net as pin 1.',cx:lx(),cy:py(8)},
+  {id:'GPIO24', lbl:'G24', name:'GPIO 24',              type:'GPIO',funcs:['GPIO'],volt:'3.3V',curr:'16mA',note:'General purpose I/O.',cx:rx(),cy:py(8)},
+  /* Row 9 */
+  {id:'GPIO10', lbl:'G10', name:'GPIO 10 / MOSI',      type:'SPI', funcs:['GPIO','SPI'],volt:'3.3V',curr:'16mA',note:'SPI0 MOSI (Master Out Slave In).',cx:lx(),cy:py(9)},
+  {id:'GND_20', lbl:'GND', name:'Ground',               type:'GND', funcs:['GND'],volt:'0V',curr:'N/A',note:'Ground reference.',cx:rx(),cy:py(9)},
+  /* Row 10 */
+  {id:'GPIO9',  lbl:'G9',  name:'GPIO 9 / MISO',       type:'SPI', funcs:['GPIO','SPI'],volt:'3.3V',curr:'16mA',note:'SPI0 MISO (Master In Slave Out).',cx:lx(),cy:py(10)},
+  {id:'GPIO25', lbl:'G25', name:'GPIO 25',              type:'GPIO',funcs:['GPIO'],volt:'3.3V',curr:'16mA',note:'General purpose I/O.',cx:rx(),cy:py(10)},
+  /* Row 11 */
+  {id:'GPIO11', lbl:'G11', name:'GPIO 11 / SCLK',      type:'SPI', funcs:['GPIO','SPI'],volt:'3.3V',curr:'16mA',note:'SPI0 Clock.',cx:lx(),cy:py(11)},
+  {id:'GPIO8',  lbl:'G8',  name:'GPIO 8 / CE0',        type:'SPI', funcs:['GPIO','SPI'],volt:'3.3V',curr:'16mA',note:'SPI0 Chip Enable 0 (active low).',cx:rx(),cy:py(11)},
+  /* Row 12 */
+  {id:'GND_25', lbl:'GND', name:'Ground',               type:'GND', funcs:['GND'],volt:'0V',curr:'N/A',note:'Ground reference.',cx:lx(),cy:py(12)},
+  {id:'GPIO7',  lbl:'G7',  name:'GPIO 7 / CE1',        type:'SPI', funcs:['GPIO','SPI'],volt:'3.3V',curr:'16mA',note:'SPI0 Chip Enable 1 (active low).',cx:rx(),cy:py(12)},
+  /* Row 13 */
+  {id:'ID_SD',  lbl:'IDSD',name:'ID EEPROM SDA',       type:'I2C', funcs:['I2C'],volt:'3.3V',curr:'N/A',note:'HAT ID EEPROM I2C data. Reserved for HAT identification. Do not use for general I/O.',cx:lx(),cy:py(13)},
+  {id:'ID_SC',  lbl:'IDSC',name:'ID EEPROM SCL',       type:'I2C', funcs:['I2C'],volt:'3.3V',curr:'N/A',note:'HAT ID EEPROM I2C clock. Reserved for HAT identification.',cx:rx(),cy:py(13)},
+  /* Row 14 */
+  {id:'GPIO5',  lbl:'G5',  name:'GPIO 5 / GPCLK1',     type:'CLK', funcs:['GPIO','CLK'],volt:'3.3V',curr:'16mA',note:'General clock output GPCLK1.',cx:lx(),cy:py(14)},
+  {id:'GND_30', lbl:'GND', name:'Ground',               type:'GND', funcs:['GND'],volt:'0V',curr:'N/A',note:'Ground reference.',cx:rx(),cy:py(14)},
+  /* Row 15 */
+  {id:'GPIO6',  lbl:'G6',  name:'GPIO 6 / GPCLK2',     type:'CLK', funcs:['GPIO','CLK'],volt:'3.3V',curr:'16mA',note:'General clock output GPCLK2.',cx:lx(),cy:py(15)},
+  {id:'GPIO12', lbl:'G12', name:'GPIO 12 / PWM0',      type:'PWM', funcs:['GPIO','PWM'],volt:'3.3V',curr:'16mA',note:'Hardware PWM channel 0. 16-bit, use pigpio for precise frequency.',cx:rx(),cy:py(15)},
+  /* Row 16 */
+  {id:'GPIO13', lbl:'G13', name:'GPIO 13 / PWM1',      type:'PWM', funcs:['GPIO','PWM'],volt:'3.3V',curr:'16mA',note:'Hardware PWM channel 1.',cx:lx(),cy:py(16)},
+  {id:'GND_34', lbl:'GND', name:'Ground',               type:'GND', funcs:['GND'],volt:'0V',curr:'N/A',note:'Ground reference.',cx:rx(),cy:py(16)},
+  /* Row 17 */
+  {id:'GPIO19', lbl:'G19', name:'GPIO 19 / PCM_FS',    type:'PWM', funcs:['GPIO','PWM','SPI'],volt:'3.3V',curr:'16mA',note:'Hardware PWM1 alt. Also PCM Frame Sync and SPI1 MISO.',cx:lx(),cy:py(17)},
+  {id:'GPIO16', lbl:'G16', name:'GPIO 16',              type:'GPIO',funcs:['GPIO','SPI'],volt:'3.3V',curr:'16mA',note:'SPI1 CE2 alternate function.',cx:rx(),cy:py(17)},
+  /* Row 18 */
+  {id:'GPIO26', lbl:'G26', name:'GPIO 26',              type:'GPIO',funcs:['GPIO'],volt:'3.3V',curr:'16mA',note:'General purpose I/O.',cx:lx(),cy:py(18)},
+  {id:'GPIO20', lbl:'G20', name:'GPIO 20 / PCM_DIN',   type:'SPI', funcs:['GPIO','SPI'],volt:'3.3V',curr:'16mA',note:'SPI1 MOSI and PCM Data In.',cx:rx(),cy:py(18)},
+  /* Row 19 */
+  {id:'GND_39', lbl:'GND', name:'Ground',               type:'GND', funcs:['GND'],volt:'0V',curr:'N/A',note:'Ground reference.',cx:lx(),cy:py(19)},
+  {id:'GPIO21', lbl:'G21', name:'GPIO 21 / PCM_DOUT',  type:'SPI', funcs:['GPIO','SPI'],volt:'3.3V',curr:'16mA',note:'SPI1 SCLK and PCM Data Out.',cx:rx(),cy:py(19)},
+];
+
+/* ── Draw physical pin numbers 1-40 — placed above silk labels ── */
+for(var row=0;row<20;row++){
+  var oddPin=row*2+1;
+  var evenPin=row*2+2;
+  app(svg,txt(oddPin+'',{
+    x:lx()-18,y:py(row)-12,
+    fill:'rgba(255,255,255,0.6)','font-size':'8',
+    'font-family':'monospace','text-anchor':'middle','pointer-events':'none'
+  }));
+  app(svg,txt(evenPin+'',{
+    x:rx()+18,y:py(row)-12,
+    fill:'rgba(255,255,255,0.6)','font-size':'8',
+    'font-family':'monospace','text-anchor':'middle','pointer-events':'none'
+  }));
+}
+
+/* ── GPIO connector block outlines ── */
+app(svg,mk('rect',{x:'28',y:'124',width:'34',height:'430',rx:'3',fill:'#0a0a0a',stroke:'#1a2a1a','stroke-width':'1'}));
+
+var PS=20;
+
+function addSilk(p){
+  var onR=p.cx>44;
+  var t=mk('text',{
+    x:onR?p.cx+PS+5:p.cx-PS-4, y:p.cy+4,
+    'text-anchor':onR?'start':'end',
+    fill:'rgba(255,255,255,0.85)','font-size':'11',
+    'font-family':'monospace','font-weight':'bold','pointer-events':'none'
+  });
+  t.textContent=p.lbl;
+  svg.appendChild(t);
+}
+
+PINS.forEach(function(p){
+  var col=cl(p.type);
+  var g=mk('g',{'class':'rpi-pin','data-id':p.id});
+  g.style.cursor='pointer';
+  app(g,mk('rect',{x:p.cx-PS/2-2,y:p.cy-PS/2-2,width:PS+4,height:PS+4,rx:'3',
+    fill:'rgba(80,140,60,0.25)',stroke:'rgba(80,140,60,0.45)','stroke-width':'0.5'}));
+  var sq=mk('rect',{x:p.cx-PS/2,y:p.cy-PS/2,width:PS,height:PS,rx:'3',
+    fill:col.bg,stroke:col.c,'stroke-width':'1.5','class':'pin-sq'});
+  app(g,sq);
+  app(g,mk('rect',{x:p.cx-4,y:p.cy-4,width:8,height:8,rx:'1',fill:'#040808','pointer-events':'none'}));
+  addSilk(p);
+  app(g,mk('rect',{x:p.cx-16,y:p.cy-16,width:32,height:32,fill:'transparent'}));
+  g.addEventListener('click',function(e){e.stopPropagation();pickPin(p.id);});
+  g.addEventListener('mouseenter',function(e){showTT(p,e);});
+  g.addEventListener('mousemove',function(e){moveTT(e);});
+  g.addEventListener('mouseleave',hideTT);
+  svg.appendChild(g);
+});
+
+/* ── INTERACTION ── */
+var selId=null,listOpen=false,filterType=null;
+
+var FILTERS=[
+  {lbl:'GPIO',  key:'GPIO',fn:function(p){return p.funcs.indexOf('GPIO')>=0;}},
+  {lbl:'PWM',   key:'PWM', fn:function(p){return p.funcs.indexOf('PWM')>=0;}},
+  {lbl:'UART',  key:'UART',fn:function(p){return p.funcs.indexOf('UART')>=0;}},
+  {lbl:'SPI',   key:'SPI', fn:function(p){return p.funcs.indexOf('SPI')>=0;}},
+  {lbl:'I2C',   key:'I2C', fn:function(p){return p.funcs.indexOf('I2C')>=0;}},
+  {lbl:'CLK',   key:'CLK', fn:function(p){return p.type==='CLK';}},
+  {lbl:'GND',   key:'GND', fn:function(p){return p.type==='GND';}},
+  {lbl:'PWR',   key:'PWR', fn:function(p){return p.type==='PWR';}},
+  {lbl:'3.3V',  key:'3V3', fn:function(p){return p.volt==='3.3V'&&p.type==='PWR';}},
+  {lbl:'5V',    key:'5V',  fn:function(p){return p.volt==='5V';}},
+  {lbl:'HAT',   key:'HAT', fn:function(p){return p.id==='ID_SD'||p.id==='ID_SC';}},
+];
+
+var FCLR={
+  GPIO:'#6dbf6d',PWM:'#60b0b0',ADC:'#c0a060',
+  SPI:'#4a90d9',I2C:'#8888cc',UART:'#c06080',
+  PWR:'#ff6b6b',GND:'#9e9e9e',CLK:'#d4a017',
+  '3V3':'#f0a070','5V':'#f07050','HAT':'#8888cc'
+};
+
+function buildBtns(){
+  var wrap=document.getElementById('rpiBtns');
+  wrap.innerHTML=FILTERS.map(function(f){
+    var c=FCLR[f.key]||'#888';
+    var isActive=filterType===f.key;
+    return '<button class="rpi-fbtn'+(isActive?' active':'')+'" data-key="'+f.key+'" style="color:'+c+';background:'+(isActive?'#1a1a1e':'#2c2c30')+';border-color:'+(isActive?c:'rgba(255,255,255,0.22)')+'">'+f.lbl+'</button>';
+  }).join('');
+  var btns=document.querySelectorAll('.rpi-fbtn');
+  for(var i=0;i<btns.length;i++){
+    btns[i].addEventListener('click',(function(b){return function(){
+      var k=b.getAttribute('data-key');
+      filterType=(filterType===k)?null:k;
+      buildBtns();updateBoard();updateList();
+    };})(btns[i]));
+  }
+}
+
+function pickPin(id){
+  selId=(selId===id)?null:id;
+  updateBoard();updateDetail();updateList();
+}
+
+function pinMatchesFilter(p){
+  if(!filterType) return true;
+  var f=FILTERS.filter(function(x){return x.key===filterType;})[0];
+  return f?f.fn(p):true;
+}
+
+function updateBoard(){
+  var hasFilter=filterType!=null;
+  var gs=document.querySelectorAll('.rpi-pin');
+  for(var i=0;i<gs.length;i++){
+    var g=gs[i],id=g.getAttribute('data-id');
+    var p=PINS.filter(function(x){return x.id===id;})[0];
+    var col=cl(p.type),sq=g.querySelector('.pin-sq'),active=selId===id;
+    var matched=pinMatchesFilter(p);
+    if(active){
+      sq.setAttribute('fill',col.c);sq.setAttribute('stroke',col.c);
+      sq.setAttribute('stroke-width','2.5');sq.setAttribute('filter','url(#rpiPinGlow)');
+      g.style.opacity='1';
+    } else if(hasFilter&&!matched){
+      sq.setAttribute('fill','rgba(30,40,30,0.4)');sq.setAttribute('stroke','rgba(60,80,60,0.3)');
+      sq.setAttribute('stroke-width','1');sq.removeAttribute('filter');
+      g.style.opacity='0.22';
+    } else {
+      sq.setAttribute('fill',col.bg);sq.setAttribute('stroke',col.c);
+      sq.setAttribute('stroke-width','1.5');sq.removeAttribute('filter');
+      g.style.opacity='1';
+    }
+  }
+}
+
+function updateDetail(){
+  var empty=document.getElementById('rpiEmpty');
+  var content=document.getElementById('rpiDetailContent');
+  if(!selId){empty.style.display='block';content.className='rpi-detail-content';return;}
+  var p=PINS.filter(function(x){return x.id===selId;})[0];
+  if(!p){empty.style.display='block';content.className='rpi-detail-content';return;}
+  empty.style.display='none';
+  content.className='rpi-detail-content show';
+  var col=cl(p.type);
+  var badge=document.getElementById('rpiDetBadge');
+  badge.textContent=p.lbl;
+  badge.style.background=col.bg;badge.style.color=col.c;badge.style.borderColor=col.c;
+  document.getElementById('rpiDetId').textContent='Pin: '+selId;
+  document.getElementById('rpiDetFull').textContent=p.name;
+  document.getElementById('rpiFuncs').innerHTML=p.funcs.map(function(f){
+    var fc=C[f]||col;
+    return '<span class="rpi-func-chip" style="background:'+fc.bg+';color:'+fc.c+';border-color:'+fc.border+'">'+f+'</span>';
+  }).join('');
+  document.getElementById('rpiInfoGrid').innerHTML=[
+    ['Voltage',p.volt],['Max Current',p.curr],
+    ['Type',p.type],['Functions',p.funcs.join(', ')]
+  ].map(function(pair){
+    return '<div class="rpi-info-cell"><span class="rpi-info-label">'+pair[0]+'</span><span class="rpi-info-value">'+pair[1]+'</span></div>';
+  }).join('');
+  var altSec=document.getElementById('rpiAltSection');
+  var alts=ALT[p.id];
+  if(alts&&alts.length){
+    altSec.style.display='';
+    document.getElementById('rpiAltChips').innerHTML=alts.map(function(a){
+      return '<span class="rpi-alt-chip">'+a+'</span>';
+    }).join('');
+  } else {altSec.style.display='none';}
+  document.getElementById('rpiNote').innerHTML='<span class="rpi-note-icon">&#128161;</span>'+p.note;
+}
+
+document.getElementById('rpiListCnt').textContent=PINS.length;
+buildBtns();
+
+function updateList(){
+  var pins=PINS.filter(function(p){return pinMatchesFilter(p);});
+  document.getElementById('rpiRows').innerHTML=pins.map(function(p){
+    var col=cl(p.type),on=selId===p.id;
+    return '<div class="rpi-prow'+(on?' on':'')+'" data-id="'+p.id+'">'
+      +'<div class="rpi-pbadge" style="background:'+col.bg+';color:'+col.c+';border:1px solid '+col.border+'">'+p.lbl+'</div>'
+      +'<div class="rpi-pname">'+p.name+'</div>'
+      +'<span class="rpi-ptag" style="background:'+col.bg+';color:'+col.c+'">'+p.type+'</span></div>';
+  }).join('');
+  document.getElementById('rpiListCnt').textContent=pins.length+(pins.length<PINS.length?' / '+PINS.length:'');
+  var rows=document.querySelectorAll('.rpi-prow');
+  for(var i=0;i<rows.length;i++){
+    rows[i].addEventListener('click',(function(r){return function(){pickPin(r.dataset.id);};})(rows[i]));
+  }
+}
+updateList();
+
+(function(){
+  var types=[];
+  PINS.forEach(function(p){if(types.indexOf(p.type)<0)types.push(p.type);});
+  document.getElementById('rpiLegend').innerHTML=types.map(function(t){
+    var c=cl(t);
+    return '<div class="rpi-leg"><span class="rpi-ldot" style="background:'+c.c+'"></span>'+t+'</div>';
+  }).join('');
+})();
+
+function rpiToggleList(){
+  listOpen=!listOpen;
+  var pl=document.getElementById('rpiPinList');
+  pl.className='rpi-pinlist'+(listOpen?' open':'');
+  document.getElementById('rpiToggleIcon').innerHTML=listOpen?'&#9650; HIDE':'&#9660; SHOW ALL';
+}
+window.rpiToggleList=rpiToggleList;
+
+var ttEl=document.getElementById('rpiTT');
+function showTT(p,e){
+  var col=cl(p.type);
+  ttEl.innerHTML='<span class="ttn" style="color:'+col.c+'">'+p.id+' &mdash; '+p.name+'</span>'
+    +'<span class="ttnote">'+p.funcs.join(' &middot; ')+' | '+p.volt+' | '+p.curr+'</span>';
+  ttEl.className='rpi-tt show';
+  moveTT(e);
+}
+function moveTT(e){ttEl.style.left=(e.clientX+14)+'px';ttEl.style.top=(e.clientY-10)+'px';}
+function hideTT(){ttEl.className='rpi-tt';}
+
+})();
+//]]>
+</script>
+
+<!--════════════════════════════════════════════════════════
+     RASPBERRY PI 3 PINOUT EXPLORER — ee-diary
+     ════════════════════════════════════════════════════════-->
+<div>Explore Raspberry Pi 3 board with a free interactive web app. View pins, components, and details for learning, prototyping, and embedded projects easi</div>
+<div class="separator" style="display: none;"><img alt="Explore Raspberry Pi 3 board" border="0" data-original-height="578" data-original-width="778" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj-pQgWvE9e4oxkyUvbCAsIDYm2of4SYDxCRL6FwXZUfP3DLea4o3TF88DXEOa9ToX_bL10dngTb51gVdcl92FfUlINw8gwB3cxyT7RINd7KGE9YC1WUPL-SbW5Xw7zLq7xXK-RtpvQFSogQUieJ7Fpc23Wk5LX2OhwouFB4qDnfqrZSl3lZ090E451F53U/s1600/raspberry%20pi.png" /></div>

@@ -1,0 +1,1346 @@
+---
+layout: post
+title: "PCB Router — Ratsnest & Auto-Router Visualizer"
+date: 2026-05-06 19:14:00 +0000
+description: "PCB ROUTER Ratsnest + Auto-Router Visualiser Auto-Router Placer Inspector READY Import PCB File ⬆ Drop or click to import .dsn .net .ipc .gbr .pho .drl"
+---
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Bebas+Neue&display=swap');
+
+#pcb-app *{box-sizing:border-box;margin:0;padding:0;}
+#pcb-app {
+  display:block;font-family:'IBM Plex Mono',monospace;
+  background:#0a0f0a;color:#a8c8a8;
+  --g:#00ff50;--g2:#00cc40;--r:#ff4444;--y:#ffcc00;
+  --bg:#0a0f0a;--bg2:#0e140e;--bg3:#121a12;
+  --bd:#1a2a1a;--bd2:#243824;
+}
+#pcb-app .shell{display:flex;flex-direction:column;}
+#pcb-app .topbar{display:flex;align-items:center;height:44px;background:#0e140e;border-bottom:1px solid #243824;flex-shrink:0;}
+#pcb-app .brand{display:flex;align-items:center;gap:10px;padding:0 16px;border-right:1px solid #243824;height:44px;}
+#pcb-app .brand-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#00ff50;text-shadow:0 0 10px rgba(0,255,80,.4);}
+#pcb-app .brand-sub{font-size:9px;color:#5a7a5a;letter-spacing:.1em;text-transform:uppercase;}
+#pcb-app .topbar-tabs{display:flex;height:44px;}
+#pcb-app .ttab{padding:0 14px;font-size:11px;color:#5a7a5a;cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:5px;transition:all .15s;}
+#pcb-app .ttab:hover{color:#a8c8a8;background:#121a12;}
+#pcb-app .ttab.active{color:#00ff50;border-bottom-color:#00ff50;background:#121a12;}
+#pcb-app .ttab-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+#pcb-app .topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;padding:0 14px;}
+#pcb-app .status-led{display:flex;align-items:center;gap:6px;font-size:10px;color:#5a7a5a;}
+#pcb-app .led{width:7px;height:7px;border-radius:50%;background:#00ff50;box-shadow:0 0 8px #00ff50;animation:pcb-blink 2s infinite;}
+@keyframes pcb-blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+#pcb-app .main{display:flex;height:640px;}
+#pcb-app .sidebar{width:230px;flex-shrink:0;background:#0e140e;border-right:1px solid #243824;display:flex;flex-direction:column;overflow-y:auto;}
+#pcb-app .sb-sec{border-bottom:1px solid #1a2a1a;padding:9px 11px;}
+#pcb-app .sb-title{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#2d4a2d;margin-bottom:7px;font-weight:600;}
+#pcb-app .ctrl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+#pcb-app .ctrl-lbl{font-size:10px;color:#5a7a5a;}
+#pcb-app .ctrl-val{font-size:10px;color:#00ff50;font-weight:600;}
+#pcb-app .slider{width:100%;-webkit-appearance:none;height:3px;border-radius:2px;background:#1a2a1a;outline:none;accent-color:#00ff50;margin:3px 0 7px;}
+#pcb-app .slider::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:#00ff50;cursor:pointer;box-shadow:0 0 5px rgba(0,255,80,.5);}
+#pcb-app .btn{width:100%;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:6px 9px;border-radius:4px;cursor:pointer;border:1px solid #243824;background:#121a12;color:#a8c8a8;transition:all .15s;text-align:left;display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+#pcb-app .btn:hover{border-color:#243824;color:#e8f0e8;background:#161f16;}
+#pcb-app .btn.primary{border-color:#00cc40;color:#00ff50;background:rgba(0,255,80,.06);}
+#pcb-app .btn.primary:hover{background:rgba(0,255,80,.12);}
+#pcb-app .btn.danger{border-color:#ff4444;color:#ff4444;background:rgba(255,68,68,.06);}
+#pcb-app .btn.running{border-color:#ffcc00;color:#ffcc00;background:rgba(255,204,0,.06);animation:pcb-pulse .7s infinite;}
+@keyframes pcb-pulse{0%,100%{box-shadow:0 0 4px rgba(255,204,0,.2);}50%{box-shadow:0 0 16px rgba(255,204,0,.5);}}
+#pcb-app select.sb-sel{width:100%;font-family:'IBM Plex Mono',monospace;font-size:10px;padding:5px 6px;background:#121a12;border:1px solid #243824;color:#a8c8a8;border-radius:4px;margin-bottom:7px;outline:none;}
+#pcb-app .drop-zone{border:1.5px dashed #243824;border-radius:6px;padding:12px 8px;text-align:center;cursor:pointer;background:rgba(0,255,80,.02);transition:all .2s;margin-bottom:6px;}
+#pcb-app .drop-zone:hover,.drop-zone.drag{border-color:#00cc40;background:rgba(0,255,80,.07);}
+#pcb-app .drop-icon{font-size:20px;display:block;margin-bottom:3px;}
+#pcb-app .drop-lbl{font-size:10px;color:#a8c8a8;font-weight:600;}
+#pcb-app .drop-sub{font-size:8px;color:#2d4a2d;margin-top:2px;line-height:1.5;}
+#pcb-app .imp-status{display:none;margin-top:5px;padding:4px 7px;border-radius:3px;font-size:9px;line-height:1.5;}
+#pcb-app .imp-ok  {background:rgba(0,204,64,.1);border:1px solid rgba(0,204,64,.3);color:#00cc40;}
+#pcb-app .imp-warn{background:rgba(255,204,0,.1);border:1px solid rgba(255,204,0,.3);color:#ffcc00;}
+#pcb-app .imp-err {background:rgba(255,68,68,.1);border:1px solid rgba(255,68,68,.3);color:#ff4444;}
+#pcb-app .net-list{overflow-y:auto;max-height:160px;padding:6px;}
+#pcb-app .net-item{display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:3px;margin-bottom:2px;cursor:pointer;font-size:10px;}
+#pcb-app .net-item:hover{background:#121a12;}
+#pcb-app .net-sw{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+#pcb-app .net-nm{flex:1;color:#a8c8a8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#pcb-app .net-info{color:#5a7a5a;font-size:9px;}
+#pcb-app .net-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+#pcb-app .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #243824;margin-top:auto;}
+#pcb-app .stat-cell{padding:7px 4px;text-align:center;border-right:1px solid #1a2a1a;}
+#pcb-app .stat-cell:last-child{border-right:none;}
+#pcb-app .stat-v{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#00ff50;line-height:1;}
+#pcb-app .stat-l{font-size:8px;color:#2d4a2d;letter-spacing:.08em;text-transform:uppercase;margin-top:1px;}
+#pcb-app .canvas-area{flex:1;position:relative;overflow:hidden;background:#0d1a0d;min-width:0;}
+#pcb-app .prog-bar{position:absolute;top:0;left:0;right:0;height:2px;background:#1a2a1a;z-index:5;}
+#pcb-app .prog-fill{height:100%;background:linear-gradient(90deg,#00cc40,#00e5ff);width:0%;transition:width .25s;box-shadow:0 0 6px rgba(0,229,255,.4);}
+#pcb-app canvas{display:block;position:absolute;top:0;left:0;}
+#pcb-app .layer-bar{position:absolute;top:10px;right:10px;display:flex;flex-direction:column;gap:3px;z-index:6;}
+#pcb-app .layer-pill{padding:3px 9px;border-radius:20px;font-size:9px;letter-spacing:.1em;cursor:pointer;border:1px solid transparent;font-family:'IBM Plex Mono',monospace;text-transform:uppercase;transition:all .15s;}
+#pcb-app .layer-pill.fcu{background:rgba(200,168,75,.12);border-color:rgba(200,168,75,.3);color:#c8a84b;}
+#pcb-app .layer-pill.bcu{background:rgba(68,153,255,.08);border-color:rgba(68,153,255,.25);color:#4499ff;}
+#pcb-app .layer-pill.act{border-color:#00cc40;color:#00ff50;box-shadow:0 0 8px rgba(0,255,80,.2);}
+#pcb-app .float-tb{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:5px;background:#0e140e;border:1px solid #243824;border-radius:7px;padding:5px;z-index:6;}
+#pcb-app .tb-btn{width:32px;height:32px;border-radius:5px;border:1px solid #1a2a1a;background:#121a12;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:#5a7a5a;transition:all .15s;}
+#pcb-app .tb-btn:hover{color:#a8c8a8;}
+#pcb-app .tb-btn.act{border-color:#00ff50;color:#00ff50;background:rgba(0,255,80,.07);}
+#pcb-app .tb-sep{width:1px;background:#1a2a1a;margin:4px 1px;}
+#pcb-app .right-panel{width:190px;flex-shrink:0;background:#0e140e;border-left:1px solid #243824;display:flex;flex-direction:column;overflow-y:auto;}
+#pcb-app .rp-sec{padding:9px 11px;border-bottom:1px solid #1a2a1a;}
+#pcb-app .rp-title{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#2d4a2d;margin-bottom:7px;}
+#pcb-app .rp-row{display:flex;justify-content:space-between;margin-bottom:4px;font-size:10px;}
+#pcb-app .rp-key{color:#5a7a5a;}
+#pcb-app .rp-val{color:#e8f0e8;font-weight:500;}
+#pcb-app .rp-ok{color:#00cc40;}
+#pcb-app .rp-warn{color:#ffcc00;}
+#pcb-app .rp-err{color:#ff4444;}
+#pcb-app .log-panel{flex:1;overflow-y:auto;padding:7px 9px;max-height:200px;}
+#pcb-app .log-e{font-size:9px;line-height:1.7;padding:1px 0;border-bottom:1px solid rgba(26,42,26,.4);}
+#pcb-app .log-ok{color:#00cc40;}
+#pcb-app .log-warn{color:#ffcc00;}
+#pcb-app .log-err{color:#ff4444;}
+#pcb-app .log-info{color:#5a7a5a;}
+#pcb-app .log-t{color:#2d4a2d;margin-right:5px;}
+#pcb-app .tip{position:fixed;pointer-events:none;background:#121a12;border:1px solid #243824;border-radius:5px;padding:6px 10px;font-size:10px;color:#a8c8a8;z-index:999;display:none;line-height:1.6;box-shadow:0 4px 20px rgba(0,0,0,.5);max-width:200px;}
+#pcb-app .modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:100;}
+#pcb-app .modal.show{display:flex;}
+#pcb-app .modal-box{background:#0e140e;border:1px solid #243824;border-radius:9px;padding:22px;max-width:340px;width:90%;font-size:11px;}
+#pcb-app .modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;color:#00ff50;margin-bottom:10px;letter-spacing:2px;}
+#pcb-app .modal-body{color:#5a7a5a;line-height:1.8;margin-bottom:14px;}
+#pcb-app .modal-close{width:100%;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:8px;border-radius:4px;cursor:pointer;border:1px solid #00cc40;color:#00ff50;background:rgba(0,255,80,.07);}
+#pcb-app ::-webkit-scrollbar{width:3px;}
+#pcb-app ::-webkit-scrollbar-thumb{background:#243824;border-radius:2px;}
+</style>
+
+<div id="pcb-app">
+
+<div class="shell">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div>
+        <div class="brand-logo">PCB ROUTER</div>
+        <div class="brand-sub">Ratsnest + Auto-Router Visualiser</div>
+      </div>
+    </div>
+    <div class="topbar-tabs">
+      <div class="ttab active" id="tab-route" onclick="pcb.setMode('route')"><div class="ttab-dot"></div>Auto-Router</div>
+      <div class="ttab" id="tab-place" onclick="pcb.setMode('place')"><div class="ttab-dot"></div>Placer</div>
+      <div class="ttab" id="tab-inspect" onclick="pcb.setMode('inspect')"><div class="ttab-dot"></div>Inspector</div>
+    </div>
+    <div class="topbar-right">
+      <div class="status-led"><div class="led" id="pcb-led"></div><span id="pcb-status">READY</span></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sb-sec">
+        <div class="sb-title">Import PCB File</div>
+        <div class="drop-zone" id="pcb-dropzone" onclick="document.getElementById('pcb-fileinput').click()">
+          <input type="file" id="pcb-fileinput" style="display:none"
+            accept=".dsn,.net,.ipc,.dru,.ext,.gbr,.pho,.drl,.xnc,.kicad_pcb,.csv,.txt,.netlist"
+            onchange="pcb.importFile(this.files[0])">
+          <span class="drop-icon">&#x2B06;</span>
+          <div class="drop-lbl">Drop or click to import</div>
+          <div class="drop-sub">.dsn .net .ipc .gbr .pho<br>.drl .xnc .kicad_pcb .csv .txt</div>
+        </div>
+        <div class="imp-status" id="pcb-impstatus"></div>
+      </div>
+
+      <div class="sb-sec">
+        <div class="sb-title">Board Setup</div>
+        <div class="ctrl-row"><span class="ctrl-lbl">Grid</span><span class="ctrl-val" id="lbl-grid">1.0mm</span></div>
+        <input type="range" class="slider" min="0" max="4" value="1" oninput="pcb.setGrid(this.value)">
+        <div class="ctrl-row"><span class="ctrl-lbl">Trace width</span><span class="ctrl-val" id="lbl-trace">0.25mm</span></div>
+        <input type="range" class="slider" min="0" max="7" value="2" oninput="pcb.setTrace(this.value)">
+        <div class="ctrl-row"><span class="ctrl-lbl">Clearance</span><span class="ctrl-val" id="lbl-clear">0.20mm</span></div>
+        <input type="range" class="slider" min="0" max="5" value="2" oninput="pcb.setClear(this.value)">
+        <div class="ctrl-row"><span class="ctrl-lbl">Via drill</span><span class="ctrl-val" id="lbl-via">0.6mm</span></div>
+        <input type="range" class="slider" min="0" max="4" value="1" oninput="pcb.setVia(this.value)">
+      </div>
+
+      <div class="sb-sec">
+        <div class="sb-title">Routing</div>
+        <select class="sb-sel" id="sel-algo">
+          <option value="mst">MST / Direct lines</option>
+          <option value="astar" selected>A* Pathfinder</option>
+          <option value="dijkstra">Lee / Dijkstra</option>
+        </select>
+        <button class="btn primary" id="btn-route" onclick="pcb.startRouting()">&#x25B6; Run Auto-Router</button>
+        <button class="btn" onclick="pcb.showRatsnest()">&#x2934; Show Ratsnest</button>
+        <button class="btn" onclick="pcb.stepRoute()">&#x23E9; Step Once</button>
+        <button class="btn danger" onclick="pcb.clearRoutes()">&#x2715; Clear Routes</button>
+      </div>
+
+      <div class="sb-sec">
+        <div class="sb-title">Presets</div>
+        <button class="btn" onclick="pcb.loadPreset('arduino')">&#x1F4E6; Arduino Shield</button>
+        <button class="btn" onclick="pcb.loadPreset('timer555')">&#x1F4E6; 555 Timer</button>
+        <button class="btn" onclick="pcb.loadPreset('opamp')">&#x1F4E6; Op-Amp Filter</button>
+        <button class="btn" onclick="pcb.loadPreset('random')">&#x1F3B2; Random Board</button>
+      </div>
+
+      <div class="sb-title" style="padding:7px 11px 3px;">Nets</div>
+      <div class="net-list" id="net-list"></div>
+
+      <div class="stats-strip">
+        <div class="stat-cell"><div class="stat-v" id="st-pads">0</div><div class="stat-l">Pads</div></div>
+        <div class="stat-cell"><div class="stat-v" id="st-nets">0</div><div class="stat-l">Nets</div></div>
+        <div class="stat-cell"><div class="stat-v" id="st-rt">0/0</div><div class="stat-l">Routed</div></div>
+        <div class="stat-cell"><div class="stat-v" id="st-via">0</div><div class="stat-l">Vias</div></div>
+      </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="canvas-area" id="pcb-canvasarea">
+      <div class="prog-bar"><div class="prog-fill" id="pcb-prog"></div></div>
+      <canvas id="pcb-canvas"></canvas>
+      <div class="layer-bar">
+        <div class="layer-pill fcu act" id="lay-fcu" onclick="pcb.toggleLayer('F.Cu')">F.Cu</div>
+        <div class="layer-pill bcu" id="lay-bcu" onclick="pcb.toggleLayer('B.Cu')">B.Cu</div>
+      </div>
+      <div class="float-tb">
+        <button class="tb-btn act" id="tool-select" onclick="pcb.setTool('select')" title="Select">&#x25A0;</button>
+        <button class="tb-btn" id="tool-move"   onclick="pcb.setTool('move')"   title="Move">&#x2725;</button>
+        <button class="tb-btn" id="tool-add"    onclick="pcb.setTool('add')"    title="Add pad">&#x2295;</button>
+        <button class="tb-btn" id="tool-del"    onclick="pcb.setTool('del')"    title="Delete">&#x2715;</button>
+        <div class="tb-sep"></div>
+        <button class="tb-btn" onclick="pcb.zoomIn()"    title="Zoom in">&#x2795;</button>
+        <button class="tb-btn" onclick="pcb.zoomOut()"   title="Zoom out">&#x2796;</button>
+        <button class="tb-btn" onclick="pcb.resetView()" title="Fit board">&#x25A3;</button>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right-panel">
+      <div class="rp-sec">
+        <div class="rp-title">Board Info</div>
+        <div class="rp-row"><span class="rp-key">Size</span><span class="rp-val" id="rp-size">--</span></div>
+        <div class="rp-row"><span class="rp-key">Completion</span><span class="rp-val rp-ok" id="rp-pct">0%</span></div>
+        <div class="rp-row"><span class="rp-key">Trace len</span><span class="rp-val" id="rp-len">0mm</span></div>
+        <div class="rp-row"><span class="rp-key">Vias</span><span class="rp-val" id="rp-via">0</span></div>
+        <div class="rp-row"><span class="rp-key">DRC</span><span class="rp-val rp-ok" id="rp-drc">PASS</span></div>
+      </div>
+      <div class="rp-sec">
+        <div class="rp-title">Selected</div>
+        <div id="rp-sel" style="font-size:10px;color:#5a7a5a;line-height:1.7;">Nothing selected.</div>
+      </div>
+      <div class="rp-title" style="padding:7px 11px 3px;">Router Log</div>
+      <div class="log-panel" id="pcb-log"></div>
+    </div>
+  </div>
+</div>
+
+<div class="tip" id="pcb-tip"></div>
+<div class="modal" id="pcb-modal">
+  <div class="modal-box">
+    <div class="modal-title">ROUTING COMPLETE</div>
+    <div class="modal-body" id="pcb-modalbody"></div>
+    <button class="modal-close" onclick="document.getElementById('pcb-modal').classList.remove('show')">CLOSE</button>
+  </div>
+</div>
+
+</div><!-- #pcb-app -->
+
+<script>
+// ================================================================
+// PCB ROUTER — complete self-contained engine
+// All state namespaced under window.pcb to avoid Blogger conflicts
+// ================================================================
+(function(){
+
+var NET_COLORS = ['#ff4444','#44aaff','#ffaa00','#aa44ff','#00ffaa',
+                  '#ff44aa','#44ffff','#ffff44','#ff8844','#88ff44'];
+var GRIDS   = [0.5,1.0,1.27,2.0,2.54];
+var TRACES  = [0.1,0.15,0.25,0.3,0.4,0.5,0.8,1.0];
+var CLEARS  = [0.1,0.15,0.2,0.25,0.3,0.4];
+var VIAS    = [0.3,0.4,0.6,0.8,1.0];
+
+// ── State ────────────────────────────────────────────────────
+var cfg = { gridMM:1.0, traceW:0.25, clearance:0.2, viaDrill:0.6, layers:{'F.Cu':true,'B.Cu':false} };
+var board = { widthMM:60, heightMM:50, components:[], nets:[], routes:[], ratsnest:[] };
+var view  = { zoom:10, panX:30, panY:30 };
+var state = { tool:'select', mode:'route', selComp:null, selPad:null,
+              hovComp:null, hovPad:null, dragging:false, dragComp:null,
+              dragOX:0, dragOY:0, routing:false, routeQ:[], routeTimer:null,
+              totalLen:0, viaCount:0 };
+
+// ── Canvas ────────────────────────────────────────────────────
+var canvas, ctx;
+
+function init(){
+  canvas = document.getElementById('pcb-canvas');
+  if(!canvas){ setTimeout(init,100); return; }
+  ctx = canvas.getContext('2d');
+  setupDropzone();
+  setupCanvasEvents();
+  resizeCanvas();
+  loadPreset('arduino');
+  log('PCB Router ready','info');
+  log('Arduino Shield loaded — click Run Auto-Router','ok');
+  setTimeout(function(){ resizeCanvas(); resetView(); }, 400);
+}
+
+function resizeCanvas(){
+  var area = document.getElementById('pcb-canvasarea');
+  if(!area) return;
+  var W = area.offsetWidth  || 600;
+  var H = area.offsetHeight || 600;
+  if(W < 50) W = 600;
+  if(H < 50) H = 600;
+  canvas.width  = W;
+  canvas.height = H;
+  draw();
+}
+
+window.addEventListener('resize', resizeCanvas);
+
+// ── Coordinate helpers ────────────────────────────────────────
+function mm2px(mm){ return mm * view.zoom; }
+function px2mm(px){ return px / view.zoom; }
+function sx(wx){ return mm2px(wx) + view.panX; }
+function sy(wy){ return mm2px(wy) + view.panY; }
+function wx(sx_){ return px2mm(sx_ - view.panX); }
+function wy(sy_){ return px2mm(sy_ - view.panY); }
+function snap(mm){ return Math.round(mm / cfg.gridMM) * cfg.gridMM; }
+
+// ── Union-Find (Kruskal/Prim support) ────────────────────────
+function UF(n){
+  var p=[], r=[];
+  for(var i=0;i<n;i++){p[i]=i;r[i]=0;}
+  return {
+    find:function(x){ while(p[x]!==x){p[x]=p[p[x]];x=p[x];}return x; },
+    union:function(a,b){
+      var ra=this.find(a),rb=this.find(b);
+      if(ra===rb)return false;
+      if(r[ra]<r[rb])p[ra]=rb; else if(r[ra]>r[rb])p[rb]=ra; else{p[rb]=ra;r[ra]++;}
+      return true;
+    }
+  };
+}
+
+// ── Prim's MST Ratsnest ───────────────────────────────────────
+function buildRatsnest(){
+  board.ratsnest = [];
+  board.nets.forEach(function(net){
+    var pads = padsOfNet(net.id);
+    if(pads.length < 2) return;
+    var visited = [0], edges = [];
+    while(visited.length < pads.length){
+      var best=null, bestD=Infinity;
+      for(var vi=0;vi<visited.length;vi++){
+        for(var j=0;j<pads.length;j++){
+          if(visited.indexOf(j)>=0) continue;
+          var d=dist2(pads[visited[vi]],pads[j]);
+          if(d<bestD){bestD=d;best={f:visited[vi],t:j};}
+        }
+      }
+      if(!best) break;
+      edges.push(best);
+      visited.push(best.t);
+    }
+    edges.forEach(function(e){
+      board.ratsnest.push({
+        net:net.id, color:net.color, routed:false,
+        from:{x:pads[e.f].ax, y:pads[e.f].ay},
+        to  :{x:pads[e.t].ax, y:pads[e.t].ay}
+      });
+    });
+  });
+  updateStats(); draw();
+}
+
+function padsOfNet(netId){
+  var out=[];
+  board.components.forEach(function(c){
+    c.pads.forEach(function(p){
+      if(p.net===netId) out.push({ax:c.x+p.dx, ay:c.y+p.dy});
+    });
+  });
+  return out;
+}
+
+function dist2(a,b){ var dx=a.ax-b.ax,dy=a.ay-b.ay; return Math.sqrt(dx*dx+dy*dy); }
+
+// ── A* router ────────────────────────────────────────────────
+var GRID_RES = 0.5;
+function astar(x1,y1,x2,y2,layer){
+  var toR=function(y){return Math.round(y/GRID_RES);};
+  var toC=function(x){return Math.round(x/GRID_RES);};
+  var toW=function(r,c){return {x:c*GRID_RES,y:r*GRID_RES};};
+  var h=function(r,c,er,ec){return Math.sqrt((r-er)*(r-er)+(c-ec)*(c-ec))*GRID_RES;};
+  var sr=toR(y1),sc=toC(x1),er=toR(y2),ec=toC(x2);
+  var maxR=toR(board.heightMM)+2, maxC=toC(board.widthMM)+2;
+  if(sr===er&&sc===ec) return [{x1:x1,y1:y1,x2:x2,y2:y2,layer:layer}];
+
+  var gScore={}, fScore={}, came={};
+  var key=function(r,c){return r+','+c;};
+  var sk=key(sr,sc);
+  gScore[sk]=0; fScore[sk]=h(sr,sc,er,ec);
+  // MinHeap via simple sorted array (fine for PCB scale)
+  var open=[{r:sr,c:sc,f:fScore[sk]}];
+  var dirs=[[0,1,1],[0,-1,1],[1,0,1],[-1,0,1],[1,1,1.414],[-1,-1,1.414],[1,-1,1.414],[-1,1,1.414]];
+  var itr=0, found=false;
+
+  while(open.length && itr++<5000){
+    open.sort(function(a,b){return a.f-b.f;});
+    var cur=open.shift();
+    var r=cur.r,c=cur.c,ck=key(r,c);
+    if(r===er&&c===ec){found=true;break;}
+    for(var d=0;d<dirs.length;d++){
+      var nr=r+dirs[d][0],nc=c+dirs[d][1],cost=dirs[d][2];
+      if(nr<0||nc<0||nr>=maxR||nc>=maxC) continue;
+      var nk=key(nr,nc);
+      var ng=(gScore[ck]||0)+cost*GRID_RES;
+      if(ng<(gScore[nk]!==undefined?gScore[nk]:Infinity)){
+        gScore[nk]=ng;fScore[nk]=ng+h(nr,nc,er,ec);
+        came[nk]={r:r,c:c};
+        open.push({r:nr,c:nc,f:fScore[nk]});
+      }
+    }
+  }
+
+  if(!found) return [{x1:x1,y1:y1,x2:x2,y2:y2,layer:layer,fallback:true}];
+
+  var path=[],cr=er,cc=ec;
+  var limit=0;
+  while(!(cr===sr&&cc===sc)&&limit++<8000){
+    path.push({r:cr,c:cc});
+    var prev=came[key(cr,cc)];
+    if(!prev) break;
+    cr=prev.r; cc=prev.c;
+  }
+  path.push({r:sr,c:sc});
+  path.reverse();
+
+  var segs=[];
+  for(var i=1;i<path.length;i++){
+    var wa=toW(path[i-1].r,path[i-1].c), wb=toW(path[i].r,path[i].c);
+    segs.push({x1:wa.x,y1:wa.y,x2:wb.x,y2:wb.y,layer:layer});
+  }
+  return segs;
+}
+
+// ── Routing engine ────────────────────────────────────────────
+function startRouting(){
+  if(state.routing) return;
+  clearRoutes(false);
+  buildRatsnest();
+  state.routing=true;
+  state.routeQ=board.ratsnest.slice();
+  state.totalLen=0; state.viaCount=0;
+  setStatus('ROUTING',true);
+  setBtnRunning(true);
+  setProgress(0);
+  log('Auto-router started: '+state.routeQ.length+' connections','info');
+  schedNext();
+}
+
+function schedNext(){
+  if(!state.routing||!state.routeQ.length){finishRouting();return;}
+  state.routeTimer=setTimeout(routeOne,55);
+}
+
+function routeOne(){
+  if(!state.routing||!state.routeQ.length){finishRouting();return;}
+  var rn=state.routeQ.shift();
+  var net=board.nets.filter(function(n){return n.id===rn.net;})[0];
+  var algo=document.getElementById('sel-algo').value;
+  var segs;
+  if(algo==='mst'){
+    segs=[{x1:rn.from.x,y1:rn.from.y,x2:rn.to.x,y2:rn.to.y,layer:'F.Cu',mst:true}];
+  } else {
+    segs=astar(rn.from.x,rn.from.y,rn.to.x,rn.to.y,'F.Cu');
+  }
+  var len=segs.reduce(function(s,sg){
+    return s+Math.sqrt((sg.x2-sg.x1)*(sg.x2-sg.x1)+(sg.y2-sg.y1)*(sg.y2-sg.y1));
+  },0);
+  state.totalLen+=len;
+  var vias=[];
+  if(cfg.layers['B.Cu']&&segs.length>4&&Math.random()<0.15){
+    var mid=segs[Math.floor(segs.length/2)];
+    vias=[{x:mid.x1,y:mid.y1}]; state.viaCount++;
+  }
+  board.routes.push({net:rn.net,color:net?net.color:'#888',segs:segs,vias:vias});
+  rn.routed=true;
+  var done=board.ratsnest.filter(function(r){return r.routed;}).length;
+  setProgress(Math.round(done/board.ratsnest.length*100));
+  updateStats(); draw();
+  log('Routed '+(net?net.name:'?')+' — '+len.toFixed(1)+'mm', segs.some(function(s){return s.fallback;})?'warn':'ok');
+  schedNext();
+}
+
+function finishRouting(){
+  state.routing=false;
+  setBtnRunning(false);
+  setStatus('COMPLETE',false);
+  setProgress(100);
+  var routed=board.ratsnest.filter(function(r){return r.routed;}).length;
+  var total=board.ratsnest.length;
+  var pct=total?Math.round(routed/total*100):100;
+  log('Done: '+routed+'/'+total+' ('+pct+'%)','ok');
+  log('Trace total: '+state.totalLen.toFixed(1)+'mm','info');
+  if(total>0){
+    document.getElementById('pcb-modalbody').innerHTML=
+      'Routed <strong style="color:#00ff50">'+routed+' of '+total+'</strong> connections ('+pct+'%)<br>'+
+      'Trace length: <strong>'+state.totalLen.toFixed(1)+' mm</strong><br>'+
+      'Vias: <strong>'+state.viaCount+'</strong>';
+    document.getElementById('pcb-modal').classList.add('show');
+  }
+  updateStats();
+}
+
+function clearRoutes(rebuild){
+  if(state.routing){state.routing=false;clearTimeout(state.routeTimer);}
+  board.routes=[];
+  board.ratsnest.forEach(function(r){r.routed=false;});
+  state.totalLen=0; state.viaCount=0;
+  setBtnRunning(false); setProgress(0); setStatus('READY',false);
+  if(rebuild!==false) buildRatsnest();
+  else { updateStats(); draw(); }
+}
+
+function showRatsnest(){
+  clearRoutes(false);
+  buildRatsnest();
+  log('Ratsnest displayed','info');
+}
+
+function stepRoute(){
+  if(!state.routeQ.length){clearRoutes(false);buildRatsnest();state.routeQ=board.ratsnest.slice();}
+  if(state.routeQ.length){state.routing=true;routeOne();state.routing=false;}
+}
+
+// ── Drawing ───────────────────────────────────────────────────
+function draw(){
+  if(!canvas||!ctx) return;
+  var W=canvas.width, H=canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // App background
+  ctx.fillStyle='#0a0f0a';
+  ctx.fillRect(0,0,W,H);
+
+  // Board rect
+  var bx=sx(0),by=sy(0),bw=mm2px(board.widthMM),bh=mm2px(board.heightMM);
+  ctx.fillStyle='#0d1a0d'; ctx.fillRect(bx,by,bw,bh);
+  ctx.strokeStyle='#2a4a2a'; ctx.lineWidth=1.5; ctx.strokeRect(bx,by,bw,bh);
+  drawCorners(bx,by,bw,bh);
+  drawGrid();
+
+  board.ratsnest.forEach(function(rn){
+    if(rn.routed) return;
+    ctx.save();
+    ctx.strokeStyle=rn.color||'#555'; ctx.lineWidth=0.8;
+    ctx.setLineDash([4,4]); ctx.globalAlpha=0.55;
+    ctx.beginPath(); ctx.moveTo(sx(rn.from.x),sy(rn.from.y)); ctx.lineTo(sx(rn.to.x),sy(rn.to.y)); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+    ctx.fillStyle=rn.color||'#555';
+    var mx=(sx(rn.from.x)+sx(rn.to.x))/2, my=(sy(rn.from.y)+sy(rn.to.y))/2;
+    ctx.beginPath(); ctx.arc(mx,my,2,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  });
+
+  board.routes.forEach(function(route){
+    route.segs.forEach(function(seg){
+      if(!cfg.layers[seg.layer||'F.Cu']) return;
+      var tw=Math.max(1.5,mm2px(cfg.traceW));
+      ctx.save();
+      if(seg.mst) ctx.setLineDash([5,3]);
+      ctx.strokeStyle=route.color||'#c8a84b';
+      ctx.lineWidth=tw; ctx.lineCap='round'; ctx.globalAlpha=0.85;
+      ctx.beginPath(); ctx.moveTo(sx(seg.x1),sy(seg.y1)); ctx.lineTo(sx(seg.x2),sy(seg.y2)); ctx.stroke();
+      ctx.strokeStyle=route.color||'#c8a84b'; ctx.lineWidth=tw+4; ctx.globalAlpha=0.08; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(sx(seg.x1),sy(seg.y1)); ctx.lineTo(sx(seg.x2),sy(seg.y2)); ctx.stroke();
+      ctx.restore();
+    });
+    route.vias.forEach(function(via){
+      var vx=sx(via.x), vy=sy(via.y), vr=Math.max(3,mm2px(cfg.viaDrill*0.5));
+      ctx.save();
+      ctx.beginPath(); ctx.arc(vx,vy,vr+2,0,Math.PI*2);
+      ctx.fillStyle=route.color||'#c8a84b'; ctx.globalAlpha=0.8; ctx.fill();
+      ctx.beginPath(); ctx.arc(vx,vy,vr*0.4,0,Math.PI*2);
+      ctx.fillStyle='#0d1a0d'; ctx.globalAlpha=1; ctx.fill();
+      ctx.restore();
+    });
+  });
+
+  board.components.forEach(function(c){
+    var cw=mm2px(c.w||2.5), ch=mm2px(c.h||2.0);
+    var isSel=(state.selComp===c.id);
+    ctx.save();
+    ctx.fillStyle=isSel?'rgba(0,255,80,.08)':'rgba(20,40,20,.8)';
+    ctx.strokeStyle=isSel?'#00ff50':'#2a4a2a';
+    ctx.lineWidth=isSel?1.5:0.8;
+    ctx.beginPath(); ctx.roundRect(sx(c.x)-cw/2,sy(c.y)-ch/2,cw,ch,2); ctx.fill(); ctx.stroke();
+    if(mm2px(1)>6){
+      ctx.fillStyle='#3a6a3a'; ctx.font=Math.max(7,mm2px(0.55))+'px IBM Plex Mono,monospace';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(c.ref,sx(c.x),sy(c.y));
+    }
+    c.pads.forEach(function(p){
+      var px=sx(c.x+p.dx), py=sy(c.y+p.dy);
+      var pr=Math.max(3,mm2px(0.45));
+      var net=board.nets.filter(function(n){return n.id===p.net;})[0];
+      var col=net?net.color:'#666';
+      var isH=(state.hovComp===c.id&&state.hovPad===p.id);
+      var isS=(state.selComp===c.id&&state.selPad===p.id);
+      ctx.save();
+      ctx.beginPath(); ctx.arc(px,py,pr+(isH||isS?2:0),0,Math.PI*2);
+      ctx.fillStyle=col+'bb'; ctx.fill();
+      ctx.strokeStyle=isS?'#fff':col; ctx.lineWidth=isS?2:0.8; ctx.stroke();
+      if(isH||isS){ctx.beginPath();ctx.arc(px,py,pr+6,0,Math.PI*2);ctx.fillStyle=col+'18';ctx.fill();}
+      ctx.restore();
+    });
+    ctx.restore();
+  });
+}
+
+function drawGrid(){
+  var step=mm2px(cfg.gridMM);
+  if(step<8) return;
+  ctx.fillStyle='rgba(0,255,80,.06)';
+  for(var gx=sx(0);gx<=sx(board.widthMM);gx+=step)
+    for(var gy=sy(0);gy<=sy(board.heightMM);gy+=step)
+      ctx.fillRect(gx-0.5,gy-0.5,1,1);
+}
+
+function drawCorners(bx,by,bw,bh){
+  var sz=8; ctx.strokeStyle='#3a6a3a'; ctx.lineWidth=1.5;
+  [[bx,by,1,1],[bx+bw,by,-1,1],[bx,by+bh,1,-1],[bx+bw,by+bh,-1,-1]].forEach(function(c){
+    ctx.beginPath(); ctx.moveTo(c[0]+c[2]*sz,c[1]); ctx.lineTo(c[0],c[1]); ctx.lineTo(c[0],c[1]+c[3]*sz); ctx.stroke();
+  });
+}
+
+// ── Canvas events ─────────────────────────────────────────────
+function setupCanvasEvents(){
+  canvas.addEventListener('mousemove', onMouseMove);
+  canvas.addEventListener('mousedown', onMouseDown);
+  canvas.addEventListener('mouseup',   function(){ state.dragging=false; state.dragComp=null; });
+  canvas.addEventListener('mouseleave',function(){ state.dragging=false; state.hovComp=null; state.hovPad=null; hideTip(); draw(); });
+  canvas.addEventListener('wheel',     onWheel, {passive:false});
+}
+
+function onMouseMove(e){
+  var rect=canvas.getBoundingClientRect();
+  var mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  if(state.dragging&&state.dragComp!==null&&state.tool==='move'){
+    var c=board.components.filter(function(c){return c.id===state.dragComp;})[0];
+    if(c){c.x=snap(wx(mx)-state.dragOX); c.y=snap(wy(my)-state.dragOY);}
+    buildRatsnest(); return;
+  }
+  state.hovComp=null; state.hovPad=null;
+  for(var ci=0;ci<board.components.length;ci++){
+    var c=board.components[ci];
+    for(var pi=0;pi<c.pads.length;pi++){
+      var p=c.pads[pi];
+      var px=sx(c.x+p.dx), py=sy(c.y+p.dy), pr=Math.max(5,mm2px(0.5));
+      if((mx-px)*(mx-px)+(my-py)*(my-py)<pr*pr*2.5){
+        state.hovComp=c.id; state.hovPad=p.id;
+        var net=board.nets.filter(function(n){return n.id===p.net;})[0];
+        showTip(e,c.ref+' — pad '+p.id+'<br>Net: <span style="color:'+(net?net.color:'#888')+'">'+(net?net.name:'unconnected')+'</span><br>'+p.layer);
+        break;
+      }
+    }
+    if(state.hovComp!==null) break;
+  }
+  if(state.hovComp===null) hideTip();
+  draw();
+}
+
+function onMouseDown(e){
+  var rect=canvas.getBoundingClientRect();
+  var mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  if(state.tool==='add'){
+    var cid=board.components.length;
+    var nid=board.nets.length>0?Math.floor(Math.random()*board.nets.length):0;
+    board.components.push({id:cid,ref:'P'+cid,x:snap(wx(mx)),y:snap(wy(my)),pads:[{id:0,net:nid,dx:0,dy:0,layer:'F.Cu'}],w:1.5,h:1.5});
+    buildRatsnest(); renderNets(); updateStats(); draw(); return;
+  }
+  for(var ci=0;ci<board.components.length;ci++){
+    var c=board.components[ci];
+    for(var pi=0;pi<c.pads.length;pi++){
+      var p=c.pads[pi];
+      var px=sx(c.x+p.dx), py=sy(c.y+p.dy), pr=Math.max(5,mm2px(0.6));
+      if((mx-px)*(mx-px)+(my-py)*(my-py)<pr*pr*2.5){
+        if(state.tool==='del'){
+          c.pads.splice(pi,1);
+          if(!c.pads.length) board.components.splice(ci,1);
+          buildRatsnest(); updateStats(); draw(); return;
+        }
+        state.selComp=c.id; state.selPad=p.id;
+        if(state.tool==='move'){state.dragging=true;state.dragComp=c.id;state.dragOX=wx(mx)-c.x;state.dragOY=wy(my)-c.y;}
+        updateSelPanel(c,p); draw(); return;
+      }
+    }
+    var cw=mm2px(c.w||2.5)/2, ch=mm2px(c.h||2.0)/2;
+    if(mx>=sx(c.x)-cw&&mx<=sx(c.x)+cw&&my>=sy(c.y)-ch&&my<=sy(c.y)+ch){
+      if(state.tool==='move'){state.dragging=true;state.dragComp=c.id;state.dragOX=wx(mx)-c.x;state.dragOY=wy(my)-c.y;}
+      state.selComp=c.id; draw(); return;
+    }
+  }
+  state.selComp=null; state.selPad=null; draw();
+}
+
+function onWheel(e){
+  e.preventDefault();
+  var rect=canvas.getBoundingClientRect();
+  var mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  var f=e.deltaY<0?1.12:0.89;
+  var oz=view.zoom; view.zoom=Math.max(3,Math.min(50,view.zoom*f));
+  view.panX=mx-(mx-view.panX)*(view.zoom/oz);
+  view.panY=my-(my-view.panY)*(view.zoom/oz);
+  draw();
+}
+
+// ── UI helpers ────────────────────────────────────────────────
+function setStatus(t,blink){
+  document.getElementById('pcb-status').textContent=t;
+  var led=document.getElementById('pcb-led');
+  led.style.background=blink?'#ffcc00':'#00ff50';
+  led.style.boxShadow='0 0 8px '+(blink?'#ffcc00':'#00ff50');
+  led.style.animationDuration=blink?'.5s':'2s';
+}
+function setProgress(p){document.getElementById('pcb-prog').style.width=p+'%';}
+function setBtnRunning(r){
+  var b=document.getElementById('btn-route');
+  b.className=r?'btn running':'btn primary';
+  b.innerHTML=r?'&#x23F1; Routing...':'&#x25B6; Run Auto-Router';
+}
+function log(msg,type){
+  var el=document.getElementById('pcb-log');
+  var d=document.createElement('div'); d.className='log-e log-'+(type||'info');
+  var t=new Date().toTimeString().slice(0,8);
+  d.innerHTML='<span class="log-t">'+t+'</span>'+msg;
+  el.appendChild(d); el.scrollTop=el.scrollHeight;
+}
+function showTip(e,html){
+  var tip=document.getElementById('pcb-tip');
+  tip.style.display='block'; tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY-8)+'px';
+  tip.innerHTML=html;
+}
+function hideTip(){ document.getElementById('pcb-tip').style.display='none'; }
+function updateSelPanel(c,p){
+  var net=p?board.nets.filter(function(n){return n.id===p.net;})[0]:null;
+  document.getElementById('rp-sel').innerHTML=
+    '<strong style="color:#e8f0e8">'+c.ref+'</strong><br>'+
+    (p?'Pad: '+p.id+'<br>Net: <span style="color:'+(net?net.color:'#888')+'">'+(net?net.name:'unconnected')+'</span><br>Pos: ('+(c.x+p.dx).toFixed(2)+', '+(c.y+p.dy).toFixed(2)+')mm':'');
+}
+function updateStats(){
+  var totalPads=board.components.reduce(function(s,c){return s+c.pads.length;},0);
+  var routed=board.ratsnest.filter(function(r){return r.routed;}).length;
+  var total=board.ratsnest.length;
+  var pct=total?Math.round(routed/total*100):100;
+  document.getElementById('st-pads').textContent=totalPads;
+  document.getElementById('st-nets').textContent=board.nets.length;
+  document.getElementById('st-rt').textContent=routed+'/'+total;
+  document.getElementById('st-via').textContent=state.viaCount;
+  document.getElementById('rp-size').textContent=board.widthMM+'x'+board.heightMM+'mm';
+  document.getElementById('rp-pct').textContent=pct+'%';
+  document.getElementById('rp-pct').className='rp-val '+(pct===100?'rp-ok':pct>50?'rp-warn':'rp-err');
+  document.getElementById('rp-len').textContent=state.totalLen.toFixed(1)+'mm';
+  document.getElementById('rp-via').textContent=state.viaCount;
+  var drc=board.routes.some(function(r){return r.segs.some(function(s){return s.fallback;});})?'WARN':'PASS';
+  document.getElementById('rp-drc').textContent=drc;
+  document.getElementById('rp-drc').className='rp-val '+(drc==='PASS'?'rp-ok':'rp-warn');
+}
+function renderNets(){
+  var el=document.getElementById('net-list'); el.innerHTML='';
+  board.nets.forEach(function(net){
+    var pads=padsOfNet(net.id).length;
+    var rt=board.ratsnest.filter(function(r){return r.net===net.id&&r.routed;}).length;
+    var tot=board.ratsnest.filter(function(r){return r.net===net.id;}).length;
+    var d=document.createElement('div'); d.className='net-item';
+    d.innerHTML='<div class="net-sw" style="background:'+net.color+'"></div>'+
+      '<div class="net-nm">'+net.name+'</div>'+
+      '<div class="net-info">'+pads+'p</div>'+
+      '<div class="net-dot" style="background:'+(rt>=tot&&tot>0?'#00cc40':'#2d4a2d')+'"></div>';
+    el.appendChild(d);
+  });
+}
+function setTool(t){
+  state.tool=t;
+  ['select','move','add','del'].forEach(function(id){
+    var b=document.getElementById('tool-'+id);
+    if(b) b.className='tb-btn'+(t===id?' act':'');
+  });
+  canvas.style.cursor=t==='add'?'crosshair':t==='del'?'not-allowed':t==='move'?'grab':'default';
+}
+function setMode(m){
+  state.mode=m;
+  ['route','place','inspect'].forEach(function(id){
+    var b=document.getElementById('tab-'+id);
+    if(b) b.className='ttab'+(m===id?' active':'');
+  });
+}
+function zoomIn(){view.zoom=Math.min(50,view.zoom*1.2);draw();}
+function zoomOut(){view.zoom=Math.max(3,view.zoom/1.2);draw();}
+function resetView(){
+  var area=document.getElementById('pcb-canvasarea');
+  var W=area?Math.max(area.offsetWidth||0,300):600;
+  var H=area?Math.max(area.offsetHeight||0,300):600;
+  var sx2=(W-80)/board.widthMM, sy2=(H-80)/board.heightMM;
+  view.zoom=Math.min(sx2,sy2,20);
+  if(!view.zoom||isNaN(view.zoom)||view.zoom<=0) view.zoom=8;
+  view.panX=(W-mm2px(board.widthMM))/2;
+  view.panY=(H-mm2px(board.heightMM))/2;
+  draw();
+}
+function toggleLayer(l){
+  cfg.layers[l]=!cfg.layers[l];
+  var id=l==='F.Cu'?'lay-fcu':'lay-bcu';
+  var el=document.getElementById(id);
+  if(el) el.className=el.className.replace(' act','')+(cfg.layers[l]?' act':'');
+  draw();
+}
+function setGrid(v){ cfg.gridMM=GRIDS[v]||1.0; document.getElementById('lbl-grid').textContent=cfg.gridMM+'mm'; draw(); }
+function setTrace(v){ cfg.traceW=TRACES[v]||0.25; document.getElementById('lbl-trace').textContent=cfg.traceW+'mm'; }
+function setClear(v){ cfg.clearance=CLEARS[v]||0.2; document.getElementById('lbl-clear').textContent=cfg.clearance+'mm'; }
+function setVia(v){ cfg.viaDrill=VIAS[v]||0.6; document.getElementById('lbl-via').textContent=cfg.viaDrill+'mm'; }
+
+// ── Presets ───────────────────────────────────────────────────
+function loadPreset(name){
+  clearRoutes(false);
+  board.components=[]; board.nets=[]; board.routes=[]; board.ratsnest=[];
+  var p={'arduino':presetArduino,'timer555':preset555,'opamp':presetOpamp,'random':presetRandom}[name];
+  if(p) p();
+  buildRatsnest(); renderNets(); updateStats(); resetView();
+  log('Loaded: '+name,'ok');
+}
+
+function mkNet(id,name,col){ board.nets.push({id:id,name:name,color:col||NET_COLORS[id%NET_COLORS.length]}); }
+function mkPad(id,net,dx,dy,layer){ return {id:id,net:net,dx:dx,dy:dy,layer:layer||'F.Cu'}; }
+function mkComp(id,ref,x,y,pads){ board.components.push({id:id,ref:ref,x:x,y:y,pads:pads,w:2.5,h:2.0}); }
+
+function presetArduino(){
+  board.widthMM=60; board.heightMM=50;
+  mkNet(0,'GND','#4499ff'); mkNet(1,'VCC','#ff4444');
+  mkNet(2,'D13','#ffaa00'); mkNet(3,'D12','#aa44ff');
+  mkNet(4,'D11','#00ffaa'); mkNet(5,'D10','#ff44aa');
+  mkNet(6,'SDA','#44ffff'); mkNet(7,'SCL','#ffff44');
+  mkNet(8,'RST','#ff8844'); mkNet(9,'A0','#88ff44');
+  mkComp(0,'U1',28,22,[mkPad(0,0,-1.5,-1),mkPad(1,0,-1.5,0),mkPad(2,1,-1.5,1),mkPad(3,2,1.5,-1),mkPad(4,3,1.5,0),mkPad(5,4,1.5,1),mkPad(6,6,-0.5,-1.5),mkPad(7,7,0.5,-1.5),mkPad(8,8,-0.5,1.5),mkPad(9,5,0.5,1.5)]);
+  mkComp(1,'C1',14,10,[mkPad(0,1,-0.8,0),mkPad(1,0,0.8,0)]);
+  mkComp(2,'C2',14,18,[mkPad(0,1,-0.8,0),mkPad(1,0,0.8,0)]);
+  mkComp(3,'C3',44,10,[mkPad(0,1,-0.8,0),mkPad(1,0,0.8,0)]);
+  mkComp(4,'R1',8,30,[mkPad(0,9,-1,0),mkPad(1,0,1,0)]);
+  mkComp(5,'R2',50,15,[mkPad(0,2,-1,0),mkPad(1,0,1,0)]);
+  mkComp(6,'R3',50,25,[mkPad(0,6,-1,0),mkPad(1,0,1,0)]);
+  mkComp(7,'R4',50,35,[mkPad(0,7,-1,0),mkPad(1,0,1,0)]);
+  mkComp(8,'J1',6,22,[mkPad(0,8,-0.8,-1),mkPad(1,9,-0.8,0),mkPad(2,0,-0.8,1)]);
+  mkComp(9,'J2',54,22,[mkPad(0,3,-0.8,-1.5),mkPad(1,4,-0.8,-0.5),mkPad(2,5,-0.8,0.5),mkPad(3,6,-0.8,1.5)]);
+  mkComp(10,'Y1',28,8,[mkPad(0,6,-1,0),mkPad(1,7,1,0)]);
+  mkComp(11,'LED1',44,40,[mkPad(0,2,-1,0),mkPad(1,0,1,0)]);
+  mkComp(12,'Q1',18,40,[mkPad(0,0,-1,0),mkPad(1,1,0,-1),mkPad(2,4,1,0)]);
+}
+
+function preset555(){
+  board.widthMM=40; board.heightMM=35;
+  mkNet(0,'GND','#4499ff'); mkNet(1,'VCC','#ff4444');
+  mkNet(2,'TRIG','#ffaa00'); mkNet(3,'DISCH','#aa44ff');
+  mkNet(4,'OUT','#00ffaa'); mkNet(5,'CTRL','#ff44aa');
+  mkComp(0,'U1',20,17,[mkPad(0,0,-2,-3.8),mkPad(1,2,-2,-1.27),mkPad(2,5,-2,0),mkPad(3,1,-2,1.27),mkPad(4,4,2,1.27),mkPad(5,3,2,0),mkPad(6,2,2,-1.27),mkPad(7,1,2,-3.8)]);
+  mkComp(1,'R1',10,8,[mkPad(0,1,-1,0),mkPad(1,3,1,0)]);
+  mkComp(2,'R2',10,17,[mkPad(0,3,-1,0),mkPad(1,2,1,0)]);
+  mkComp(3,'C1',30,27,[mkPad(0,2,-0.8,0),mkPad(1,0,0.8,0)]);
+  mkComp(4,'C2',8,27,[mkPad(0,1,-0.8,0),mkPad(1,0,0.8,0)]);
+  mkComp(5,'C3',36,17,[mkPad(0,5,-0.8,0),mkPad(1,0,0.8,0)]);
+  mkComp(6,'J1',34,8,[mkPad(0,1,0,-0.8),mkPad(1,0,0,0.8)]);
+  mkComp(7,'J2',36,27,[mkPad(0,4,0,-0.8),mkPad(1,0,0,0.8)]);
+}
+
+function presetOpamp(){
+  board.widthMM=50; board.heightMM=40;
+  mkNet(0,'GND','#4499ff'); mkNet(1,'VCC+','#ff4444');
+  mkNet(2,'VCC-','#ff8800'); mkNet(3,'IN','#ffaa00');
+  mkNet(4,'INV','#aa44ff'); mkNet(5,'OUT','#00ffaa');
+  mkComp(0,'U1',25,20,[mkPad(0,4,-2,-1),mkPad(1,0,-2,0),mkPad(2,2,-2,1),mkPad(3,1,2,-1),mkPad(4,5,2,0),mkPad(5,3,2,1)]);
+  mkComp(1,'R1',10,14,[mkPad(0,3,-1,0),mkPad(1,4,1,0)]);
+  mkComp(2,'R2',10,26,[mkPad(0,4,-1,0),mkPad(1,0,1,0)]);
+  mkComp(3,'R3',25,10,[mkPad(0,4,0,-1),mkPad(1,5,0,1)]);
+  mkComp(4,'C1',6,20,[mkPad(0,1,-0.8,0),mkPad(1,0,0.8,0)]);
+  mkComp(5,'C2',42,20,[mkPad(0,2,-0.8,0),mkPad(1,0,0.8,0)]);
+  mkComp(6,'J1',5,14,[mkPad(0,3,0,0)]);
+  mkComp(7,'J2',44,20,[mkPad(0,5,0,0)]);
+  mkComp(8,'R4',38,14,[mkPad(0,5,-1,0),mkPad(1,1,1,0)]);
+}
+
+function presetRandom(){
+  board.widthMM=70; board.heightMM=60;
+  var N=8;
+  for(var i=0;i<N;i++) mkNet(i,'NET'+i);
+  for(var j=0;j<14;j++){
+    var x=8+Math.random()*54, y=8+Math.random()*44;
+    var np=2+Math.floor(Math.random()*4);
+    var pads=[];
+    for(var k=0;k<np;k++){
+      var ang=k/np*Math.PI*2, r=1.2+Math.random()*0.8;
+      pads.push(mkPad(k,Math.floor(Math.random()*N),Math.cos(ang)*r,Math.sin(ang)*r));
+    }
+    mkComp(j,'C'+j,x,y,pads);
+  }
+}
+
+// ── File Import ───────────────────────────────────────────────
+function setupDropzone(){
+  var dz=document.getElementById('pcb-dropzone');
+  if(!dz) return;
+  dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag');});
+  dz.addEventListener('dragleave',function(){dz.classList.remove('drag');});
+  dz.addEventListener('drop',function(e){
+    e.preventDefault(); dz.classList.remove('drag');
+    var f=e.dataTransfer.files[0]; if(f) importFile(f);
+  });
+}
+
+function importFile(file){
+  if(!file) return;
+  var ext=file.name.split('.').pop().toLowerCase();
+  impStatus('Reading '+file.name+'...','warn');
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var result=parseByExt(ext,e.target.result,file.name);
+      if(result&&result.components&&result.components.length){
+        applyBoard(result,file.name);
+        impStatus('OK: '+result.components.length+' components, '+result.nets.length+' nets','ok');
+      } else {
+        impStatus('No components found. Check file format.','warn');
+      }
+    } catch(err){
+      impStatus('Error: '+err.message,'err');
+      log('Import error: '+err.message,'err');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function impStatus(msg,type){
+  var el=document.getElementById('pcb-impstatus');
+  el.style.display='block'; el.className='imp-status imp-'+type; el.textContent=msg;
+}
+
+function applyBoard(result,fname){
+  clearRoutes(false);
+  board.components=result.components; board.nets=result.nets;
+  board.routes=[]; board.ratsnest=[];
+  board.widthMM=result.widthMM||80; board.heightMM=result.heightMM||60;
+  autoLayout();
+  buildRatsnest(); renderNets(); updateStats(); resetView();
+  log('Imported: '+fname,'ok');
+}
+
+function autoLayout(){
+  var unplaced=board.components.filter(function(c){return !c.x&&!c.y;});
+  if(!unplaced.length) return;
+  var cols=Math.ceil(Math.sqrt(board.components.length));
+  var sp=Math.min(board.widthMM,board.heightMM)/(cols+1);
+  board.components.forEach(function(c,i){
+    if(!c.x&&!c.y){ c.x=5+sp*(i%cols)+sp*0.5; c.y=5+sp*Math.floor(i/cols)+sp*0.5; }
+  });
+}
+
+function spreadPads(comps){
+  comps.forEach(function(c){
+    var n=c.pads.length; if(!n) return;
+    var r=Math.max(1.0,n*0.32);
+    c.pads.forEach(function(p,i){
+      if(p.dx===0&&p.dy===0&&n>1){
+        var a=(i/n)*Math.PI*2; p.dx=Math.cos(a)*r; p.dy=Math.sin(a)*r;
+      }
+    });
+  });
+}
+
+function parseByExt(ext,text,fname){
+  if(ext==='dsn')       return parseDSN(text);
+  if(ext==='net'||ext==='netlist') return parseKiCadNet(text);
+  if(ext==='ipc')       return parseIPC(text);
+  if(ext==='kicad_pcb') return parseKiCadPCB(text);
+  if(ext==='gbr'||ext==='pho') return parseGerber(text);
+  if(ext==='drl'||ext==='xnc') return parseDrill(text);
+  if(ext==='dru'||ext==='ext') return parseDRU(text);
+  if(ext==='csv')       return parseCentroid(text);
+  if(ext==='txt')       return parseTXT(text);
+  throw new Error('Unsupported: .'+ext);
+}
+
+// DSN — Specctra
+function parseDSN(text){
+  var nets=[],comps=[],netMap={},ni=0,ci=0;
+  // nets
+  var lines=text.split('\n');
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    var nm=l.match(/^\(net\s+"?([^"\s)]+)"?/);
+    if(nm&&!netMap[nm[1]]){ netMap[nm[1]]=ni; nets.push({id:ni,name:nm[1],color:NET_COLORS[ni%NET_COLORS.length]}); ni++; }
+  }
+  // placements
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    var pm=l.match(/^\(place\s+"?([^"\s)]+)"?\s+([\d.\-]+)\s+([\d.\-]+)/);
+    if(pm){ comps.push({id:ci++,ref:pm[1],x:parseFloat(pm[2])/1000,y:parseFloat(pm[3])/1000,pads:[],w:2.5,h:2.0}); }
+  }
+  // pin-net via (pins) blocks — safe line-by-line
+  var curNet=null;
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    var nn=l.match(/^\(net\s+"?([^"\s)]+)"?/);
+    if(nn) curNet=netMap[nn[1]]!==undefined?netMap[nn[1]]:null;
+    if(curNet===null) continue;
+    var pr=/\b([A-Za-z][A-Za-z0-9_]*)-(\w+)\b/g, m;
+    while((m=pr.exec(l))!==null){
+      var ref=m[1],pad=m[2];
+      var c=comps.filter(function(x){return x.ref===ref;})[0];
+      if(!c){c={id:ci++,ref:ref,x:0,y:0,pads:[],w:2.5,h:2.0};comps.push(c);}
+      c.pads.push({id:c.pads.length,net:curNet,dx:0,dy:0,layer:'F.Cu'});
+    }
+  }
+  spreadPads(comps);
+  return {nets:nets,components:comps,widthMM:80,heightMM:60};
+}
+
+// KiCad .net
+function parseKiCadNet(text){
+  var nets=[],comps=[],netMap={},compMap={},ni=0,ci=0;
+  var lines=text.split('\n');
+  // First pass: collect net names
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    var m=l.match(/^\(name\s+"?([^"\)]+)"?\)/);
+    if(m){var n=m[1].trim();if(!netMap[n]){netMap[n]=ni;nets.push({id:ni,name:n,color:NET_COLORS[ni%NET_COLORS.length]});ni++;}}
+  }
+  // Second pass: collect refs
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    var m=l.match(/^\(ref\s+"?([^"\)]+)"?\)/);
+    if(m){var r=m[1].trim();if(compMap[r]===undefined){compMap[r]=ci;comps.push({id:ci,ref:r,x:0,y:0,pads:[],w:2.5,h:2.0});ci++;}}
+  }
+  // Third pass: nodes
+  var curNet=null;
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    var nm=l.match(/^\(name\s+"?([^"\)]+)"?\)/); if(nm) curNet=netMap[nm[1].trim()];
+    var nd=l.match(/^\(node\s+\(ref\s+"?([^"\)]+)"?\)\s*\(pin\s+"?([^"\)]+)"?\)/);
+    if(nd&&curNet!==undefined){
+      var ref=nd[1].trim();
+      if(compMap[ref]===undefined){compMap[ref]=ci;comps.push({id:ci,ref:ref,x:0,y:0,pads:[],w:2.5,h:2.0});ci++;}
+      comps[compMap[ref]].pads.push({id:comps[compMap[ref]].pads.length,net:curNet,dx:0,dy:0,layer:'F.Cu'});
+    }
+  }
+  spreadPads(comps); return {nets:nets,components:comps,widthMM:80,heightMM:60};
+}
+
+// KiCad PCB
+function parseKiCadPCB(text){
+  var nets=[],comps=[],netMap={},ni=0,ci=0;
+  var lines=text.split('\n');
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    var nm=l.match(/^\(net\s+\d+\s+"?([^"\)]+)"?\)/);
+    if(nm){var n=nm[1].trim();if(!netMap[n]){netMap[n]=ni;nets.push({id:ni,name:n,color:NET_COLORS[ni%NET_COLORS.length]});ni++;}}
+  }
+  // Footprints: look for (footprint or (module then (at X Y)
+  var inFP=false,curRef='FP',curX=0,curY=0,curPads=[];
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    if(l.match(/^\((?:footprint|module)\s/)){inFP=true;curRef='FP'+ci;curX=0;curY=0;curPads=[];}
+    if(inFP){
+      var at=l.match(/^\(at\s+([\d.\-]+)\s+([\d.\-]+)/);
+      if(at&&!curX&&!curY){curX=parseFloat(at[1]);curY=parseFloat(at[2]);}
+      var rf=l.match(/^\(fp_text\s+reference\s+"?([^"\s)]+)"?/);
+      if(!rf) rf=l.match(/^\(property\s+"Reference"\s+"([^"]+)"/);
+      if(rf) curRef=rf[1];
+      var pd=l.match(/^\(pad\s+\S+\s+\S+\s+\S+\s*\(at\s+([\d.\-]+)\s+([\d.\-]+)/);
+      if(pd){
+        var nn=l.match(/\(net\s+\d+\s+"?([^"\)]+)"?\)/);
+        var nid=0;
+        if(nn){var n=nn[1].trim();if(!netMap[n]){netMap[n]=ni;nets.push({id:ni,name:n,color:NET_COLORS[ni%NET_COLORS.length]});ni++;}nid=netMap[n];}
+        curPads.push({id:curPads.length,net:nid,dx:parseFloat(pd[1]),dy:parseFloat(pd[2]),layer:'F.Cu'});
+      }
+      if(l===')' && inFP && curPads.length){
+        comps.push({id:ci++,ref:curRef,x:curX,y:curY,pads:curPads,w:2.5,h:2.0});
+        inFP=false;
+      }
+    }
+  }
+  if(!comps.length) return parseKiCadNet(text);
+  return {nets:nets,components:comps,widthMM:100,heightMM:80};
+}
+
+// IPC-356
+function parseIPC(text){
+  var nets=[],comps=[],netMap={},compMap={},ni=0,ci=0;
+  var lines=text.split('\n');
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i];
+    if(l.length<40||!/^[3S]/.test(l.trim())) continue;
+    var nn=l.substring(3,17).trim(), ref=l.substring(17,25).trim();
+    var xs=l.substring(31,37).trim(), ys=l.substring(38,44).trim();
+    if(!nn||!ref) continue;
+    if(!netMap[nn]){netMap[nn]=ni;nets.push({id:ni,name:nn,color:NET_COLORS[ni%NET_COLORS.length]});ni++;}
+    if(compMap[ref]===undefined){
+      compMap[ref]=ci;
+      comps.push({id:ci++,ref:ref,x:xs?parseFloat(xs)/10000:0,y:ys?parseFloat(ys)/10000:0,pads:[],w:2.5,h:2.0});
+    }
+    comps[compMap[ref]].pads.push({id:comps[compMap[ref]].pads.length,net:netMap[nn],dx:0,dy:0,layer:'F.Cu'});
+  }
+  spreadPads(comps); return {nets:nets,components:comps,widthMM:80,heightMM:60};
+}
+
+// Gerber
+function parseGerber(text){
+  var nets=[{id:0,name:'COPPER',color:'#c8a84b'}];
+  var comps=[],idx=0,wMM=80,hMM=60;
+  var lines=text.split('\n');
+  var isMM=text.indexOf('MOMM')>=0;
+  var fmtM=text.match(/FSLAX(\d)(\d)/);
+  var dec=fmtM?parseInt(fmtM[2]):5;
+  var div=Math.pow(10,dec);
+  var scale=isMM?1/div:25.4/div;
+  for(var i=0;i<lines.length;i++){
+    var m=lines[i].match(/X([-\d]+)Y([-\d]+)D03/);
+    if(m){
+      var x=parseInt(m[1])*scale, y=parseInt(m[2])*scale;
+      wMM=Math.max(wMM,x+5); hMM=Math.max(hMM,y+5);
+      comps.push({id:idx++,ref:'F'+idx,x:x,y:y,pads:[{id:0,net:0,dx:0,dy:0,layer:'F.Cu'}],w:1.2,h:1.2});
+    }
+  }
+  return {nets:nets,components:comps,widthMM:wMM,heightMM:hMM};
+}
+
+// Excellon Drill
+function parseDrill(text){
+  var nets=[{id:0,name:'DRILL',color:'#aaaaaa'}];
+  var comps=[],idx=0,wMM=80,hMM=60;
+  var isMM=text.indexOf('METRIC')>=0;
+  var scale=isMM?0.001:0.0254;
+  var lines=text.split('\n');
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    if(l==='METRIC'||l.indexOf('METRIC')===0) isMM=true;
+    var m=l.match(/X([+\-]?[\d.]+)Y([+\-]?[\d.]+)/);
+    if(m){
+      var x=parseFloat(m[1])*scale*(isMM?1:25.4/0.0254);
+      var y=parseFloat(m[2])*scale*(isMM?1:25.4/0.0254);
+      // Simpler: just use raw value * scale
+      x=parseFloat(m[1])*(isMM?0.001:0.0254);
+      y=parseFloat(m[2])*(isMM?0.001:0.0254);
+      wMM=Math.max(wMM,x+5); hMM=Math.max(hMM,y+5);
+      comps.push({id:idx++,ref:'H'+idx,x:x,y:y,pads:[{id:0,net:0,dx:0,dy:0,layer:'F.Cu'}],w:0.8,h:0.8});
+    }
+  }
+  return {nets:nets,components:comps,widthMM:wMM,heightMM:hMM};
+}
+
+// DRU — Design Rules (apply to config, no geometry)
+function parseDRU(text){
+  var lines=text.split('\n');
+  for(var i=0;i<lines.length;i++){
+    var m=lines[i].match(/^\s*(\w+)\s*=\s*([\d.]+)/);
+    if(!m) continue;
+    var k=m[1], v=parseFloat(m[2]);
+    if(k==='mlMinWidth')    cfg.traceW=v/1000;
+    if(k==='mlMinClearance') cfg.clearance=v/1000;
+    if(k==='mlMinDrill')    cfg.viaDrill=v/1000;
+  }
+  document.getElementById('lbl-trace').textContent=cfg.traceW+'mm';
+  document.getElementById('lbl-clear').textContent=cfg.clearance+'mm';
+  document.getElementById('lbl-via').textContent=cfg.viaDrill+'mm';
+  throw new Error('Design rules applied — trace:'+cfg.traceW+'mm clear:'+cfg.clearance+'mm via:'+cfg.viaDrill+'mm — no geometry to display');
+}
+
+// Centroid CSV
+function parseCentroid(text){
+  var nets=[{id:0,name:'UNASSIGNED',color:'#888888'}];
+  var comps=[],idx=0,wMM=0,hMM=0;
+  var lines=text.split('\n');
+  // find header line
+  var hdrIdx=0;
+  for(var i=0;i<Math.min(lines.length,8);i++){
+    if(/ref|design|comp/i.test(lines[i])){ hdrIdx=i; break; }
+  }
+  var hdr=lines[hdrIdx].split(/[,\t]/);
+  var ri=0,xi=-1,yi=-1,li=-1;
+  hdr.forEach(function(c,i){
+    c=c.trim().replace(/"/g,'').toLowerCase();
+    if(/ref|design/.test(c)) ri=i;
+    if(/center.x|pos.x|x.mm|posx|^x$/.test(c)) xi=i;
+    if(/center.y|pos.y|y.mm|posy|^y$/.test(c)) yi=i;
+    if(/layer|side/.test(c)) li=i;
+  });
+  if(xi<0) xi=3; if(yi<0) yi=4;
+  for(var i=hdrIdx+1;i<lines.length;i++){
+    var l=lines[i].trim(); if(!l||l[0]==='#') continue;
+    var p=l.split(/[,\t]/);
+    if(p.length<3) continue;
+    var ref=(p[ri]||'C'+i).replace(/"/g,'').trim();
+    var x=parseFloat((p[xi]||'0').replace(/"/g,''))||0;
+    var y=parseFloat((p[yi]||'0').replace(/"/g,''))||0;
+    var layer=li>=0&&p[li]&&/bot|back|b\./i.test(p[li])?'B.Cu':'F.Cu';
+    wMM=Math.max(wMM,x+5); hMM=Math.max(hMM,y+5);
+    comps.push({id:idx++,ref:ref,x:x,y:y,pads:[{id:0,net:0,dx:0,dy:0,layer:layer}],w:2.5,h:2.0});
+  }
+  return {nets:nets,components:comps,widthMM:Math.max(wMM,60),heightMM:Math.max(hMM,50)};
+}
+
+// PADS / TXT auto-detect
+function parseTXT(text){
+  if(/\(export/.test(text)||/\(net\s+\(code/.test(text)) return parseKiCadNet(text);
+  if(/\*NET\*|\*SIGNAL\*/.test(text)) return parsePADS(text);
+  if(text.indexOf(',')>=0) return parseCentroid(text);
+  return parseDSN(text);
+}
+
+function parsePADS(text){
+  var nets=[],comps=[],netMap={},compMap={},ni=0,ci=0;
+  var curNet=null;
+  var lines=text.split('\n');
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i].trim();
+    if(!l||l[0]==='%') continue;
+    if(l.indexOf('*NET*')===0||l.indexOf('*SIGNAL*')===0){
+      var parts=l.replace(/^\*(NET|SIGNAL)\*/,'').trim().split(/\s+/);
+      var n=parts[0]||'NET'+ni;
+      if(!netMap[n]){netMap[n]=ni;nets.push({id:ni,name:n,color:NET_COLORS[ni%NET_COLORS.length]});ni++;}
+      curNet=netMap[n];
+      for(var j=1;j<parts.length;j++) addPin(parts[j],curNet,comps,compMap,ci);
+      ci=comps.length;
+    } else if(curNet!==null){
+      var pins=l.split(/\s+/);
+      for(var j=0;j<pins.length;j++) if(pins[j]&&pins[j]!=='*'){ addPin(pins[j],curNet,comps,compMap,ci); ci=comps.length; }
+    }
+  }
+  spreadPads(comps); return {nets:nets,components:comps,widthMM:80,heightMM:60};
+}
+
+function addPin(str,netId,comps,compMap,ci){
+  var d=str.indexOf('-'); if(d<0) return;
+  var ref=str.substring(0,d);
+  if(compMap[ref]===undefined){compMap[ref]=comps.length;comps.push({id:comps.length,ref:ref,x:0,y:0,pads:[],w:2.5,h:2.0});}
+  var c=comps[compMap[ref]];
+  c.pads.push({id:c.pads.length,net:netId,dx:0,dy:0,layer:'F.Cu'});
+}
+
+// ── Public API ────────────────────────────────────────────────
+window.pcb = {
+  startRouting: startRouting, showRatsnest: showRatsnest,
+  stepRoute: stepRoute, clearRoutes: function(){ clearRoutes(true); },
+  loadPreset: loadPreset, setTool: setTool, setMode: setMode,
+  zoomIn: zoomIn, zoomOut: zoomOut, resetView: resetView,
+  toggleLayer: toggleLayer, setGrid: setGrid, setTrace: setTrace,
+  setClear: setClear, setVia: setVia, importFile: importFile
+};
+
+// ── Boot ──────────────────────────────────────────────────────
+function tryBoot(){
+  var area=document.getElementById('pcb-canvasarea');
+  if(!area||area.offsetWidth<10){ setTimeout(tryBoot,100); return; }
+  init();
+}
+if(document.readyState==='complete'||document.readyState==='interactive'){
+  setTimeout(tryBoot,80);
+} else {
+  document.addEventListener('DOMContentLoaded',function(){ setTimeout(tryBoot,80); });
+}
+
+})(); // end IIFE
+</script>
+
+<div>
+  <h1>PCB Router — Ratsnest & Auto-Router Visualizer</h1>
+
+  <p>
+    Design, test, and visualize PCB routing algorithms directly in your browser
+    with the PCB Router — Ratsnest & Auto-Router Visualizer.
+    This interactive web app helps electronics engineers, PCB designers,
+    students, and hobbyists understand how PCB auto-routing works using
+    real-time routing simulations, animated trace generation,
+    and ratsnest visualization.
+  </p>
+<div class="separator" style="clear: both;"><a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh6csT6rD9I5BT6qJIVe1wD5NV_4L1UbLnPG0mEVf-fXCJUV1GUX-OCxNi5M8RuCAdoMBNiGI-uknqIJctaUgAAZ5nE8KcaS4IvWeaQZbXR92hizThNAjMXRO2ugh0VX6aKLOYRbiWY0jyZWKD2eWHlBrp83YNFLaqu5m_cSfpr3LdA1aO9C7P5TbD0bp_J/s1600/PCB%20Router%20%E2%80%94%20Ratsnest%20&amp;%20Auto-Router%20Visualizer.png" style="display: block; padding: 1em 0; text-align: center; "><img alt="PCB Router — Ratsnest & Auto-Router Visualizer" border="0" data-original-height="941" data-original-width="1672" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh6csT6rD9I5BT6qJIVe1wD5NV_4L1UbLnPG0mEVf-fXCJUV1GUX-OCxNi5M8RuCAdoMBNiGI-uknqIJctaUgAAZ5nE8KcaS4IvWeaQZbXR92hizThNAjMXRO2ugh0VX6aKLOYRbiWY0jyZWKD2eWHlBrp83YNFLaqu5m_cSfpr3LdA1aO9C7P5TbD0bp_J/s1600/PCB%20Router%20%E2%80%94%20Ratsnest%20&amp;%20Auto-Router%20Visualizer.png"/></a></div>
+  <p>
+    The tool provides a modern PCB routing playground where users can experiment
+    with routing strategies, inspect trace paths, optimize PCB layouts,
+    and visualize routing decisions step by step.
+    Whether you are learning PCB design fundamentals or exploring routing
+    algorithms such as Lee routing and Dijkstra pathfinding,
+    this visualizer makes PCB routing easier to understand.
+  </p>
+
+  <h2>Features</h2>
+
+  <ul>
+    <li>Interactive PCB auto-router simulation</li>
+    <li>Real-time ratsnest visualization</li>
+    <li>Animated PCB trace routing</li>
+    <li>Adjustable trace width, clearance, and via settings</li>
+    <li>PCB component placement visualizer</li>
+    <li>Routing algorithm explorer</li>
+    <li>Multi-layer board visualization</li>
+    <li>DRC (Design Rule Check) status display</li>
+    <li>Step-by-step routing playback</li>
+    <li>Educational PCB routing interface</li>
+    <li>Fast browser-based PCB routing demo</li>
+    <li>Dark cyberpunk-style engineering UI</li>
+  </ul>
+
+  <h2>What You Can Learn</h2>
+
+  <ul>
+    <li>How PCB auto-routing algorithms work</li>
+    <li>PCB ratsnest generation and optimization</li>
+    <li>PCB trace pathfinding techniques</li>
+    <li>Via placement strategies</li>
+    <li>Routing congestion analysis</li>
+    <li>PCB layout optimization concepts</li>
+    <li>Design rule constraints in PCB routing</li>
+    <li>Signal path visualization techniques</li>
+  </ul>
+
+  <h2>Ideal For</h2>
+
+  <ul>
+    <li>Electronics engineering students</li>
+    <li>PCB designers and hardware developers</li>
+    <li>Embedded systems engineers</li>
+    <li>Arduino and STM32 hobbyists</li>
+    <li>KiCad and PCB CAD learners</li>
+    <li>Engineering educators and content creators</li>
+  </ul>
+
+  <h2>Supported Concepts</h2>
+
+  <ul>
+    <li>Lee Algorithm</li>
+    <li>Dijkstra Routing</li>
+    <li>PCB Nets and Connections</li>
+    <li>Trace Clearance Rules</li>
+    <li>Multi-layer PCB Routing</li>
+    <li>Interactive Component Placement</li>
+    <li>Routing Optimization</li>
+  </ul>
+
+  <h2>Why Use This PCB Router Visualizer?</h2>
+
+  <p>
+    Traditional PCB auto-routing tools often hide the routing process.
+    This visualizer makes routing transparent and educational by showing
+    every connection, routing attempt, and optimization step in real time.
+    It is ideal for learning PCB design workflows and understanding how
+    professional PCB routing engines operate internally.
+  </p>
+
+  <h2>SEO Keywords</h2>
+
+  <p>
+    PCB router visualizer, PCB auto router simulator, ratsnest visualizer,
+    PCB routing algorithm, PCB design tool, interactive PCB router,
+    PCB routing simulation, Lee algorithm PCB, Dijkstra PCB routing,
+    PCB trace visualizer, PCB auto routing demo, PCB engineering tool,
+    browser PCB router, PCB learning tool, routing visualizer,
+    electronics design simulator, KiCad routing tutorial,
+    PCB pathfinding visualizer, PCB trace optimizer,
+    PCB CAD educational tool.
+  </p>
+</div>
+

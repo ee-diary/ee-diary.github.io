@@ -1,0 +1,933 @@
+---
+layout: post
+title: "TL494"
+date: 2026-04-10 13:31:00 +0000
+description: "TL494: interactive pinout explorer with pin functions, design files and datasheet."
+---
+<!--TL494 PWM Controller IC Explorer-->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+#tl494wrap{all:initial;display:block;position:relative;width:100%;box-sizing:border-box;font-family:'Share Tech Mono',monospace;color:#d0d0d0;}
+#tl494wrap *{box-sizing:border-box;margin:0;padding:0;}
+.tl{width:100%;overflow:hidden;margin:0 auto;background:#161b22;border-radius:12px;padding:12px;border:1px solid #30363d;}
+.tl-hdr{display:flex;align-items:center;justify-content:space-between;background:#1c2128;border:1px solid #30363d;border-radius:8px;padding:9px 14px;margin-bottom:10px;position:relative;overflow:hidden;}
+.tl-hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#4da6ff,#88ccff,#4da6ff,transparent);}
+.tl-hdr-l{display:flex;align-items:center;gap:10px;}
+.tl-logo{width:28px;height:28px;color:#4da6ff;}
+.tl-title{font-family:'Orbitron',sans-serif;font-size:19px;font-weight:900;color:#e6edf3;letter-spacing:.12em;display:block;}
+.tl-sub{font-size:14px;color:#8b949e;margin-top:2px;display:block;}
+.tl-badge{font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:#4da6ff;background:rgba(77,166,255,0.1);border:1px solid rgba(77,166,255,0.3);border-radius:4px;padding:3px 8px;}
+.tl-dot{width:7px;height:7px;border-radius:50%;background:#4da6ff;box-shadow:0 0 8px #4da6ff;animation:tlpulse 2s infinite;flex-shrink:0;}
+@keyframes tlpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(.6);}}
+.tl-mtabs{display:flex;border-bottom:1px solid #21262d;background:#0d1117;border-radius:8px 8px 0 0;overflow:hidden;}
+.tl-mtab{flex:1;padding:12px 8px;font-size:14px;font-weight:700;cursor:pointer;color:#8b949e;border-bottom:2px solid transparent;text-align:center;font-family:'Share Tech Mono',monospace;letter-spacing:.05em;transition:all .15s;white-space:nowrap;}
+.tl-mtab:hover{color:#88ccff;background:rgba(77,166,255,0.05);}
+.tl-mtab.on{color:#4da6ff;border-bottom-color:#4da6ff;background:rgba(77,166,255,0.08);}
+.tl-body{display:flex;gap:10px;align-items:stretch;}
+.tl-screen{flex:0 0 55%;width:55%;background:#0d1117;border:1px solid #21262d;border-radius:0 0 8px 8px;position:relative;overflow:hidden;min-height:420px;display:flex;align-items:center;justify-content:center;}
+.tl-screen svg{width:100%;height:auto;display:block;}
+.tl-canvas-wrap{width:100%;height:100%;display:none;flex-direction:column;}
+.tl-canvas-wrap canvas{width:100%;flex:1;display:block;background:#0d1117;}
+.tl-ds-wrap{width:100%;height:100%;display:none;overflow-y:auto;padding:14px;scrollbar-width:thin;scrollbar-color:#30363d transparent;}
+.tl-lbl{position:absolute;bottom:6px;right:10px;font-size:11px;color:rgba(77,166,255,0.2);letter-spacing:.12em;text-transform:uppercase;pointer-events:none;}
+.tl-ctrl{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;}
+.tl-det{background:#1c2128;border:1px solid #30363d;border-radius:8px;overflow:hidden;}
+.tl-empty{padding:22px 14px;text-align:center;}
+.tl-arr{font-size:18px;display:block;margin-bottom:5px;animation:tlarg 1.8s infinite;}
+@keyframes tlarg{0%,100%{opacity:.2;transform:translateX(-4px);}50%{opacity:.8;transform:translateX(4px);}}
+.tl-empty p{font-size:14px;color:#8b949e;line-height:1.5;}
+.tl-dc{display:none;}.tl-dc.show{display:block;}
+.tl-dbar{display:flex;align-items:center;gap:9px;padding:8px 11px;border-bottom:1px solid #21262d;}
+.tl-dbadge{width:50px;height:50px;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;border:2px solid;gap:1px;}
+.tl-dbnum{font-size:13px;opacity:.6;}
+.tl-pid{font-family:'Orbitron',sans-serif;font-size:18px;font-weight:900;color:#e6edf3;display:block;line-height:1;}
+.tl-dfull{font-size:13px;color:#8b949e;margin-top:2px;display:block;}
+.tl-funcs{display:flex;flex-wrap:wrap;gap:3px;padding:6px 11px;border-bottom:1px solid #21262d;}
+.tl-chip{padding:2px 7px;border-radius:2px;font-size:13px;font-weight:700;border:1px solid;}
+.tl-igrid{display:grid;grid-template-columns:1fr 1fr;}
+.tl-icell{padding:5px 11px;border-bottom:1px solid #21262d;border-right:1px solid #21262d;}
+.tl-icell:nth-child(2n){border-right:none;}.tl-icell:nth-last-child(-n+2){border-bottom:none;}
+.tl-ilbl{font-size:12px;color:#8b949e;text-transform:uppercase;letter-spacing:.1em;margin-bottom:2px;display:block;}
+.tl-ival{font-size:14px;color:#e6edf3;font-weight:700;display:block;word-break:break-word;}
+.tl-alts{padding:6px 11px;border-top:1px solid #21262d;}
+.tl-albl{font-size:12px;color:#8b949e;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;display:block;}
+.tl-achips{display:flex;flex-wrap:wrap;gap:3px;}
+.tl-ac{padding:2px 7px;border-radius:2px;font-size:13px;background:#21262d;border:1px solid #30363d;color:#88ccff;}
+.tl-note{padding:7px 11px;border-top:1px solid #21262d;font-size:13px;color:#6a9fb5;line-height:1.5;}
+.tl-filt{background:#1c2128;border:1px solid #30363d;border-radius:8px;overflow:hidden;padding:7px 7px 0;}
+.tl-fpbox{border:1px solid #4da6ff;border-radius:4px;padding:6px;background:#0d1117;margin-bottom:6px;}
+.tl-fplbl{font-size:13px;color:#4da6ff;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;display:block;font-weight:700;}
+.tl-fbtns{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;}
+.tl-fb{display:flex;align-items:center;justify-content:center;height:26px;border-radius:2px;font-size:12px;font-weight:700;letter-spacing:.04em;font-family:'Share Tech Mono',monospace;cursor:pointer;border:1px solid rgba(255,255,255,0.12);background:#1c2128;transition:all .1s;color:#8b949e;}
+.tl-fb:hover{filter:brightness(1.4);}
+.tl-fb.on{border-color:currentColor!important;box-shadow:0 0 5px currentColor;transform:translateY(1px);}
+.tl-ltog{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;cursor:pointer;background:#161b22;border-top:1px solid #21262d;}
+.tl-ltog:hover{background:#1c2128;}
+.tl-ltog span{font-size:13px;color:#8b949e;}.tl-ltog b{color:#4da6ff;}
+.tl-plist{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+.tl-plist.open{max-height:380px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#30363d transparent;}
+.tl-prow{display:flex;align-items:center;gap:5px;padding:5px 7px;cursor:pointer;border-bottom:1px solid rgba(48,54,61,.4);}
+.tl-prow:hover{background:#1c2128;}.tl-prow.on{background:rgba(77,166,255,.07);border-left:2px solid #4da6ff;padding-left:5px;}
+.tl-pbadge{min-width:45px;height:24px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+.tl-pname{font-size:11px;flex:1;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tl-ptag{padding:1px 5px;border-radius:2px;font-size:10px;font-weight:700;}
+.tl-leg{display:flex;flex-wrap:wrap;gap:6px;padding:6px 8px;border-top:1px solid #21262d;}
+.tl-li{display:flex;align-items:center;gap:4px;font-size:11px;color:#8b949e;}
+.tl-ld{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.tl-ctrl-hdr{background:#1c2128;border:1px solid #30363d;border-radius:8px;padding:8px 12px;font-size:13px;color:#4da6ff;letter-spacing:.1em;text-transform:uppercase;font-weight:700;}
+.tl-stabs{display:flex;flex-wrap:wrap;gap:4px;background:#0d1117;border:1px solid #21262d;border-radius:6px;padding:5px;}
+.tl-stab{flex:1;min-width:70px;padding:5px 4px;font-size:12px;font-weight:700;cursor:pointer;color:#8b949e;border-radius:3px;text-align:center;font-family:'Share Tech Mono',monospace;border:1px solid transparent;transition:all .12s;}
+.tl-stab:hover{color:#88ccff;background:rgba(77,166,255,0.06);}
+.tl-stab.on{color:#4da6ff;background:rgba(77,166,255,0.10);border-color:rgba(77,166,255,0.3);}
+.tl-actions{background:#1c2128;border:1px solid #30363d;border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+.tl-act-title{font-size:12px;color:#4da6ff;letter-spacing:.1em;text-transform:uppercase;font-weight:700;display:block;margin-bottom:4px;}
+.tl-btn-row{display:flex;gap:6px;}
+.tl-btn{flex:1;padding:7px 6px;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Share Tech Mono',monospace;border:none;transition:all .12s;text-align:center;letter-spacing:.04em;}
+.tl-btn-blue{background:rgba(77,166,255,.15);color:#4da6ff;border:1px solid rgba(77,166,255,.3);}
+.tl-btn-green{background:rgba(80,200,160,.15);color:#50c8a0;border:1px solid rgba(80,200,160,.3);}
+.tl-tt{position:absolute;background:#1c2128;border:1px solid #30363d;border-radius:6px;padding:8px 12px;font-size:12px;pointer-events:none;z-index:9999;display:none;min-width:200px;max-width:280px;box-shadow:0 6px 20px rgba(0,0,0,.5);}
+.tl-tt.show{display:block;}
+.tl-tn{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:900;display:block;margin-bottom:3px;}
+.tl-td{color:#8b949e;font-size:12px;display:block;}
+.tl494-pin .psq{transition:filter .12s,stroke-width .12s;}
+.tl-prog{height:4px;background:#21262d;border-radius:2px;overflow:hidden;margin-top:8px;}
+.tl-prog-bar{height:100%;background:#4da6ff;width:0%;transition:width .3s;}
+@media(max-width:720px){.tl-body{flex-direction:column;}.tl-screen{flex:none;width:100%;min-height:300px;}.tl-ctrl{flex:none;width:100%;}}
+</style>
+
+<div id="tl494wrap">
+<div class="tl">
+
+  <!--HEADER-->
+  <div class="tl-hdr">
+    <div class="tl-hdr-l">
+      <svg class="tl-logo" viewbox="0 0 100 100">
+        <rect fill="none" height="64" rx="8" stroke-width="5" stroke="currentColor" width="64" x="18" y="18">
+        <rect fill="currentColor" height="40" opacity="0.12" rx="4" width="40" x="30" y="30">
+        <path d="M50 30 L50 45 M50 55 L50 70 M35 40 L45 45 M65 40 L55 45 M35 60 L45 55 M65 60 L55 55" fill="none" stroke-width="2" stroke="currentColor">
+        <circle cx="50" cy="50" fill="none" r="8" stroke-width="2" stroke="currentColor">
+        <line stroke-linecap="round" stroke-width="3" stroke="currentColor" x1="18" x2="4" y1="25" y2="25">
+        <line stroke-linecap="round" stroke-width="3" stroke="currentColor" x1="18" x2="4" y1="40" y2="40">
+        <line stroke-linecap="round" stroke-width="3" stroke="currentColor" x1="18" x2="4" y1="55" y2="55">
+        <line stroke-linecap="round" stroke-width="3" stroke="currentColor" x1="18" x2="4" y1="70" y2="70">
+        <line stroke-linecap="round" stroke-width="3" stroke="currentColor" x1="82" x2="96" y1="30" y2="30">
+        <line stroke-linecap="round" stroke-width="3" stroke="currentColor" x1="82" x2="96" y1="45" y2="45">
+        <line stroke-linecap="round" stroke-width="3" stroke="currentColor" x1="82" x2="96" y1="60" y2="60">
+        <line stroke-linecap="round" stroke-width="3" stroke="currentColor" x1="82" x2="96" y1="75" y2="75">
+      </line></line></line></line></line></line></line></line></circle></path></rect></rect></svg>
+      <div>
+        <span class="tl-title">TL494 PWM</span>
+        <span class="tl-sub">PWM Controller IC &nbsp;●&nbsp; DIP-16 &nbsp;●&nbsp; 16 pins</span>
+      </div>
+    </div>
+    <div style="align-items: center; display: flex; gap: 8px;">
+      <span class="tl-badge">DIP-16</span>
+      <div class="tl-dot"></div>
+    </div>
+  </div>
+
+  <!--MAIN 3 TABS-->
+  <div class="tl-mtabs" id="tlTabs">
+    <div class="tl-mtab on" data-mt="pin">○ PIN EXPLORER</div>
+    <div class="tl-mtab" data-mt="design">□ DESIGN FILES</div>
+    <div class="tl-mtab" data-mt="ds">☍ DATASHEET</div>
+  </div>
+
+  <!--BODY-->
+  <div class="tl-body">
+
+    <!--LEFT: SVG chip display-->
+    <div class="tl-screen" id="tlScreen">
+      <span class="tl-lbl" id="tlLbl">TL494 PWM CONTROLLER</span>
+      <svg id="tlSVG" style="display: block; height: auto; overflow: visible; width: 100%;" viewbox="0 0 220 180" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="tl-canvas-wrap" id="tlCanvas">
+        <canvas id="tlCVS" style="background: #0d1117; display: block; width: 100%;"></canvas>
+      </div>
+      <div class="tl-ds-wrap" id="tlDS">
+        <div id="tlDSContent" style="color: #8b949e; font-size: 13px; line-height: 1.7;"></div>
+      </div>
+    </div>
+
+    <!--RIGHT: controls-->
+    <div class="tl-ctrl" id="tlCtrl">
+
+      <!--PIN EXPLORER panel-->
+      <div id="ctrl-pin" style="display: flex; flex-direction: column; gap: 8px;">
+        <div class="tl-det">
+          <div class="tl-empty" id="tlEmpty">
+            <span class="tl-arr">←</span>
+            <p>Click any pin on the IC<br />to see full specifications</p>
+          </div>
+          <div class="tl-dc" id="tlDC">
+            <div class="tl-dbar">
+              <div class="tl-dbadge" id="tlBadge"></div>
+              <div><span class="tl-pid" id="tlPID"></span><span class="tl-dfull" id="tlFull"></span></div>
+            </div>
+            <div class="tl-funcs" id="tlFuncs"></div>
+            <div class="tl-igrid" id="tlGrid"></div>
+            <div class="tl-alts" id="tlAlts" style="display: none;">
+              <span class="tl-albl">Associated Functions</span>
+              <div class="tl-achips" id="tlAChips"></div>
+            </div>
+            <div class="tl-note" id="tlNote"></div>
+          </div>
+        </div>
+        <div class="tl-filt">
+          <div class="tl-fpbox">
+            <span class="tl-fplbl">◆ Highlight by Function</span>
+            <div class="tl-fbtns" id="tlFBtns"></div>
+          </div>
+          <div class="tl-ltog" onclick="tlTogList()">
+            <span>PIN LIST &nbsp;<b id="tlCnt"></b></span>
+            <span id="tlTIcon" style="color: #4da6ff;">▼ SHOW</span>
+          </div>
+          <div class="tl-plist" id="tlPList"><div id="tlRows"></div></div>
+          <div class="tl-leg" id="tlLeg"></div>
+        </div>
+      </div>
+
+      <!--DESIGN FILES panel-->
+      <div id="ctrl-design" style="display: none; flex-direction: column; gap: 8px;">
+        <div class="tl-ctrl-hdr">Design Files — TL494 PWM Controller</div>
+        <div class="tl-stabs" id="tlStabs">
+          <div class="tl-stab on" data-st="schematic">SCHEMATIC</div>
+          <div class="tl-stab" data-st="symbol">SYMBOL</div>
+          <div class="tl-stab" data-st="footprint">FOOTPRINT</div>
+        </div>
+        <div class="tl-actions">
+          <span class="tl-act-title">PWM Calculator &amp; Resources</span>
+          <div class="tl-btn-row">
+            <button class="tl-btn tl-btn-blue" onclick="window.open('https://www.daycounter.com/Calculators/TL494/TL494-Calculator.phtml','_blank')">↗ PWM Calculator</button>
+            <button class="tl-btn tl-btn-blue" onclick="window.open('https://www.ti.com/product/TL494','_blank')">↗ TI Product Page</button>
+          </div>
+        </div>
+        <div class="tl-actions">
+          <span class="tl-act-title">Quick Specs — TL494</span>
+          <div style="color: #8b949e; font-size: 13px; line-height: 1.9;">
+            <div style="border-bottom: 1px solid rgb(33, 38, 45); display: flex; justify-content: space-between; padding: 2px 0px;"><span>Supply Voltage</span><span style="color: #4da6ff; font-weight: 700;">7V – 40V</span></div>
+            <div style="border-bottom: 1px solid rgb(33, 38, 45); display: flex; justify-content: space-between; padding: 2px 0px;"><span>Supply Current</span><span style="color: #e0e5ec; font-weight: 700;">7 mA typical</span></div>
+            <div style="border-bottom: 1px solid rgb(33, 38, 45); display: flex; justify-content: space-between; padding: 2px 0px;"><span>Output Current</span><span style="color: #e0e5ec; font-weight: 700;">200 mA per output</span></div>
+            <div style="border-bottom: 1px solid rgb(33, 38, 45); display: flex; justify-content: space-between; padding: 2px 0px;"><span>Max Frequency</span><span style="color: #50c8a0; font-weight: 700;">300 kHz</span></div>
+            <div style="border-bottom: 1px solid rgb(33, 38, 45); display: flex; justify-content: space-between; padding: 2px 0px;"><span>Dead-Time Control</span><span style="color: #ffaa88; font-weight: 700;">0% to 100% adjustable</span></div>
+            <div style="border-bottom: 1px solid rgb(33, 38, 45); display: flex; justify-content: space-between; padding: 2px 0px;"><span>Error Amplifiers</span><span style="color: #e0e5ec; font-weight: 700;">2x (voltage/current feedback)</span></div>
+            <div style="display: flex; justify-content: space-between; padding: 2px 0px;"><span>Package</span><span style="color: #e0e5ec; font-weight: 700;">DIP-16, SOIC-16</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!--DATASHEET panel with PDF upload-->
+      <div id="ctrl-ds" style="display: none; flex-direction: column; gap: 8px;">
+        
+        <!--PDF Upload Section-->
+        <div class="tl-actions">
+          <span class="tl-act-title">📄 Upload Datasheet PDF</span>
+          <div style="color: #8b949e; font-size: 13px; margin-bottom: 8px;">
+            TL494 PWM Controller Datasheet (.pdf) — Extracts key specifications
+          </div>
+          <input accept=".pdf" id="tlPdfInput" style="display: none;" type="file" />
+          <button class="tl-btn tl-btn-blue" onclick="document.getElementById('tlPdfInput').click()">
+            📁 CHOOSE PDF FILE
+          </button>
+          <div id="tlFileInfo" style="color: #8b949e; font-size: 12px; margin-top: 6px;">
+            No file selected
+          </div>
+          <div id="tlProgress" style="display: none;">
+            <div class="tl-prog">
+              <div class="tl-prog-bar" id="tlProgBar"></div>
+            </div>
+          </div>
+          <div id="tlExtractStatus" style="color: #50c8a0; display: none; font-size: 12px; margin-top: 5px;"></div>
+        </div>
+
+        <!--Extracted Specifications-->
+        <div class="tl-actions" id="tlExtractedSpecs" style="display: none;">
+          <span class="tl-act-title">🔍 Extracted Specifications</span>
+          <div id="tlExtractedContent" style="color: #8b949e; font-size: 13px; line-height: 1.8;"></div>
+        </div>
+
+        <!--Quick Reference-->
+        <div class="tl-actions">
+          <span class="tl-act-title">📚 Quick Reference — TL494</span>
+          <div id="tlDsQuick"></div>
+        </div>
+
+        <!--Resources-->
+        <div class="tl-actions">
+          <span class="tl-act-title">🌐 Resources</span>
+          <div class="tl-btn-row">
+            <button class="tl-btn tl-btn-blue" onclick="window.open('https://www.ti.com/lit/ds/symlink/tl494.pdf','_blank')">↗ Official TI PDF</button>
+            <button class="tl-btn tl-btn-green" id="tlLoadSample">▶ Load Sample Datasheet</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!--/tl-ctrl-->
+  </div><!--/tl-body-->
+
+</div><!--/tl-->
+</div><!--/tl494wrap-->
+
+<div class="tl-tt" id="tlTT"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+(function(){
+'use strict';
+
+var NS = 'http://www.w3.org/2000/svg';
+var svg = document.getElementById('tlSVG');
+function mk(t, a) {
+  var e = document.createElementNS(NS, t);
+  for (var k in a) e.setAttribute(k, a[k]);
+  return e;
+}
+function ap(p, c) { p.appendChild(c); return c; }
+
+// ── Color map for TL494 ──
+var C = {
+  PWR:   {c:'#ff6b6b', bg:'rgba(255,107,107,.14)', bd:'rgba(255,107,107,.35)'},
+  GND:   {c:'#a8a8a8', bg:'rgba(168,168,168,.11)', bd:'rgba(168,168,168,.28)'},
+  OSC:   {c:'#50c8a0', bg:'rgba(80,200,160,.12)',  bd:'rgba(80,200,160,.30)'},
+  PWM:   {c:'#ffaa44', bg:'rgba(255,170,68,.14)',  bd:'rgba(255,170,68,.35)'},
+  OUTPUT: {c:'#4da6ff', bg:'rgba(77,166,255,.12)',  bd:'rgba(77,166,255,.30)'},
+  FEEDBACK: {c:'#c8a850', bg:'rgba(200,168,80,.12)',  bd:'rgba(200,168,80,.30)'},
+  COMP:  {c:'#50c8c8', bg:'rgba(80,200,200,.10)',  bd:'rgba(80,200,200,.27)'},
+  REF:   {c:'#ff6b6b', bg:'rgba(255,107,107,.12)', bd:'rgba(255,107,107,.30)'},
+  DEAD:  {c:'#7090a8', bg:'rgba(112,144,168,.11)', bd:'rgba(112,144,168,.28)'},
+};
+
+function cl(t) { return C[t] || C.PWM; }
+
+// ── Dimensions for 16-pin DIP ──
+var BX=70, BY=25, BW=80, BH=130;
+var PL=12, PW2=7, PITCH=BH/8;
+
+// ── Defs ──
+var defs = ap(svg, mk('defs', {}));
+var gf = mk('filter', {id:'tlGlow', x:'-80%', y:'-80%', width:'260%', height:'260%'});
+ap(gf, mk('feGaussianBlur', {stdDeviation:'3', result:'b'}));
+var fm = mk('feMerge', {});
+ap(fm, mk('feMergeNode', {in:'b'}));
+ap(fm, mk('feMergeNode', {in:'SourceGraphic'}));
+gf.appendChild(fm);
+defs.appendChild(gf);
+var icg = mk('linearGradient', {id:'tlBody', x1:'0%', y1:'0%', x2:'100%', y2:'100%'});
+ap(icg, mk('stop', {offset:'0%', 'stop-color':'#1e2430'}));
+ap(icg, mk('stop', {offset:'100%', 'stop-color':'#0d1018'}));
+defs.appendChild(icg);
+
+// ── IC body ──
+ap(svg, mk('rect', {x:BX, y:BY, width:BW, height:BH, rx:'4', fill:'url(#tlBody)', stroke:'#2a3545', 'stroke-width':'1.5'}));
+// Pin-1 notch
+ap(svg, mk('circle', {cx:BX+8, cy:BY+8, r:'3.5', fill:'#4da6ff', stroke:'#4da6ff', 'stroke-width':'1', opacity:'0.8'}));
+ap(svg, mk('circle', {cx:BX+8, cy:BY+8, r:'1.5', fill:'#4da6ff', opacity:'0.9'}));
+// Body text
+var CX = BX+BW/2, CY = BY+BH/2;
+var t1 = mk('text', {x:CX, y:CY-15, fill:'#3a4a5a', 'font-family':'monospace', 'font-size':'9', 'font-weight':'bold', 'text-anchor':'middle'});
+t1.textContent = 'PWM CONTROLLER'; ap(svg, t1);
+var t2 = mk('text', {x:CX, y:CY+2, fill:'#4da6ff', 'font-family':'monospace', 'font-size':'11', 'font-weight':'bold', 'text-anchor':'middle'});
+t2.textContent = 'TL494'; ap(svg, t2);
+var t3 = mk('text', {x:CX, y:CY+14, fill:'#2a3a48', 'font-family':'monospace', 'font-size':'7', 'text-anchor':'middle'});
+t3.textContent = 'DIP-16  PWM'; ap(svg, t3);
+
+// ── Pin data for TL494 (16 pins) ──
+var ALT = {
+  '1IN+': ['Non-inverting input of Error Amp 1'],
+  '1IN-': ['Inverting input of Error Amp 1'],
+  'FEEDBACK': ['Feedback input for PWM control'],
+  'DTC': ['Dead-Time Control input (0-3.3V)'],
+  'CT': ['Timing capacitor (determines frequency)'],
+  'RT': ['Timing resistor (determines frequency)'],
+  'GND': ['Ground reference'],
+  'C1': ['Collector of Output Transistor 1'],
+  'E1': ['Emitter of Output Transistor 1'],
+  'E2': ['Emitter of Output Transistor 2'],
+  'C2': ['Collector of Output Transistor 2'],
+  'VCC': ['Supply voltage (7V to 40V)'],
+  'OUTPUT_CTRL': ['Output control (push-pull or parallel)'],
+  'REF': ['5V reference output'],
+  '2IN-': ['Inverting input of Error Amp 2'],
+  '2IN+': ['Non-inverting input of Error Amp 2']
+};
+
+var PINS = [
+  {num:1, id:'1IN+', lbl:'1IN+', name:'Error Amp 1 Non-Inverting Input', type:'COMP', funcs:['COMPARATOR','INPUT'], volt:'-0.3 to VCC', curr:'< 1µA', note:'Non-inverting input of first error amplifier. Used for voltage regulation feedback.'},
+  {num:2, id:'1IN-', lbl:'1IN-', name:'Error Amp 1 Inverting Input', type:'COMP', funcs:['COMPARATOR','INPUT'], volt:'-0.3 to VCC', curr:'< 1µA', note:'Inverting input of first error amplifier. Typically connected to reference voltage.'},
+  {num:3, id:'FEEDBACK', lbl:'FB', name:'Feedback Input', type:'FEEDBACK', funcs:['FEEDBACK','PWM'], volt:'0-3.5V', curr:'< 1µA', note:'Feedback input to PWM comparator. Connects to error amp outputs.'},
+  {num:4, id:'DTC', lbl:'DTC', name:'Dead-Time Control', type:'DEAD', funcs:['DEAD-TIME','CONTROL'], volt:'0-3.3V', curr:'< 1µA', note:'Controls minimum off-time. 0V = 0% dead-time, 3V = 100% dead-time.'},
+  {num:5, id:'CT', lbl:'CT', name:'Timing Capacitor', type:'OSC', funcs:['OSCILLATOR','TIMING'], volt:'0-3V', curr:'N/A', note:'External capacitor sets oscillator frequency. f = 1.1/(RT × CT).'},
+  {num:6, id:'RT', lbl:'RT', name:'Timing Resistor', type:'OSC', funcs:['OSCILLATOR','TIMING'], volt:'0-3V', curr:'N/A', note:'External resistor sets oscillator frequency. Connect between pin 6 and ground.'},
+  {num:7, id:'GND', lbl:'GND', name:'Ground', type:'GND', funcs:['GND','POWER'], volt:'0V', curr:'N/A', note:'Common ground reference for all circuits.'},
+  {num:8, id:'C1', lbl:'C1', name:'Collector Output 1', type:'OUTPUT', funcs:['OUTPUT','PWM'], volt:'Up to 40V', curr:'200mA max', note:'Collector of output transistor 1. Open collector output.'},
+  {num:9, id:'E1', lbl:'E1', name:'Emitter Output 1', type:'OUTPUT', funcs:['OUTPUT','PWM'], volt:'0V to VCC', curr:'200mA max', note:'Emitter of output transistor 1. Usually connected to ground.'},
+  {num:10, id:'E2', lbl:'E2', name:'Emitter Output 2', type:'OUTPUT', funcs:['OUTPUT','PWM'], volt:'0V to VCC', curr:'200mA max', note:'Emitter of output transistor 2. Usually connected to ground.'},
+  {num:11, id:'C2', lbl:'C2', name:'Collector Output 2', type:'OUTPUT', funcs:['OUTPUT','PWM'], volt:'Up to 40V', curr:'200mA max', note:'Collector of output transistor 2. Open collector output.'},
+  {num:12, id:'VCC', lbl:'VCC', name:'Supply Voltage', type:'PWR', funcs:['POWER'], volt:'7V-40V', curr:'7mA typical', note:'Positive supply. Decouple with 0.1µF capacitor.'},
+  {num:13, id:'OUTPUT_CTRL', lbl:'OC', name:'Output Control', type:'PWM', funcs:['CONTROL','PWM'], volt:'0-5V', curr:'< 1µA', note:'Selects output mode: <0.4V = parallel mode, >2.4V = push-pull mode.'},
+  {num:14, id:'REF', lbl:'REF', name:'Reference Output', type:'REF', funcs:['REFERENCE','POWER'], volt:'5V ±5%', curr:'10mA max', note:'5V regulated reference output. Bypass with 0.1µF capacitor.'},
+  {num:15, id:'2IN-', lbl:'2IN-', name:'Error Amp 2 Inverting Input', type:'COMP', funcs:['COMPARATOR','INPUT'], volt:'-0.3 to VCC', curr:'< 1µA', note:'Inverting input of second error amplifier. Used for current limiting.'},
+  {num:16, id:'2IN+', lbl:'2IN+', name:'Error Amp 2 Non-Inverting Input', type:'COMP', funcs:['COMPARATOR','INPUT'], volt:'-0.3 to VCC', curr:'< 1µA', note:'Non-inverting input of second error amplifier. Typically connected to current sense.'}
+];
+
+// Assign coordinates for 16 pins (8 left, 8 right)
+PINS.forEach(function(pin) {
+  var n = pin.num;
+  if (n >= 1 && n <= 8) {
+    var slot = n - 1;
+    var cy = BY + slot * PITCH + PITCH/2;
+    pin._px = BX - PL;
+    pin._py = cy - PW2/2;
+  } else {
+    var slot = 16 - n;
+    var cy = BY + slot * PITCH + PITCH/2;
+    pin._px = BX + BW;
+    pin._py = cy - PW2/2;
+  }
+});
+
+function drawPin(pin) {
+  var col = cl(pin.type);
+  var px = pin._px, py = pin._py;
+  var cx = px + PL/2;
+  var cy = py + PW2/2;
+  var g = mk('g', {'class':'tl494-pin', 'data-id':pin.id});
+  g.style.cursor = 'pointer';
+  var sq = mk('rect', {x:px, y:py, width:PL, height:PW2, rx:'1', fill:col.bg, stroke:col.c, 'stroke-width':'0.8', 'class':'psq'});
+  ap(g, sq);
+  var lb = mk('text', {x:String(cx), y:String(cy+2), 'text-anchor':'middle', fill:col.c, 'font-size':'5', 'font-family':'monospace', 'font-weight':'bold', 'pointer-events':'none'});
+  lb.textContent = String(pin.num);
+  ap(g, lb);
+  ap(g, mk('rect', {x:px-3, y:py-3, width:PL+6, height:PW2+6, fill:'transparent'}));
+  g.addEventListener('click', function(e) { e.stopPropagation(); pick(pin.id); });
+  g.addEventListener('mouseenter', function(e) { hoverPin(g, pin, true); showTT(pin, e); });
+  g.addEventListener('mousemove', moveTT);
+  g.addEventListener('mouseleave', function() { hoverPin(g, pin, false); hideTT(); });
+  svg.appendChild(g);
+  var sk = mk('text', {x:String(cx), y:String(py - 3), 'text-anchor':'middle', fill:'rgba(77,166,255,0.7)', 'font-size':'4.5', 'font-family':'monospace', 'font-weight':'bold', 'pointer-events':'none'});
+  sk.textContent = pin.lbl;
+  svg.appendChild(sk);
+}
+
+PINS.forEach(drawPin);
+
+function hoverPin(g, p, on) {
+  var sq = g.querySelector('.psq');
+  var col = cl(p.type);
+  if (on) {
+    sq.setAttribute('fill', col.c); sq.setAttribute('stroke-width','2');
+    sq.setAttribute('filter','url(#tlGlow)');
+    g.querySelector('text').setAttribute('fill','#020810');
+  } else if (selId === p.id) {
+    sq.setAttribute('fill', col.c); sq.setAttribute('stroke', col.c);
+    sq.setAttribute('stroke-width','2'); sq.setAttribute('filter','url(#tlGlow)');
+    g.querySelector('text').setAttribute('fill','#020810');
+  } else {
+    sq.setAttribute('fill', col.bg); sq.setAttribute('stroke', col.c);
+    sq.setAttribute('stroke-width','1.2'); sq.removeAttribute('filter');
+    g.querySelector('text').setAttribute('fill', col.c);
+  }
+}
+
+var selId = null, listOpen = false, fType = null;
+
+var FILTS = [
+  {l:'POWER',   k:'PWR',   fn:function(p){return p.type==='PWR';}},
+  {l:'GND',     k:'GND',   fn:function(p){return p.type==='GND';}},
+  {l:'OSC',     k:'OSC',   fn:function(p){return p.type==='OSC';}},
+  {l:'PWM',     k:'PWM',   fn:function(p){return p.type==='PWM'||p.type==='OUTPUT';}},
+  {l:'OUTPUT',  k:'OUTPUT',fn:function(p){return p.type==='OUTPUT';}},
+  {l:'FEEDBACK',k:'FEEDBACK',fn:function(p){return p.type==='FEEDBACK';}},
+  {l:'COMP',    k:'COMP',  fn:function(p){return p.type==='COMP';}},
+  {l:'DEAD',    k:'DEAD',  fn:function(p){return p.type==='DEAD';}},
+  {l:'REF',     k:'REF',   fn:function(p){return p.type==='REF';}},
+];
+
+function matches(p) {
+  if (!fType) return true;
+  var f = FILTS.find(function(fn){return fn.k===fType;});
+  return f ? f.fn(p) : true;
+}
+
+function pick(id) {
+  selId = (selId===id) ? null : id;
+  upBoard(); upDetail(); upList();
+}
+
+function upBoard() {
+  var hasFilt = fType !== null;
+  var pins = document.querySelectorAll('.tl494-pin');
+  for (var i=0; i<pins.length; i++) {
+    var g = pins[i];
+    var id = g.getAttribute('data-id');
+    var p = PINS.find(function(pn){return pn.id===id;});
+    if (!p) continue;
+    var sq = g.querySelector('.psq');
+    var col = cl(p.type);
+    var act = selId === id;
+    var mt = matches(p);
+    if (act) {
+      sq.setAttribute('fill',col.c); sq.setAttribute('stroke',col.c);
+      sq.setAttribute('stroke-width','2'); sq.setAttribute('filter','url(#tlGlow)');
+      g.querySelector('text').setAttribute('fill','#020810'); g.style.opacity='1';
+    } else if (hasFilt && !mt) {
+      sq.setAttribute('fill','rgba(4,8,20,.5)'); sq.setAttribute('stroke','rgba(20,30,60,.3)');
+      sq.setAttribute('stroke-width','0.8'); sq.removeAttribute('filter');
+      g.querySelector('text').setAttribute('fill','rgba(30,45,80,.3)'); g.style.opacity='0.15';
+    } else if (hasFilt && mt) {
+      sq.setAttribute('fill',col.c); sq.setAttribute('stroke',col.c);
+      sq.setAttribute('stroke-width','2'); sq.setAttribute('filter','url(#tlGlow)');
+      g.querySelector('text').setAttribute('fill','#020810'); g.style.opacity='1';
+    } else {
+      sq.setAttribute('fill',col.bg); sq.setAttribute('stroke',col.c);
+      sq.setAttribute('stroke-width','1.2'); sq.removeAttribute('filter');
+      g.querySelector('text').setAttribute('fill',col.c); g.style.opacity='1';
+    }
+  }
+}
+
+function upDetail() {
+  var empty = document.getElementById('tlEmpty');
+  var dc = document.getElementById('tlDC');
+  if (!selId) { empty.style.display='block'; dc.className='tl-dc'; return; }
+  var p = PINS.find(function(pn){return pn.id===selId;});
+  if (!p) return;
+  var col = cl(p.type);
+  empty.style.display='none'; dc.className='tl-dc show';
+  var badge = document.getElementById('tlBadge');
+  badge.style.background=col.bg; badge.style.borderColor=col.c; badge.style.color=col.c;
+  badge.innerHTML='<span class="tl-dbnum">#'+p.num+'</span>'+p.lbl;
+  var pid = document.getElementById('tlPID');
+  pid.style.color=col.c; pid.textContent=p.id;
+  document.getElementById('tlFull').textContent=p.name;
+  var funcsHtml = '';
+  for (var i=0;i<p.funcs.length;i++){
+    var fc = C[p.funcs[i]] || col;
+    funcsHtml += '<span class="tl-chip" style="background:'+fc.bg+';color:'+fc.c+';border-color:'+fc.bd+'">'+p.funcs[i]+'</span>';
+  }
+  document.getElementById('tlFuncs').innerHTML = funcsHtml;
+  document.getElementById('tlGrid').innerHTML =
+    '<div class="tl-icell"><span class="tl-ilbl">Pin</span><span class="tl-ival">#'+p.num+'</span></div>'+
+    '<div class="tl-icell"><span class="tl-ilbl">Type</span><span class="tl-ival" style="color:'+col.c+'">'+p.type+'</span></div>'+
+    '<div class="tl-icell"><span class="tl-ilbl">Voltage</span><span class="tl-ival">'+p.volt+'</span></div>'+
+    '<div class="tl-icell"><span class="tl-ilbl">Current</span><span class="tl-ival">'+p.curr+'</span></div>';
+  var alts = ALT[p.id] || [];
+  var as = document.getElementById('tlAlts');
+  if (alts.length) {
+    as.style.display='block';
+    var achHtml = '';
+    for (var i=0;i<alts.length;i++) achHtml += '<span class="tl-ac">'+alts[i]+'</span>';
+    document.getElementById('tlAChips').innerHTML = achHtml;
+  } else { as.style.display='none'; }
+  document.getElementById('tlNote').innerHTML = '<span style="color:#4da6ff;margin-right:4px;">ℹ️</span>'+p.note;
+}
+
+function buildBtns() {
+  var wrap = document.getElementById('tlFBtns');
+  var html = '';
+  for (var i=0;i<FILTS.length;i++) {
+    var f = FILTS[i];
+    var on = fType===f.k;
+    html += '<div class="tl-fb'+(on?' on':'')+'" data-key="'+f.k+'">'+f.l+'</div>';
+  }
+  wrap.innerHTML = html;
+  var btns = wrap.querySelectorAll('.tl-fb');
+  for (var i=0;i<btns.length;i++) {
+    btns[i].addEventListener('click', (function(b){
+      return function(){
+        var k = b.getAttribute('data-key');
+        fType = (fType===k) ? null : k;
+        buildBtns(); upBoard(); upList();
+      };
+    })(btns[i]));
+  }
+}
+
+function upList() {
+  var ps = PINS.filter(matches);
+  var html = '';
+  for (var i=0;i<ps.length;i++){
+    var p=ps[i], col=cl(p.type), on=selId===p.id;
+    html += '<div class="tl-prow'+(on?' on':'')+'" data-id="'+p.id+'" onclick="tlPick(\''+p.id+'\')">'
+      +'<div class="tl-pbadge" style="background:'+col.bg+';color:'+col.c+';border:1px solid '+col.bd+'">'+p.lbl+'</div>'
+      +'<div class="tl-pname">'+p.name+'</div>'
+      +'<span class="tl-ptag" style="background:'+col.bg+';color:'+col.c+'">'+p.type+'</span>'
+      +'</div>';
+  }
+  document.getElementById('tlRows').innerHTML = html;
+  document.getElementById('tlCnt').textContent = ps.length+' / '+PINS.length;
+}
+
+(function(){
+  var types = ['PWR','GND','OSC','PWM','OUTPUT','FEEDBACK','COMP','DEAD','REF'];
+  var html='';
+  for(var i=0;i<types.length;i++){
+    var c=cl(types[i]);
+    html+='<div class="tl-li"><span class="tl-ld" style="background:'+c.c+'"></span>'+types[i]+'</div>';
+  }
+  document.getElementById('tlLeg').innerHTML=html;
+})();
+
+window.tlPick = function(id){pick(id);};
+window.tlTogList = function(){
+  listOpen = !listOpen;
+  document.getElementById('tlPList').className='tl-plist'+(listOpen?' open':'');
+  document.getElementById('tlTIcon').textContent=listOpen?'▲ HIDE':'▼ SHOW';
+};
+
+buildBtns(); upList();
+
+var TT = document.getElementById('tlTT');
+function showTT(p, e) {
+  var col=cl(p.type);
+  TT.innerHTML='<span class="tl-tn" style="color:'+col.c+'">#'+p.num+' '+p.id+'</span>'
+    +'<span class="tl-td">'+p.funcs.join(' · ')+' | '+p.volt+'</span>';
+  TT.className='tl-tt show'; moveTT(e);
+}
+function moveTT(e){
+  var r=document.getElementById('tl494wrap').getBoundingClientRect();
+  var x=e.clientX-r.left+14, y=e.clientY-r.top-8;
+  if(x+280>r.width) x=e.clientX-r.left-300;
+  if(y+80>r.height) y=e.clientY-r.top-90;
+  TT.style.left=x+'px'; TT.style.top=y+'px';
+}
+function hideTT(){TT.className='tl-tt';}
+document.addEventListener('click',function(){if(selId){selId=null;upBoard();upDetail();upList();}});
+
+var tabBtns = document.querySelectorAll('.tl-mtab');
+var screenSVG  = document.getElementById('tlSVG');
+var screenCVS  = document.getElementById('tlCanvas');
+var screenDS2  = document.getElementById('tlDS');
+var lblEl      = document.getElementById('tlLbl');
+
+function showPane(mt) {
+  screenSVG.style.display  = (mt==='pin')    ? 'block' : 'none';
+  screenCVS.style.display  = (mt==='design') ? 'flex'  : 'none';
+  screenDS2.style.display  = (mt==='ds')     ? 'block' : 'none';
+  var panels = ['ctrl-pin','ctrl-design','ctrl-ds'];
+  for (var i=0;i<panels.length;i++){
+    var el = document.getElementById(panels[i]);
+    var show = panels[i]==='ctrl-'+mt;
+    el.style.display = show ? 'flex' : 'none';
+  }
+  if (mt==='pin')    lblEl.textContent='TL494 PWM PIN EXPLORER';
+  if (mt==='design') lblEl.textContent='DESIGN FILES & CALCULATORS';
+  if (mt==='ds')     { lblEl.textContent='DATASHEET REFERENCE'; if(!window._dsLoaded) loadDSSample(); }
+  if (mt==='design') setTimeout(function(){drawCanvas('schematic');},30);
+}
+
+for (var i=0;i<tabBtns.length;i++){
+  tabBtns[i].addEventListener('click',(function(btn){
+    return function(){
+      for(var j=0;j<tabBtns.length;j++) tabBtns[j].classList.remove('on');
+      btn.classList.add('on');
+      showPane(btn.getAttribute('data-mt'));
+    };
+  })(tabBtns[i]));
+}
+
+var stabs = document.querySelectorAll('.tl-stab');
+for (var i=0;i<stabs.length;i++){
+  stabs[i].addEventListener('click',(function(s){
+    return function(){
+      for(var j=0;j<stabs.length;j++) stabs[j].classList.remove('on');
+      s.classList.add('on');
+      drawCanvas(s.getAttribute('data-st'));
+    };
+  })(stabs[i]));
+}
+
+var cvs = document.getElementById('tlCVS');
+var ctx = cvs.getContext('2d');
+
+function drawCanvas(mode) {
+  screenCVS.style.display='flex';
+  var W = cvs.offsetWidth||400, H = cvs.offsetHeight||380;
+  cvs.width=W; cvs.height=H;
+  ctx.clearRect(0,0,W,H);
+  if (mode==='schematic') drawSchematicTL494(W,H);
+  else if (mode==='symbol') drawSymbolTL494(W,H);
+  else if (mode==='footprint') drawFootprintTL494(W,H);
+}
+
+function drawSchematicTL494(W,H){
+  ctx.fillStyle='#080d16'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='rgba(77,166,255,0.05)'; ctx.lineWidth=0.5;
+  for(var x=0;x<W;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(var y=0;y<H;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  var iw=200, ih=H*0.7, ix=(W-iw)/2, iy=(H-ih)/2;
+  ctx.fillStyle='#0a0e18'; ctx.strokeStyle='#4da6ff'; ctx.lineWidth=1.5;
+  ctx.fillRect(ix,iy,iw,ih); ctx.strokeRect(ix,iy,iw,ih);
+  ctx.fillStyle='#4da6ff'; ctx.font='bold 10px monospace'; ctx.textAlign='center';
+  ctx.fillText('U1',ix+iw/2,iy+14);
+  ctx.fillStyle='#4da6ff'; ctx.font='bold 11px monospace';
+  ctx.fillText('TL494',ix+iw/2,iy+32);
+  ctx.fillStyle='#8b949e'; ctx.font='8px monospace';
+  ctx.fillText('PWM Controller',ix+iw/2,iy+48);
+  ctx.fillStyle='#4da6ff'; ctx.font='7px monospace';
+  ctx.fillText('Oscillator + Error Amps + PWM',ix+iw/2,iy+64);
+}
+
+function drawSymbolTL494(W,H){
+  ctx.fillStyle='#080d16'; ctx.fillRect(0,0,W,H);
+  var bx=W/2-65,by=H/2-85,bw=130,bh=170;
+  ctx.fillStyle='#0a0e18'; ctx.strokeStyle='#4da6ff'; ctx.lineWidth=1.5;
+  ctx.fillRect(bx,by,bw,bh); ctx.strokeRect(bx,by,bw,bh);
+  ctx.fillStyle='#4da6ff'; ctx.font='bold 10px Orbitron,monospace'; ctx.textAlign='center';
+  ctx.fillText('TL494',bx+bw/2,by+20);
+  ctx.fillStyle='#8b949e'; ctx.font='7px monospace';
+  ctx.fillText('PWM Controller',bx+bw/2,by+34);
+  var leftPins = [1,2,3,4,5,6,7,8];
+  var rightPins = [16,15,14,13,12,11,10,9];
+  for(var i=0;i<leftPins.length;i++){
+    var p = PINS.find(pn=>pn.num===leftPins[i]);
+    if(p){
+      var y = by+45 + i*15;
+      ctx.strokeStyle='#4da6ff'; ctx.lineWidth=0.5;
+      ctx.beginPath(); ctx.moveTo(bx-12,y); ctx.lineTo(bx,y); ctx.stroke();
+      ctx.fillStyle='#88ccff'; ctx.font='6px monospace'; ctx.textAlign='right';
+      ctx.fillText(p.lbl,bx-14,y+3);
+    }
+  }
+  for(var i=0;i<rightPins.length;i++){
+    var p = PINS.find(pn=>pn.num===rightPins[i]);
+    if(p){
+      var y = by+45 + i*15;
+      ctx.strokeStyle='#4da6ff'; ctx.lineWidth=0.5;
+      ctx.beginPath(); ctx.moveTo(bx+bw+12,y); ctx.lineTo(bx+bw,y); ctx.stroke();
+      ctx.fillStyle='#88ccff'; ctx.font='6px monospace'; ctx.textAlign='left';
+      ctx.fillText(p.lbl,bx+bw+14,y+3);
+    }
+  }
+}
+
+function drawFootprintTL494(W,H){
+  ctx.fillStyle='#0d1b0d'; ctx.fillRect(0,0,W,H);
+  var bw2=W*0.45, bh2=H*0.6, bx=(W-bw2)/2, by=(H-bh2)/2;
+  ctx.fillStyle='#0a1208'; ctx.strokeStyle='#4da6ff'; ctx.lineWidth=0.7;
+  ctx.fillRect(bx,by,bw2,bh2); ctx.strokeRect(bx,by,bw2,bh2);
+  ctx.fillStyle='rgba(77,166,255,0.4)'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
+  ctx.fillText('TL494',bx+bw2/2,by+bh2/2-6);
+  ctx.fillStyle='rgba(77,166,255,0.3)'; ctx.font='8px monospace';
+  ctx.fillText('PWM',bx+bw2/2,by+bh2/2+10);
+  var N=8, pLen=14, pW=5, pitch=bh2/N;
+  ctx.fillStyle='#4da6ff';
+  for(var i=0;i<N;i++){
+    var pos=i*pitch+pitch/2;
+    ctx.fillRect(bx-pLen-2,by+pos-pW/2,pLen,pW);
+    ctx.fillRect(bx+bw2+2,by+pos-pW/2,pLen,pW);
+  }
+  ctx.fillStyle='#ffaa44'; ctx.beginPath();
+  ctx.arc(bx-pLen-6,by+pitch/2,3,0,Math.PI*2); ctx.fill();
+}
+
+function sec(t,rows){
+  return '<div style="font-size:13px;color:#4da6ff;font-weight:700;letter-spacing:.1em;margin:12px 0 5px;text-transform:uppercase;">'+t+'</div>'
+    +'<div style="background:#0d1117;border:1px solid #21262d;border-radius:4px;overflow:hidden;">'+rows+'</div>';
+}
+function row(p,v){
+  return '<div style="display:flex;justify-content:space-between;padding:4px 9px;border-bottom:1px solid #1a2030;font-size:13px;">'
+    +'<span style="color:#8b949e;">'+p+'</span><span style="color:#e6edf3;font-weight:700;">'+v+'</span></div>';
+}
+function feat(t){
+  return '<div style="padding:4px 9px;border-bottom:1px solid #1a2030;font-size:13px;color:#8b949e;display:flex;gap:6px;">'
+    +'<span style="color:#4da6ff;flex-shrink:0;">▶</span>'+t+'</div>';
+}
+
+function loadDSSample(){
+  window._dsLoaded=true;
+  var quick = document.getElementById('tlDsQuick');
+  quick.innerHTML = sec('ABSOLUTE MAXIMUM RATINGS',
+    row('Supply Voltage','41V')+row('Output Current','250mA')+row('Power Dissipation','1000mW')+row('Operating Temp','0°C to 70°C')+row('Storage Temp','-65°C to 150°C'))
+    +sec('OSCILLATOR FORMULAS',
+      row('Frequency','f = 1.1 / (RT × CT)')+row('RT Range','1.8kΩ to 100kΩ')+row('CT Range','0.0047µF to 10µF')+row('Dead-Time','0% to 100% (0V to 3.3V on DTC pin)'))
+    +sec('KEY FEATURES',
+      feat('Complete PWM control circuit')+feat('Variable frequency oscillator')+feat('Two error amplifiers')+feat('5V reference output')+feat('Push-pull or parallel output modes')+feat('Adjustable dead-time control')+feat('200mA totem-pole outputs')+feat('Widely used in SMPS, inverters, motor control'));
+  document.getElementById('tlDSContent').innerHTML = sec('TL494 — Complete Reference',
+    row('Type','Pulse Width Modulation Controller')+row('Manufacturers','TI, ON Semi, STMicro')+row('Introduced','1970s')+row('Supply Current','7 mA typical')+row('Output Drive','200mA per output')+row('Frequency Range','1kHz to 300kHz')+row('Pin Count','16-pin DIP, SOIC'))+
+    sec('TYPICAL APPLICATIONS',
+      feat('SMPS (Switch Mode Power Supplies)')+feat('DC-DC Converters')+feat('Battery Chargers')+feat('Inverters')+feat('Motor Speed Control')+feat('LED Drivers')+feat('Audio Amplifiers (Class D)')+feat('Solar Inverters')+feat('Electric Vehicle Chargers'));
+}
+
+// ── PDF Upload and Analysis ──
+var pdfInput = document.getElementById('tlPdfInput');
+var extractedSpecsDiv = document.getElementById('tlExtractedSpecs');
+var extractedContent = document.getElementById('tlExtractedContent');
+var fileInfo = document.getElementById('tlFileInfo');
+var progressDiv = document.getElementById('tlProgress');
+var progBar = document.getElementById('tlProgBar');
+var extractStatus = document.getElementById('tlExtractStatus');
+
+var specPatterns = [
+  { key: 'Supply Voltage', patterns: [/supply[\s-]*voltage/i, /vcc[\s-]*range/i, /operating[\s-]*voltage/i], unit: 'V' },
+  { key: 'Supply Current', patterns: [/supply[\s-]*current/i, /icc/i, /quiescent[\s-]*current/i], unit: 'mA' },
+  { key: 'Output Current', patterns: [/output[\s-]*current/i, /sink[\s-]*current/i, /source[\s-]*current/i], unit: 'mA' },
+  { key: 'Max Frequency', patterns: [/maximum[\s-]*frequency/i, /oscillator[\s-]*frequency/i], unit: 'kHz' },
+  { key: 'Power Dissipation', patterns: [/power[\s-]*dissipation/i, /pd[\s-]*max/i], unit: 'mW' },
+  { key: 'Reference Voltage', patterns: [/reference[\s-]*voltage/i, /vref/i], unit: 'V' },
+  { key: 'Temperature Range', patterns: [/operating[\s-]*temperature/i, /temp[\s-]*range/i], unit: '°C' },
+  { key: 'Dead-Time Range', patterns: [/dead[\s-]*time/i, /dtc/i], unit: '%' }
+];
+
+function extractNumber(text) {
+  var match = text.match(/(\d+(?:\.\d+)?)\s*(?:µ|u|micro)?\s*([mM]?[kK]?[a-zA-Z]*)/);
+  if (match) {
+    var num = parseFloat(match[1]);
+    var unit = match[2] || '';
+    return { value: num, unit: unit };
+  }
+  return null;
+}
+
+function findSpecification(text, patterns) {
+  for (var i = 0; i < patterns.length; i++) {
+    var pattern = patterns[i];
+    var regex = new RegExp(pattern + '\\s*[:=\\s]\\s*([\\d\\.]+\\s*(?:[µu]?[A-Za-z]*)?)', 'i');
+    var match = text.match(regex);
+    if (match) {
+      var numMatch = extractNumber(match[1]);
+      if (numMatch) {
+        return numMatch.value + (numMatch.unit ? ' ' + numMatch.unit : '');
+      }
+      return match[1].trim();
+    }
+  }
+  return null;
+}
+
+function analyzeTL494Datasheet(text) {
+  var extracted = {};
+  var fullText = text;
+  for (var i = 0; i < specPatterns.length; i++) {
+    var spec = specPatterns[i];
+    var value = findSpecification(fullText, spec.patterns);
+    if (value) {
+      extracted[spec.key] = value;
+    }
+  }
+  return extracted;
+}
+
+function displayExtractedSpecs(specs) {
+  if (Object.keys(specs).length === 0) {
+    extractedContent.innerHTML = '<div style="color:#8b949e; padding: 10px; text-align:center;">⚠️ No specifications could be extracted from this PDF.<br>Try a different datasheet or use the sample data.</div>';
+    extractedSpecsDiv.style.display = 'block';
+    return;
+  }
+  var html = '<div style="display:flex; flex-direction:column; gap:4px;">';
+  for (var key in specs) {
+    html += '<div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #21262d;">' +
+            '<span style="color:#8b949e;">' + key + '</span>' +
+            '<span style="color:#4da6ff; font-weight:700;">' + specs[key] + '</span>' +
+            '</div>';
+  }
+  html += '</div>';
+  extractedContent.innerHTML = html;
+  extractedSpecsDiv.style.display = 'block';
+}
+
+if (pdfInput) {
+  pdfInput.addEventListener('change', function(e) {
+    if (!e.target.files.length) return;
+    var file = e.target.files[0];
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      fileInfo.innerHTML = '❌ Please select a PDF file';
+      return;
+    }
+    fileInfo.innerHTML = '📄 Loading: ' + file.name + '...';
+    progressDiv.style.display = 'block';
+    progBar.style.width = '20%';
+    extractStatus.style.display = 'none';
+    var fileReader = new FileReader();
+    fileReader.onload = function() {
+      progBar.style.width = '50%';
+      var typedarray = new Uint8Array(this.result);
+      pdfjsLib.getDocument(typedarray).promise.then(function(pdf) {
+        progBar.style.width = '70%';
+        var numPages = pdf.numPages;
+        var pagePromises = [];
+        for (var i = 1; i <= Math.min(numPages, 15); i++) {
+          pagePromises.push(pdf.getPage(i).then(function(page) {
+            return page.getTextContent().then(function(textContent) {
+              return textContent.items.map(function(item) { return item.str; }).join(' ');
+            });
+          }));
+        }
+        Promise.all(pagePromises).then(function(pagesText) {
+          progBar.style.width = '90%';
+          var fullText = pagesText.join(' ');
+          var extractedSpecs = analyzeTL494Datasheet(fullText);
+          progBar.style.width = '100%';
+          setTimeout(function() {
+            progressDiv.style.display = 'none';
+            progBar.style.width = '0%';
+            if (Object.keys(extractedSpecs).length > 0) {
+              fileInfo.innerHTML = '✅ Extracted ' + Object.keys(extractedSpecs).length + ' specifications from: ' + file.name;
+              extractStatus.style.display = 'block';
+              extractStatus.innerHTML = '✓ PDF analysis complete!';
+              extractStatus.style.color = '#50c8a0';
+              setTimeout(function() { extractStatus.style.display = 'none'; }, 3000);
+            } else {
+              fileInfo.innerHTML = '⚠️ PDF loaded but no specifications found. Try the sample data below.';
+              extractStatus.style.display = 'block';
+              extractStatus.innerHTML = '⚠️ No specifications found in this PDF';
+              extractStatus.style.color = '#ffaa44';
+              setTimeout(function() { extractStatus.style.display = 'none'; }, 3000);
+            }
+            displayExtractedSpecs(extractedSpecs);
+          }, 200);
+        }).catch(function(err) {
+          console.error('Error extracting text:', err);
+          progressDiv.style.display = 'none';
+          fileInfo.innerHTML = '❌ Error extracting text from PDF. The file may be image-based.';
+          extractStatus.style.display = 'block';
+          extractStatus.innerHTML = '❌ PDF text extraction failed';
+          extractStatus.style.color = '#ff6b6b';
+          setTimeout(function() { extractStatus.style.display = 'none'; }, 3000);
+        });
+      }).catch(function(err) {
+        console.error('Error loading PDF:', err);
+        progressDiv.style.display = 'none';
+        fileInfo.innerHTML = '❌ Could not load PDF. Make sure it\'s a valid PDF file.';
+      });
+    };
+    fileReader.readAsArrayBuffer(file);
+  });
+}
+
+function loadTL494SampleData() {
+  var sampleSpecs = {
+    'Supply Voltage': '7V - 40V',
+    'Supply Current': '7 mA',
+    'Output Current': '200 mA',
+    'Max Frequency': '300 kHz',
+    'Power Dissipation': '1000 mW',
+    'Reference Voltage': '5.0V ±5%',
+    'Temperature Range': '0°C to 70°C',
+    'Dead-Time Range': '0% to 100%'
+  };
+  displayExtractedSpecs(sampleSpecs);
+  fileInfo.innerHTML = '📄 Sample datasheet loaded — TL494 PWM specifications';
+  extractStatus.style.display = 'block';
+  extractStatus.innerHTML = '✓ Sample data loaded successfully!';
+  extractStatus.style.color = '#50c8a0';
+  setTimeout(function() { extractStatus.style.display = 'none'; }, 3000);
+}
+
+var sampleBtn = document.getElementById('tlLoadSample');
+if (sampleBtn) {
+  sampleBtn.onclick = function() {
+    loadTL494SampleData();
+    loadDSSample();
+  };
+}
+
+})();
+</script>
+
+<!------------------------->
+
+<!------------------------->
+
+<div>Explore TL494 PWM Controller IC interactively—view pin functions, internal blocks, datasheet, applications, and design tips in one place.</div>
+
+<div class="separator" style="display:none;"><a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiIco3w16ziIDn7WRMzUfTsAR5r51YNeA2m2mbf04U3N0LHJmGD-4BX8arDTt6No7vFGtBGSLDOm7USp8UiGWPlqHB7h-x5TW_WLEjpHJRORPtDA_M7S49C7uhLyk_NTkCX6ZhhevScOq3EM6Vq6QPP8CJ1hIQ90fXICy8kECtrNKVw6zWN6ROyOo0-F2H0/s1600/TL494%20chip%20explorer.png" style="display: block; padding: 1em 0; text-align: center; "><img alt="Explore TL494 PWM Controller IC" border="0" data-original-height="768" data-original-width="1376" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiIco3w16ziIDn7WRMzUfTsAR5r51YNeA2m2mbf04U3N0LHJmGD-4BX8arDTt6No7vFGtBGSLDOm7USp8UiGWPlqHB7h-x5TW_WLEjpHJRORPtDA_M7S49C7uhLyk_NTkCX6ZhhevScOq3EM6Vq6QPP8CJ1hIQ90fXICy8kECtrNKVw6zWN6ROyOo0-F2H0/s1600/TL494%20chip%20explorer.png"/></a></div>

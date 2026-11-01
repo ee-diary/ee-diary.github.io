@@ -1,0 +1,74 @@
+---
+layout: post
+title: "ATtiny85 LED Blink Tutorial: First Microcontroller Project"
+date: 2026-05-02 09:45:00 +0000
+description: "Embarking on embedded electronics often begins with a simple, yet foundational project: making an LED blink. This tutorial focuses on using the compact"
+---
+<!--SEO_TITLE: ATtiny85 LED Blink Tutorial: First Microcontroller Project-->
+<!--SEO_DESCRIPTION: Learn to blink an LED with the ATtiny85 microcontroller. This beginner-friendly guide explains circuit components, operation, and practical uses.-->
+<!--SEO_KEYWORDS: ATtiny85, LED blink, microcontroller tutorial, embedded systems, electronics project, Arduino ATtiny, digital output, pushbutton input, circuit explanation-->
+
+<p>Embarking on embedded electronics often begins with a simple, yet foundational project: making an LED blink. This tutorial focuses on using the compact and versatile ATtiny85 microcontroller to achieve this classic "Hello World" of hardware, complete with a pushbutton input for interaction.</p>
+
+<h2>Why the ATtiny85?</h2>
+<p>The <a href="https://www.icexplorer.online/2026/04/attiny85.html">ATtiny85</a> is a powerful 8-pin microcontroller from Atmel (now Microchip), known for its small form factor, low power consumption, and affordability. Despite its size, it packs significant processing power, making it ideal for projects where space and budget are critical. It's an excellent choice for learning microcontroller basics without the complexity of larger boards like an <a href="https://www.icexplorer.online/2026/03/arduino-uno.html">Arduino Uno</a>.</p>
+<div style="text-align: center;"><img alt="attiny85" border="0" data-original-height="595" data-original-width="755" src="https://blogger.googleusercontent.com/img/a/AVvXsEiinKnEO3KvUeeEgGrRrBRM2d0_Q22mHXQTUPWi8tVLK4XnYrV21czd1yxB6mN3D6zW65gB1a-SJIVfsngfak0NbNZWrBkSicp69njzbqRixFj6wL0wh7w6HWzdrzW9qbftVtLQVp4zmwnopMzFUSDgYrf8yWliUzxvFfVVp-YfDskW0wMx8NgNS6PZ_u17" title="attiny85" /></div>
+
+<h2>Understanding the Circuit Diagram</h2>
+<p>Our circuit demonstrates how to control an output (an LED) and read an input (a pushbutton) using the ATtiny85. This simple setup forms the basis for countless embedded projects.</p>
+<img alt="attiny85 led blink" border="0" data-original-height="595" data-original-width="755" src="https://blogger.googleusercontent.com/img/a/AVvXsEhplJfjMjUpm-KjO-Ih3iWVnez5_KMeESyDbg-JqmC021CLB8CyjsNHj1iz1c4CvSCF42659pOOcxMHzfDij4RLI6Otn2qYgAlKgrxhyTXzO1DIaj_EuuSzQK5UE1MmSHtwr0o6nyn5DAEJyOyYIRGljeM7x20IPhL8rUj69gBqqrxe0QckMMiYzEtC3zjF" title="attiny85 led blink" /><br />
+
+<h3>Key Components and Their Functions:</h3>
+<ul>
+<li><strong>U1: ATtiny85 Microcontroller:</strong> This is the brain of our circuit. It's an 8-pin IC. Pin 8 (VCC) is connected to the +5V power supply, and Pin 4 (GND) is connected to ground, providing power to the chip. The ATtiny85 executes the code we upload, controlling the LED and reading the button's state.</li><br />
+<li><strong>D1: LED (Light Emitting Diode):</strong> Our visual output. It lights up when current flows through it in the correct direction. The anode (longer leg) is connected to Pin 5 (PB0) of the ATtiny85, and the cathode (shorter leg) is connected to resistor R2.</li><br />
+<li><strong>R2: Current-Limiting Resistor (270Ω):</strong> Crucial for protecting the LED from excessive current and the ATtiny85's output pin from damage. Without it, the LED would likely burn out instantly. When the ATtiny85 sets PB0 to HIGH, current flows through R2 and D1.</li><br />
+<li><strong>Pushbutton:</strong> Our input device. One side is connected to ground. The other side is connected to Pin 1 (PB5) of the ATtiny85 and also to resistor R1. When pressed, it connects PB5 to ground.</li><br />
+<li><strong>R1: Pull-up Resistor (10kΩ):</strong> This resistor is connected between +5V and Pin 1 (PB5). It ensures that when the pushbutton is <em>not</em> pressed, Pin 1 is pulled up to +5V (a HIGH state). When the button <em>is</em> pressed, it overrides R1 and pulls Pin 1 down to ground (a LOW state). This prevents the input pin from "floating" and picking up random electrical noise.</li><br />
+<li><strong>+5V Power Supply &amp; Ground:</strong> These provide the necessary electrical power for the entire circuit to function, establishing a common reference point.</li><br />
+</ul>
+
+<h2>How the Circuit Operates (The Blink Logic)</h2>
+<p>The core operation relies on the ATtiny85's ability to control its output pins. For the LED to blink, the microcontroller is programmed to perform the following sequence:</p>
+<ol>
+<li>Set Pin 5 (PB0) to <strong>HIGH</strong> (+5V). This allows current to flow from PB0, through the LED (D1), through the current-limiting resistor (R2), and to ground, thus turning the LED <strong>ON</strong>.</li><br />
+<li>Wait for a specified duration (e.g., 500 milliseconds).</li><br />
+<li>Set Pin 5 (PB0) to <strong>LOW</strong> (0V). This stops current flow through the LED, turning it <strong>OFF</strong>.</li><br />
+<li>Wait for another specified duration.</li><br />
+<li>Repeat the cycle indefinitely.</li></ol><p>The pushbutton adds an interactive element. The ATtiny85 continuously monitors Pin 1 (PB5). When the button is pressed, PB5 goes LOW; when released, R1 pulls PB5 back to HIGH. Your code can use this input to, for example, toggle the LED's blink pattern, start/stop the blinking, or change its speed.</p>
+
+<h2>Practical Applications</h2>
+<p>While a blinking LED might seem simple, this project is a stepping stone for many practical applications. The ATtiny85, with its compact size, is ideal for:</p>
+<ul>
+<li><strong>Status Indicators:</strong> Blinking LEDs can indicate device status (e.g., power on, error, processing).</li><br />
+<li><strong>Simple User Interfaces:</strong> The pushbutton input can be expanded to control various device functions.</li><br />
+<li><strong>Low-Power Devices:</strong> Its efficiency makes it suitable for battery-powered sensors or small gadgets.</li><br />
+<li><strong>Wearable Technology:</strong> Its small footprint fits well into compact designs.</li><br />
+<li><strong>Model Making &amp; Robotics:</strong> Controlling small motors, servos, or other visual effects.</li></ul><h2>Getting Started with Code</h2>
+<p>To make the ATtiny85 blink, you'll write a small program, typically using the Atmel Studio IDE with WinAVR compiler which has the ATtiny core already installed. The following is the led blink code for ATtiny85:</p><pre lang="cpp">#ifndef F_CPU
+#define F_CPU 8000000UL // 8 MHz internal clock (default)
+#endif
+
+#include &lt;avr/io.h&gt;
+#include &lt;util/delay.h&gt;
+
+int main(void) {
+    // 1. Set PB0 as output (Pin 5 on the physical chip)
+    // DDRB is the Data Direction Register for Port B
+    DDRB |= (1 &lt;&lt; PB0);
+
+    while (1) {
+        // 2. Turn LED ON
+        PORTB |= (1 &lt;&lt; PB0);
+        _delay_ms(500);
+
+        // 3. Turn LED OFF
+        PORTB &amp;= ~(1 &lt;&lt; PB0);
+        _delay_ms(500);
+    }
+
+    return 0;
+}
+</pre><p>This ATtiny85 AVR C program begins by defining the CPU clock frequency as 8 MHz using F_CPU, which ensures that timing functions like _delay_ms() work accurately with the microcontroller’s internal oscillator. It then includes the necessary AVR libraries for hardware register control and delay generation. Inside the main function, the DDRB register is configured so that PB0 (physical pin 5 on the ATtiny85) acts as an output by setting its corresponding bit to 1. The program then enters an infinite loop where PORTB is used to control the output state of PB0: first setting the pin HIGH to turn the connected LED on, waiting for 500 milliseconds, then clearing the pin LOW to turn the LED off, followed by another 500-millisecond delay. This continuous cycle creates a blinking LED effect with a one-second total period, demonstrating basic digital output control and timing on the ATtiny85.</p>
+
+<p>This basic ATtiny85 LED blink tutorial not only illuminates an LED but also lights the path to understanding fundamental microcontroller concepts. Build this circuit, upload your code, and watch your first embedded system come to life!</p>Related Web Pages:<div><ul style="text-align: left;"><li><a href="https://www.icexplorer.online/2026/04/attiny13-led-blink-tutorial-code-pinout.html">ATtiny13 LED Blink Tutorial: Code, Pinout, and Proteus Simulation Guide</a></li><li><a href="https://www.icexplorer.online/2026/04/attiny13-with-push-button-led-avr-gcc.html">Attiny13 with Push Button &amp; LED - AVR-GCC toolchain (WinAVR)</a></li><li><a href="https://www.icexplorer.online/2026/03/attiny45.html">ATtiny45</a></li></ul></div>

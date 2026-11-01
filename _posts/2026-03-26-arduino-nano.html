@@ -1,0 +1,512 @@
+---
+layout: post
+title: "Arduino Nano"
+date: 2026-03-26 03:45:00 +0000
+description: "Arduino Nano: interactive pinout explorer with pin functions, design files and datasheet."
+---
+<!--════════════════════════════════════════════════════════
+     ARDUINO NANO PINOUT EXPLORER by icexplorer.online
+     
+     ════════════════════════════════════════════════════════-->
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+.nano-widget{all:initial;display:block;font-family:'Share Tech Mono','Courier New',monospace;color:#d0d0d0;background:#1e1e1e;border-radius:12px;padding:10px;max-width:980px;margin:0 auto;box-sizing:border-box;position:relative;}
+.nano-widget *{box-sizing:border-box;}
+.nano-widget a,.nano-widget button{all:unset;}
+.nano-hdr{display:flex;align-items:center;justify-content:space-between;background:#252526;border:1px solid #3c3c3c;border-radius:10px;padding:9px 14px;margin-bottom:10px;position:relative;overflow:hidden;}
+.nano-hdr::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#4a90d9,#87ceeb,transparent);}
+.nano-hdr-logo{display:flex;align-items:center;gap:10px;}
+.ard-logo-svg{width:28px;height:28px;flex-shrink:0;color:#4a90d9;}
+.nano-hdr-title{font-family:'Orbitron','Arial Black',sans-serif;font-size:15px;font-weight:900;color:#d4d4d4;letter-spacing:.12em;display:block;}
+.nano-hdr-sub{font-size:13px;color:#888;margin-top:2px;display:block;}
+.nano-pulse{width:7px;height:7px;border-radius:50%;background:#4a90d9;box-shadow:0 0 8px #4a90d9;animation:nanoPulse 2s infinite;flex-shrink:0;}
+@keyframes nanoPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+.nano-main{display:flex;gap:10px;align-items:flex-start;}
+.nano-board-wrap{flex:0 0 auto;width:420px;background:#1e1e1e;border:1px solid #2d2d2d;border-radius:10px;padding:8px;position:relative;}
+.nano-board-wrap svg{width:100%;height:auto;display:block;touch-action:manipulation;}
+.nano-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px;}
+.nano-detail{background:#252526;border:1px solid #3c3c3c;border-radius:10px;overflow:hidden;}
+.nano-detail-empty{padding:28px 20px;text-align:center;color:#888;}
+.nano-detail-empty .nanoArrow{font-size:28px;margin-bottom:10px;display:block;animation:nanoArrow 1.8s infinite;}
+@keyframes nanoArrow{0%,100%{opacity:.3;transform:translateX(-4px);}50%{opacity:.9;transform:translateX(4px);}}
+.nano-detail-empty p{font-size:13px;line-height:1.6;color:#aaa;margin:0;}
+.nano-detail-content{display:none;}
+.nano-detail-content.show{display:block;}
+.nano-det-bar{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #2d2d2d;}
+.nano-det-badge{width:56px;height:56px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;border:2px solid;font-family:'Share Tech Mono',monospace;}
+.nano-det-name{flex:1;}
+.nano-det-pinid{font-family:'Orbitron','Arial Black',sans-serif;font-size:20px;font-weight:900;line-height:1;color:#d4d4d4;display:block;}
+.nano-det-fullname{font-size:13px;color:#6a6a6a;margin-top:3px;letter-spacing:.05em;display:block;}
+.nano-funcs{display:flex;flex-wrap:wrap;gap:5px;padding:8px 14px;border-bottom:1px solid #2d2d2d;}
+.nano-func-chip{padding:5px 12px;border-radius:4px;font-size:13px;font-weight:700;border:1px solid;letter-spacing:.06em;display:inline-block;}
+.nano-info-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.nano-info-cell{padding:8px 14px;border-bottom:1px solid #2d2d2d;border-right:1px solid #2d2d2d;}
+.nano-info-cell:nth-child(2n){border-right:none;}
+.nano-info-cell:nth-last-child(-n+2){border-bottom:none;}
+.nano-info-label{font-size:11px;color:#6a6a6a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:3px;display:block;}
+.nano-info-value{font-size:14px;color:#d4d4d4;font-weight:700;display:block;}
+.nano-alt-section{padding:8px 14px;border-top:1px solid #2d2d2d;}
+.nano-alt-label{font-size:11px;color:#6a6a6a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;display:block;}
+.nano-alt-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.nano-alt-chip{padding:4px 10px;border-radius:3px;font-size:13px;background:#2d2d2d;border:1px solid #3c3c3c;color:#9cdcfe;display:inline-block;}
+.nano-note{padding:10px 14px;border-top:1px solid #2d2d2d;font-size:13px;color:#6a9fb5;line-height:1.6;background:#252526;}
+.nano-note-icon{color:#4a90d9;margin-right:4px;}
+.nano-filter-section{background:#252526;border:1px solid #3c3c3c;border-radius:10px;overflow:hidden;padding:10px 10px 0;}
+.nano-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;}
+.nano-panel-box{border:1px solid #4a90d9;border-radius:6px;padding:8px;background:#1a1a1e;overflow:hidden;}
+.nano-panel-label{font-size:10px;color:#4a90d9;letter-spacing:.12em;text-transform:uppercase;font-family:'Share Tech Mono',monospace;margin-bottom:8px;display:block;font-weight:700;}
+.nano-fbtn{display:flex;align-items:center;justify-content:center;height:34px;width:100%;padding:0 4px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.08em;font-family:'Share Tech Mono',monospace;cursor:pointer;user-select:none;outline:none;border:1px solid rgba(255,255,255,0.22);transition:background .12s,border-color .12s,box-shadow .12s,transform .08s;box-shadow:0 2px 4px rgba(0,0,0,0.5);}
+.nano-fbtn:hover{background:rgba(255,255,255,0.14) !important;border-color:rgba(255,255,255,0.5) !important;}
+.nano-fbtn.active{border-color:currentColor !important;box-shadow:0 0 8px currentColor,0 1px 3px rgba(0,0,0,0.7) inset;transform:translateY(1px);}
+.nano-pinlist{max-height:0;overflow:hidden;transition:max-height .4s ease;}
+.nano-pinlist.open{max-height:460px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#3c3c3c transparent;}
+.nano-pinlist::-webkit-scrollbar{width:3px;}
+.nano-pinlist::-webkit-scrollbar-thumb{background:#3c3c3c;}
+.nano-prow{display:flex;align-items:center;gap:7px;padding:6px 10px;cursor:pointer;border-bottom:1px solid rgba(60,60,60,.5);}
+.nano-prow:hover{background:rgba(255,255,255,.04);}
+.nano-prow.on{background:rgba(74,144,217,.12);border-left:2px solid #4a90d9;padding-left:8px;}
+.nano-pbadge{min-width:44px;height:26px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.nano-pname{font-size:13px;flex:1;color:#9d9d9d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nano-ptag{padding:3px 7px;border-radius:2px;font-size:11px;font-weight:700;flex-shrink:0;display:inline-block;}
+.nano-list-toggle{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;cursor:pointer;background:#1e1e1e;border-top:1px solid #2d2d2d;}
+.nano-list-toggle:hover{background:#2a2d2e;}
+.nano-list-toggle span{font-size:13px;color:#888;}
+.nano-list-toggle b{color:#4a90d9;}
+.nano-legend{display:flex;flex-wrap:wrap;gap:5px;padding:7px 14px;border-top:1px solid #2d2d2d;background:#1e1e1e;}
+.nano-leg{display:flex;align-items:center;gap:4px;font-size:12px;color:#888;}
+.nano-ldot{width:10px;height:10px;border-radius:2px;flex-shrink:0;display:inline-block;}
+.nano-tt{position:fixed;background:#252526;border:1px solid #3c3c3c;border-radius:8px;padding:9px 13px;font-size:13px;pointer-events:none;z-index:99999;display:none;min-width:180px;max-width:280px;box-shadow:0 4px 24px rgba(0,0,0,.8);font-family:'Share Tech Mono',monospace;color:#d4d4d4;}
+.nano-tt.show{display:block;}
+.nano-tt .ttn{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:900;margin-bottom:4px;display:block;}
+.nano-tt .ttnote{color:#6a9fb5;font-size:12px;line-height:1.5;display:block;}
+@media(max-width:640px){
+  .nano-main{flex-direction:column;}
+  .nano-board-wrap{width:100%;}
+  .nano-detail-empty .nanoArrow{transform:rotate(90deg);display:inline-block;}
+}
+</style>
+
+<div class="nano-widget" id="nanoWidget">
+  <div class="nano-hdr">
+    <div class="nano-hdr-logo">
+      <!--Arduino logo SVG — properly closed tags, safe for Blogger-->
+      <svg class="ard-logo-svg" viewbox="-4 -4 258 258" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="125" cy="125" fill="none" r="128" stroke-width="6" stroke="currentColor"></circle>
+        <g fill="currentColor" stroke="none">
+          <path d="M30.924053,110.839020 C32.271049,96.751373 37.626022,84.078644 45.537788,72.615982 C84.362808,16.365808 164.676620,16.338886 202.293015,67.573280 C211.454880,80.051956 218.989380,93.220840 221.582901,108.739510 C221.716156,109.536804 221.711777,110.357094 221.799072,111.540771 C219.007065,111.540771 216.421677,111.540771 213.277405,111.540771 C208.675308,85.217117 195.357880,64.224136 172.121048,50.037800 C155.752533,40.044640 138.018616,35.168186 118.753792,37.003212 C76.638771,41.014778 46.406097,69.164246 37.691315,112.721130 C35.828281,112.721130 33.866787,112.721130 31.471786,112.359268 C31.000208,111.611275 30.962130,111.225143 30.924053,110.839020 z"></path>
+          <path d="M39.002419,144.998688 C42.871235,167.023514 54.243065,184.385941 71.468651,198.385941 C113.596413,232.624985 177.388062,220.180878 202.841614,172.257324 C207.552048,163.388550 210.409698,153.535706 214.490616,143.205276 C215.146378,143.205276 217.094009,143.205276 219.480499,143.525940 C219.952881,144.240875 219.986374,144.635132 219.907501,145.394836 C219.529892,146.722534 219.223007,147.675491 219.005341,148.648407 C209.034882,193.215424 166.246124,229.147110 116.424393,223.116684 C75.953529,218.218094 44.763008,192.944763 34.101643,149.947144 C33.713722,148.382645 33.966019,146.659393 34.343407,144.998550 C36.178711,144.990875 37.590565,144.994781 39.002419,144.998688 z"></path>
+          <path d="M93.348022,62.278591 C75.659180,74.504974 66.422562,91.334373 64.020294,112.414696 C57.606010,112.414696 51.387978,112.414696 44.437019,112.414696 C49.870277,84.124397 66.616852,65.255997 91.117065,52.248848 C114.305466,39.938148 150.851883,44.001419 167.716354,56.927902 C142.145325,47.198513 117.271187,46.511620 93.348022,62.278591 z"></path>
+          <path d="M189.048492,143.380417 C194.851151,143.380417 200.653793,143.380417 207.287018,143.380417 C202.063644,167.972504 188.802750,186.416168 167.778351,199.077026 C142.602173,214.238068 116.621017,213.611313 90.528229,200.890717 C92.094269,201.196396 93.681717,201.419632 95.223183,201.819931 C123.725502,209.221436 149.140259,204.237122 170.111191,182.636337 C180.052017,172.396942 184.674149,159.410934 187.848129,145.229065 C188.519424,144.313690 188.783951,143.847061 189.048492,143.380417 z"></path>
+          <path d="M47.044746,143.378510 C53.374176,143.332138 59.703609,143.285767 66.576241,143.594284 C67.601730,144.215134 68.084023,144.481110 68.566307,144.747086 C73.091042,152.392303 77.615784,160.037537 82.184853,167.757660 C77.389053,172.379211 71.729790,177.832855 65.782913,183.563660 C55.392700,173.646286 48.942802,160.672653 45.985756,145.370392 C46.487041,144.354874 46.765896,143.866699 47.044746,143.378510 z"></path>
+          <path d="M183.869888,111.059814 C179.183197,103.080833 174.496521,95.101852 169.589111,86.747101 C174.662720,82.023521 180.476593,76.610741 186.583786,70.924896 C195.852066,80.672272 202.548309,93.040840 205.814758,107.819618 C204.023010,109.323456 202.546341,110.840523 200.993195,110.923340 C195.299179,111.226921 189.579758,111.053589 183.869888,111.059814 z"></path>
+        </g>
+      </svg>
+      <div>
+        <span class="nano-hdr-title">ARDUINO NANO</span>
+        <span class="nano-hdr-sub">Interactive Pinout · ATmega328P · Click any pin for details</span>
+      </div>
+    </div>
+    <div class="nano-pulse"></div>
+  </div>
+
+  <div class="nano-main">
+    <div class="nano-board-wrap">
+      <svg id="nanoSVG" viewbox="0 0 168 224" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+
+    <div class="nano-right">
+      <div class="nano-detail" id="nanoDetail">
+        <div class="nano-detail-empty" id="nanoEmpty">
+          <span class="nanoArrow">←</span>
+          <p>Click any pin on the board<br />to see its full details here</p>
+        </div>
+        <div class="nano-detail-content" id="nanoDetailContent">
+          <div class="nano-det-bar">
+            <div class="nano-det-badge" id="nanoDetBadge"></div>
+            <div class="nano-det-name">
+              <span class="nano-det-pinid" id="nanoDetId"></span>
+              <span class="nano-det-fullname" id="nanoDetFull"></span>
+            </div>
+          </div>
+          <div class="nano-funcs" id="nanoFuncs"></div>
+          <div class="nano-info-grid" id="nanoInfoGrid"></div>
+          <div class="nano-alt-section" id="nanoAltSection">
+            <span class="nano-alt-label">Alternative Functions</span>
+            <div class="nano-alt-chips" id="nanoAltChips"></div>
+          </div>
+          <div class="nano-note" id="nanoNote"></div>
+        </div>
+      </div>
+
+      <div class="nano-filter-section">
+        <div class="nano-panel-box">
+          <span class="nano-panel-label">◆ Highlight Pins</span>
+          <div class="nano-btns" id="nanoBtns"></div>
+        </div>
+        <div class="nano-list-toggle" onclick="nanoToggleList()">
+          <span>PIN LIST &nbsp;<b id="nanoListCnt"></b></span>
+          <span id="nanoToggleIcon" style="color: #4a90d9;">▼ SHOW</span>
+        </div>
+        <div class="nano-pinlist" id="nanoPinList">
+          <div id="nanoRows"></div>
+        </div>
+        <div class="nano-legend" id="nanoLegend"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="nano-tt" id="nanoTT"></div>
+
+<script>
+//<![CDATA[
+(function(){
+'use strict';
+
+var NS='http://www.w3.org/2000/svg';
+var svg=document.getElementById('nanoSVG');
+
+function mk(tag,attrs){
+  var el=document.createElementNS(NS,tag);
+  for(var k in attrs) el.setAttribute(k,attrs[k]);
+  return el;
+}
+function app(p,c){p.appendChild(c);return c;}
+function txt(str,attrs){var el=mk('text',attrs);el.textContent=str;return el;}
+
+/* ── DEFS ── */
+var defs=app(svg,mk('defs',{}));
+
+function linGrad(id,x1,y1,x2,y2,stops){
+  var g=mk('linearGradient',{id:id,x1:x1,y1:y1,x2:x2,y2:y2});
+  stops.forEach(function(s){var st=mk('stop',{offset:s[0]});st.setAttribute('stop-color',s[1]);g.appendChild(st);});
+  defs.appendChild(g);
+}
+linGrad('nanoPcbG','0','0','1','1',[['0%','#1a3a6e'],['50%','#142d58'],['100%','#0e2040']]);
+linGrad('nanoChipG','0','0','1','1',[['0%','#1e1e1e'],['100%','#0a0a0a']]);
+linGrad('nanoSilvG','0','0','0','1',[['0%','#d8d8d8'],['50%','#a8a8a8'],['100%','#787878']]);
+
+var pat=mk('pattern',{id:'nanoDots',width:'14',height:'14',patternUnits:'userSpaceOnUse'});
+app(pat,mk('circle',{cx:'7',cy:'7',r:'0.5',fill:'rgba(100,160,255,0.12)'}));
+defs.appendChild(pat);
+
+var filt=mk('filter',{id:'nanoPinGlow',x:'-50%',y:'-50%',width:'200%',height:'200%'});
+var fgb=mk('feGaussianBlur',{stdDeviation:'3',result:'blur'});
+filt.appendChild(fgb);
+var fm=mk('feMerge',{});
+app(fm,mk('feMergeNode',{in:'blur'}));
+app(fm,mk('feMergeNode',{in:'SourceGraphic'}));
+filt.appendChild(fm);
+defs.appendChild(filt);
+
+/* ── PCB BODY ── */
+app(svg,mk('rect',{x:'22',y:'2',width:'126',height:'220',rx:'6',fill:'url(#nanoPcbG)',stroke:'#0a1830','stroke-width':'1.5'}));
+app(svg,mk('rect',{x:'22',y:'2',width:'126',height:'220',rx:'6',fill:'url(#nanoDots)'}));
+app(svg,mk('rect',{x:'23',y:'3',width:'124',height:'218',rx:'5',fill:'none',stroke:'rgba(100,160,255,0.1)','stroke-width':'0.8'}));
+
+/* ── Mounting holes ── */
+[[34,10],[136,10],[34,215],[136,215]].forEach(function(h){
+  app(svg,mk('circle',{cx:h[0],cy:h[1],r:'5',fill:'#0a1830',stroke:'#0d2040','stroke-width':'1'}));
+  app(svg,mk('circle',{cx:h[0],cy:h[1],r:'2.5',fill:'#060e1a'}));
+});
+
+/* ── Mini USB connector ── */
+app(svg,mk('rect',{x:'61',y:'0',width:'48',height:'26',rx:'3',fill:'#666',stroke:'#444','stroke-width':'1.2'}));
+app(svg,mk('rect',{x:'64',y:'2',width:'42',height:'22',rx:'2',fill:'#333'}));
+app(svg,mk('rect',{x:'67',y:'0',width:'36',height:'6',rx:'1',fill:'#1a1a1a',stroke:'#555','stroke-width':'0.8'}));
+app(svg,mk('rect',{x:'69',y:'8',width:'32',height:'13',rx:'2',fill:'#1a1a1a',stroke:'#555','stroke-width':'0.8'}));
+app(svg,mk('rect',{x:'72',y:'11',width:'26',height:'7',rx:'1',fill:'#222'}));
+
+/* ── Header bars ── */
+app(svg,mk('rect',{x:'22',y:'18',width:'10',height:'190',rx:'1.5',fill:'#0d0d0d',stroke:'#1a1a1a','stroke-width':'0.8'}));
+app(svg,mk('rect',{x:'138',y:'18',width:'10',height:'190',rx:'1.5',fill:'#0d0d0d',stroke:'#1a1a1a','stroke-width':'0.8'}));
+
+/* ── Header labels removed ── */
+
+/* ── Capacitor ── */
+app(svg,mk('ellipse',{cx:'58',cy:'103',rx:'4.5',ry:'4.5',fill:'#3a3a3a',stroke:'#2a2a2a','stroke-width':'0.8'}));
+app(svg,mk('ellipse',{cx:'58',cy:'103',rx:'2.8',ry:'2.8',fill:'#444'}));
+app(svg,mk('line',{x1:'56.8',y1:'99',x2:'56.8',y2:'107',stroke:'#666','stroke-width':'0.7'}));
+app(svg,txt('10\u03bcF',{fill:'rgba(140,190,255,0.22)','font-family':'monospace','font-size':'3.5','text-anchor':'middle',x:'58',y:'112'}));
+
+/* ── SMD resistor ── */
+app(svg,mk('rect',{x:'57',y:'46',width:'8',height:'3',rx:'0.6',fill:'#c8a870',stroke:'#8a6030','stroke-width':'0.3'}));
+app(svg,mk('rect',{x:'55',y:'47',width:'2.5',height:'2',rx:'0.3',fill:'#b87333'}));
+app(svg,mk('rect',{x:'64',y:'47',width:'2.5',height:'2',rx:'0.3',fill:'#b87333'}));
+
+/* ── ATmega328P (rotated 45deg group) ── */
+var chipG=mk('g',{transform:'rotate(45,85,76)'});
+app(chipG,mk('rect',{x:'63',y:'54',width:'44',height:'44',rx:'3.5',fill:'url(#nanoChipG)',stroke:'#2a2a2a','stroke-width':'1.5'}));
+app(chipG,mk('rect',{x:'65',y:'56',width:'40',height:'40',rx:'2',fill:'none',stroke:'#1a1a1a','stroke-width':'0.7','stroke-dasharray':'2.5,2.5'}));
+app(chipG,mk('circle',{cx:'66',cy:'57',r:'1.8',fill:'#444'}));
+
+var ct1=mk('text',{fill:'#333','font-family':'monospace','font-size':'5','font-weight':'bold','text-anchor':'middle',x:'85',y:'72'});ct1.textContent='ATmega';chipG.appendChild(ct1);
+var ct2=mk('text',{fill:'#333','font-family':'monospace','font-size':'5','font-weight':'bold','text-anchor':'middle',x:'85',y:'80'});ct2.textContent='328P-AU';chipG.appendChild(ct2);
+var ct3=mk('text',{fill:'#282828','font-family':'monospace','font-size':'3.5','text-anchor':'middle',x:'85',y:'88'});ct3.textContent='ARDUINO NANO';chipG.appendChild(ct3);
+
+// 8 leads left
+[58.5,63.5,68.5,73.5,78.5,83.5,88.5,93.5].forEach(function(y){
+  app(chipG,mk('line',{x1:'63',y1:y,x2:'58',y2:y,stroke:'#c8c8c8','stroke-width':'1'}));
+});
+// 8 leads right
+[58.5,63.5,68.5,73.5,78.5,83.5,88.5,93.5].forEach(function(y){
+  app(chipG,mk('line',{x1:'107',y1:y,x2:'112',y2:y,stroke:'#c8c8c8','stroke-width':'1'}));
+});
+// 8 leads top
+[66.5,71.5,76.5,81.5,86.5,91.5,96.5,101.5].forEach(function(x){
+  app(chipG,mk('line',{x1:x,y1:'54',x2:x,y2:'49',stroke:'#c8c8c8','stroke-width':'1'}));
+});
+// 8 leads bottom
+[66.5,71.5,76.5,81.5,86.5,91.5,96.5,101.5].forEach(function(x){
+  app(chipG,mk('line',{x1:x,y1:'98',x2:x,y2:'103',stroke:'#c8c8c8','stroke-width':'1'}));
+});
+svg.appendChild(chipG);
+
+/* ── "Nano" silkscreen ── */
+app(svg,txt('Nano',{fill:'rgba(255,255,255,0.82)','font-family':'monospace','font-size':'11','font-weight':'bold','letter-spacing':'2','text-anchor':'middle',x:'85',y:'121'}));
+
+/* ── Reset button ── */
+app(svg,mk('rect',{x:'77',y:'132',width:'17',height:'17',rx:'3',fill:'#b0b0b0',stroke:'#888','stroke-width':'1.2'}));
+app(svg,mk('circle',{cx:'85.5',cy:'140.5',r:'5.5',fill:'#f0f0f0',stroke:'#aaaaaa','stroke-width':'0.8'}));
+app(svg,mk('circle',{cx:'85.5',cy:'140.5',r:'3.8',fill:'#ffffff'}));
+app(svg,mk('circle',{cx:'84.2',cy:'139.2',r:'1.2',fill:'rgba(255,255,255,0.9)'}));
+app(svg,txt('RST',{fill:'#2a4a6a','font-family':'monospace','font-size':'4','text-anchor':'middle',x:'85.5',y:'155'}));
+
+/* ── LED rows ── */
+var leds=[
+  {x:67,col:'#00cc44',lbl:'ON'},{x:77,col:'#eecc00',lbl:'L'},
+  {x:87,col:'#ff8800',lbl:'TX'},{x:97,col:'#ff8800',lbl:'RX'}
+];
+[160,172].forEach(function(y){
+  leds.forEach(function(led){
+    app(svg,mk('rect',{x:led.x,y:y,width:'7',height:'5',rx:'1.5',fill:led.col}));
+    app(svg,txt(led.lbl,{fill:'rgba(200,200,120,0.65)','font-family':'monospace','font-size':'3.5','text-anchor':'middle',x:led.x+3.5,y:y+10}));
+  });
+});
+
+/* ── ICSP header ── */
+app(svg,mk('rect',{x:'69',y:'206',width:'32',height:'16',rx:'1.5',fill:'#0d0d0d',stroke:'#333','stroke-width':'1'}));
+[[72,209],[81,209],[90,209],[72,216],[81,216],[90,216]].forEach(function(p){
+  app(svg,mk('rect',{x:p[0],y:p[1],width:'6',height:'5',rx:'0.8',fill:'#222',stroke:'#555','stroke-width':'0.6'}));
+});
+app(svg,txt('ICSP',{fill:'rgba(140,190,255,0.3)','font-family':'monospace','font-size':'4.5','text-anchor':'middle',x:'85',y:'202'}));
+
+/* ── Trace ATmega to ICSP ── */
+app(svg,mk('line',{x1:'85',y1:'98',x2:'85',y2:'206',stroke:'rgba(184,130,60,0.06)','stroke-width':'1.2'}));
+
+/* ════════════════ PIN DATA ════════════════ */
+var C={
+  PWR: {c:'#ff6b6b',bg:'rgba(255,107,107,.14)',border:'rgba(255,107,107,.35)'},
+  GND: {c:'#9e9e9e',bg:'rgba(158,158,158,.12)',border:'rgba(158,158,158,.3)'},
+  GPIO:{c:'#a0c0a0',bg:'rgba(100,160,100,.1)', border:'rgba(100,160,100,.28)'},
+  ADC: {c:'#c0a060',bg:'rgba(192,160,96,.12)', border:'rgba(192,160,96,.3)'},
+  SPI: {c:'#4a90d9',bg:'rgba(74,144,217,.12)', border:'rgba(74,144,217,.3)'},
+  I2C: {c:'#8888cc',bg:'rgba(136,136,204,.12)',border:'rgba(136,136,204,.3)'},
+  UART:{c:'#c06080',bg:'rgba(192,96,128,.12)', border:'rgba(192,96,128,.3)'},
+  PWM: {c:'#60b0b0',bg:'rgba(96,176,176,.12)', border:'rgba(96,176,176,.3)'},
+  SPEC:{c:'#7090a0',bg:'rgba(112,144,160,.12)',border:'rgba(112,144,160,.3)'},
+};
+function cl(t){return C[t]||C.SPEC;}
+
+var LX=27,RX=143,startY=22,step=13;
+function ly(i){return startY+i*step;}
+function ry(i){return startY+i*step;}
+
+var ALT = {
+  'D13':['SPI_SCK','LED_BUILTIN'],'D12':['SPI_MISO'],'D11':['SPI_MOSI','OC2A'],
+  'D10':['SPI_SS','OC1B'],'D9':['OC1A','ICP1'],'D3':['INT1','OC2B'],'D2':['INT0'],
+  'TX0':['Serial.print()','HardwareSerial'],'RX0':['Serial.read()','HardwareSerial'],
+  'A5':['Wire.setClock()','TWI_SCL'],'A4':['Wire.begin()','TWI_SDA'],
+  'A6':['analogRead only - no digitalWrite'],'A7':['analogRead only - no digitalWrite'],
+  'A0':['digitalRead/Write'],'A1':['digitalRead/Write'],'A2':['digitalRead/Write'],'A3':['digitalRead/Write'],
+  '3V3':['Shield supply','Sensor power'],'5V':['Shield supply','External device power'],
+  'VIN':['Raw input 7-12V','Regulator input'],'REF':['analogReference(EXTERNAL)'],
+  'RST_L':['watchdogReset()','ISP reset'],'RST_R':['watchdogReset()','ISP reset'],
+};
+
+var PINS = [
+  // LEFT side header (top to bottom): D13, 3V3, AREF, A0, A1, A2, A3, A4, A5, A6, A7, 5V, RST, GND, VIN
+  {id:'D13',  lbl:'D13', name:'D13 / SCK',        type:'SPI', funcs:['GPIO','SPI'],    volt:'0/5V',  curr:'40mA',     note:'SPI Clock (SCK). Also drives the onboard L LED.', cx:LX, cy:ly(0)},
+  {id:'3V3',  lbl:'3V3', name:'3.3V Output',      type:'PWR', funcs:['PWR'],           volt:'3.3V',  curr:'50mA max', note:'3.3V regulated output. Max 50mA - for low-power sensors only.', cx:LX, cy:ly(1)},
+  {id:'REF', lbl:'REF',name:'Analog Reference', type:'SPEC',funcs:['SPEC'],          volt:'0-5V',  curr:'N/A',      note:'External ADC reference voltage. Use analogReference(EXTERNAL) in sketch.', cx:LX, cy:ly(2)},
+  {id:'A0',   lbl:'A0',  name:'Analog 0',         type:'ADC', funcs:['ADC','GPIO'],    volt:'0-5V',  curr:'N/A',      note:'10-bit ADC (0-1023). analogRead(A0). Also usable as digital I/O.', cx:LX, cy:ly(3)},
+  {id:'A1',   lbl:'A1',  name:'Analog 1',         type:'ADC', funcs:['ADC','GPIO'],    volt:'0-5V',  curr:'N/A',      note:'10-bit ADC. analogRead(A1). Max 5V input.', cx:LX, cy:ly(4)},
+  {id:'A2',   lbl:'A2',  name:'Analog 2',         type:'ADC', funcs:['ADC','GPIO'],    volt:'0-5V',  curr:'N/A',      note:'10-bit ADC. analogRead(A2). 4.88mV per step.', cx:LX, cy:ly(5)},
+  {id:'A3',   lbl:'A3',  name:'Analog 3',         type:'ADC', funcs:['ADC','GPIO'],    volt:'0-5V',  curr:'N/A',      note:'10-bit ADC (0-1023). analogRead(A3). Also usable as digital I/O.', cx:LX, cy:ly(6)},
+  {id:'A4',   lbl:'A4',  name:'A4 / SDA',         type:'I2C', funcs:['ADC','I2C'],     volt:'0-5V',  curr:'N/A',      note:'I2C Data (Wire library). Use 4.7k pull-up to 5V.', cx:LX, cy:ly(7)},
+  {id:'A5',   lbl:'A5',  name:'A5 / SCL',         type:'I2C', funcs:['ADC','I2C'],     volt:'0-5V',  curr:'N/A',      note:'I2C Clock (Wire library). Use 4.7k pull-up. 100kHz / 400kHz fast mode.', cx:LX, cy:ly(8)},
+  {id:'A6',   lbl:'A6',  name:'Analog 6',         type:'ADC', funcs:['ADC'],           volt:'0-5V',  curr:'N/A',      note:'ADC only - cannot be used as digital I/O. 10-bit resolution.', cx:LX, cy:ly(9)},
+  {id:'A7',   lbl:'A7',  name:'Analog 7',         type:'ADC', funcs:['ADC'],           volt:'0-5V',  curr:'N/A',      note:'ADC only - cannot be used as digital I/O. 10-bit (0-1023).', cx:LX, cy:ly(10)},
+  {id:'5V',   lbl:'5V',  name:'5V Output',        type:'PWR', funcs:['PWR'],           volt:'5V',    curr:'400-900mA',note:'5V regulated output. Main power rail for sensors and modules.', cx:LX, cy:ly(11)},
+  {id:'RST_L',lbl:'RST', name:'Reset (Left)',     type:'SPEC',funcs:['SPEC'],          volt:'5V',    curr:'N/A',      note:'Pull LOW to reset. Accessible from left side header.', cx:LX, cy:ly(12)},
+  {id:'GND_L',lbl:'GND', name:'Ground (Left)',    type:'GND', funcs:['GND'],           volt:'0V',    curr:'N/A',      note:'Digital ground. Common with all GND pins.', cx:LX, cy:ly(13)},
+  {id:'VIN',  lbl:'VIN', name:'Voltage Input',    type:'PWR', funcs:['PWR'],           volt:'7-12V', curr:'N/A',      note:'External DC input 7-12V. Bypasses USB. Goes through onboard 5V regulator.', cx:LX, cy:ly(14)},
+
+  // RIGHT side header (top to bottom): D12, D11, D10, D9, D8, D7, D6, D5, D4, D3, D2, GND, RST, RX0, TX0
+  {id:'D12',  lbl:'D12', name:'D12 / MISO',      type:'SPI', funcs:['GPIO','SPI'],    volt:'0/5V',  curr:'40mA',     note:'SPI MISO (Master In Slave Out). Data from peripheral to master.', cx:RX, cy:ry(0)},
+  {id:'D11',  lbl:'~11', name:'D11 / MOSI',      type:'SPI', funcs:['GPIO','PWM','SPI'],volt:'0/5V',curr:'40mA',    note:'SPI MOSI (Master Out Slave In) + PWM 490Hz via OC2A.', cx:RX, cy:ry(1)},
+  {id:'D10',  lbl:'~10', name:'D10 / SS',        type:'SPI', funcs:['GPIO','PWM','SPI'],volt:'0/5V',curr:'40mA',    note:'SPI Slave Select + PWM 490Hz via OC1B.', cx:RX, cy:ry(2)},
+  {id:'D9',   lbl:'~9',  name:'Digital 9',       type:'PWM', funcs:['GPIO','PWM'],    volt:'0/5V',  curr:'40mA',     note:'PWM 490Hz via OC1A. Also ICP1 (input capture) for Timer1.', cx:RX, cy:ry(3)},
+  {id:'D8',   lbl:'D8',  name:'Digital 8',       type:'GPIO',funcs:['GPIO'],          volt:'0/5V',  curr:'40mA',     note:'General purpose digital I/O. No PWM or special functions.', cx:RX, cy:ry(4)},
+  {id:'D7',   lbl:'D7',  name:'Digital 7',       type:'GPIO',funcs:['GPIO'],          volt:'0/5V',  curr:'40mA',     note:'General purpose digital I/O.', cx:RX, cy:ry(5)},
+  {id:'D6',   lbl:'~6',  name:'Digital 6',       type:'PWM', funcs:['GPIO','PWM'],    volt:'0/5V',  curr:'40mA',     note:'PWM 980Hz via OC0A.', cx:RX, cy:ry(6)},
+  {id:'D5',   lbl:'~5',  name:'Digital 5',       type:'PWM', funcs:['GPIO','PWM'],    volt:'0/5V',  curr:'40mA',     note:'PWM 980Hz via OC0B.', cx:RX, cy:ry(7)},
+  {id:'D4',   lbl:'D4',  name:'Digital 4',       type:'GPIO',funcs:['GPIO'],          volt:'0/5V',  curr:'40mA',     note:'General purpose digital I/O. T0 external clock input for Timer0.', cx:RX, cy:ry(8)},
+  {id:'D3',   lbl:'~3',  name:'Digital 3',       type:'PWM', funcs:['GPIO','PWM'],    volt:'0/5V',  curr:'40mA',     note:'PWM 490Hz via OC2B + External interrupt INT1.', cx:RX, cy:ry(9)},
+  {id:'D2',   lbl:'D2',  name:'Digital 2',       type:'GPIO',funcs:['GPIO'],          volt:'0/5V',  curr:'40mA',     note:'External interrupt INT0. Triggers on RISING, FALLING or CHANGE.', cx:RX, cy:ry(10)},
+  {id:'GND_R',lbl:'GND', name:'Ground (Right)',  type:'GND', funcs:['GND'],           volt:'0V',    curr:'N/A',      note:'Power ground. Common with all GND pins on the board.', cx:RX, cy:ry(11)},
+  {id:'RST_R',lbl:'RST', name:'Reset (Right)',   type:'SPEC',funcs:['SPEC'],          volt:'5V',    curr:'N/A',      note:'Same as left RST pin. Pull LOW to reset the MCU.', cx:RX, cy:ry(12)},
+  {id:'RX0',  lbl:'RX',  name:'D0 / RX',         type:'UART',funcs:['GPIO','UART'],   volt:'0/5V',  curr:'40mA',     note:'UART Receive. Shared with USB via CH340. Avoid during uploads.', cx:RX, cy:ry(13)},
+  {id:'TX0',  lbl:'TX',  name:'D1 / TX',         type:'UART',funcs:['GPIO','UART'],   volt:'0/5V',  curr:'40mA',     note:'UART Transmit. Shared with USB via CH340. Avoid during uploads.', cx:RX, cy:ry(14)},
+];
+
+var PS=8;
+
+function addSilk(p){
+  var onR=p.cx>84;
+  var t=mk('text',{x:onR?p.cx-PS-4:p.cx+PS+4,y:p.cy+3,
+    'text-anchor':onR?'end':'start',fill:'rgba(200,225,255,0.78)',
+    'font-size':'6.5','font-family':'monospace','font-weight':'bold','pointer-events':'none'});
+  t.textContent=p.lbl;svg.appendChild(t);
+}
+
+PINS.forEach(function(p){
+  var typeKey=p.type.split(',')[0].trim();
+  var col=cl(typeKey);
+  var g=mk('g',{'class':'nano-pin','data-id':p.id});g.style.cursor='pointer';
+  app(g,mk('rect',{x:p.cx-PS/2-2,y:p.cy-PS/2-2,width:PS+4,height:PS+4,rx:'2',
+    fill:'rgba(184,130,60,0.3)',stroke:'rgba(184,130,60,0.55)','stroke-width':'0.5'}));
+  var sq=mk('rect',{x:p.cx-PS/2,y:p.cy-PS/2,width:PS,height:PS,rx:'2',
+    fill:col.bg,stroke:col.c,'stroke-width':'1.5','class':'pin-sq'});
+  app(g,sq);
+  app(g,mk('rect',{x:p.cx-2.5,y:p.cy-2.5,width:5,height:5,rx:'1',fill:'#050810','pointer-events':'none'}));
+  addSilk(p);
+  app(g,mk('rect',{x:p.cx-14,y:p.cy-14,width:28,height:28,fill:'transparent'}));
+  g.addEventListener('click',function(e){e.stopPropagation();pickPin(p.id);});
+  g.addEventListener('mouseenter',function(e){showTT(p,e);});
+  g.addEventListener('mousemove',function(e){moveTT(e);});
+  g.addEventListener('mouseleave',hideTT);
+  svg.appendChild(g);
+});
+
+var selId=null,listOpen=false,filterType=null;
+
+var FILTERS=[
+  {lbl:'DIGITAL',key:'GPIO', fn:function(p){return p.funcs.indexOf('GPIO')>=0;}},
+  {lbl:'PWM',    key:'PWM',  fn:function(p){return p.funcs.indexOf('PWM')>=0;}},
+  {lbl:'ANALOG', key:'ADC',  fn:function(p){return p.funcs.indexOf('ADC')>=0;}},
+  {lbl:'UART',   key:'UART', fn:function(p){return p.funcs.indexOf('UART')>=0;}},
+  {lbl:'SPI',    key:'SPI',  fn:function(p){return p.funcs.indexOf('SPI')>=0;}},
+  {lbl:'I2C',    key:'I2C',  fn:function(p){return p.funcs.indexOf('I2C')>=0;}},
+  {lbl:'GND',    key:'GND',  fn:function(p){return p.type==='GND';}},
+  {lbl:'PWR',    key:'PWR',  fn:function(p){return p.type==='PWR';}},
+  {lbl:'3.3V',   key:'3V3',  fn:function(p){return p.id==='3V3';}},
+  {lbl:'5V',     key:'5V',   fn:function(p){return p.id==='5V';}},
+  {lbl:'RESET',  key:'RST',  fn:function(p){return p.id==='RST_L'||p.id==='RST_R';}},
+];
+
+var FCLR={GPIO:'#a0c0a0',PWM:'#60b0b0',ADC:'#c0a060',SPI:'#4a90d9',I2C:'#8888cc',UART:'#c06080',PWR:'#ff6b6b',GND:'#9e9e9e',RST:'#e06060','3V3':'#f0a070','5V':'#f07050'};
+
+function buildBtns(){
+  var wrap=document.getElementById('nanoBtns');
+  wrap.innerHTML=FILTERS.map(function(f){
+    var c=FCLR[f.key],ia=filterType===f.key;
+    return '<button class="nano-fbtn'+(ia?' active':'')+'" data-key="'+f.key+'" style="color:'+c+';background:'+(ia?'#1a1a1e':'#2c2c30')+';border-color:'+(ia?c:'rgba(255,255,255,0.22)')+'">'+f.lbl+'</button>';
+  }).join('');
+  var btns=document.querySelectorAll('.nano-fbtn');
+  for(var i=0;i<btns.length;i++){
+    btns[i].addEventListener('click',(function(b){return function(){
+      var k=b.getAttribute('data-key');filterType=(filterType===k)?null:k;buildBtns();updateBoard();updateList();
+    };})(btns[i]));
+  }
+}
+
+function pickPin(id){selId=(selId===id)?null:id;updateBoard();updateDetail();updateList();}
+
+function pinMatchesFilter(p){
+  if(!filterType) return true;
+  var f=FILTERS.filter(function(x){return x.key===filterType;})[0];
+  return f?f.fn(p):true;
+}
+
+function updateBoard(){
+  var hf=filterType!=null,gs=document.querySelectorAll('.nano-pin');
+  for(var i=0;i<gs.length;i++){
+    var g=gs[i],id=g.getAttribute('data-id');
+    var p=PINS.filter(function(x){return x.id===id;})[0];
+    var tk=p.type.split(',')[0].trim(),col=cl(tk),sq=g.querySelector('.pin-sq');
+    var act=selId===id,match=pinMatchesFilter(p);
+    if(act){sq.setAttribute('fill',col.c);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','2.5');sq.setAttribute('filter','url(#nanoPinGlow)');g.style.opacity='1';}
+    else if(hf&&!match){sq.setAttribute('fill','rgba(30,30,40,0.4)');sq.setAttribute('stroke','rgba(80,80,90,0.3)');sq.setAttribute('stroke-width','1');sq.removeAttribute('filter');g.style.opacity='0.25';}
+    else if(hf&&match){sq.setAttribute('fill',col.c);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','2');sq.setAttribute('filter','url(#nanoPinGlow)');g.style.opacity='1';}
+    else{sq.setAttribute('fill',col.bg);sq.setAttribute('stroke',col.c);sq.setAttribute('stroke-width','1.5');sq.removeAttribute('filter');g.style.opacity='1';}
+  }
+}
+
+function updateDetail(){
+  var empty=document.getElementById('nanoEmpty'),content=document.getElementById('nanoDetailContent');
+  if(!selId){empty.style.display='block';content.className='nano-detail-content';return;}
+  var p=PINS.filter(function(x){return x.id===selId;})[0];
+  var tk=p.type.split(',')[0].trim(),col=cl(tk);
+  empty.style.display='none';content.className='nano-detail-content show';
+  var badge=document.getElementById('nanoDetBadge');
+  badge.style.background=col.bg;badge.style.borderColor=col.c;badge.style.color=col.c;badge.textContent=p.lbl;
+  document.getElementById('nanoDetId').style.color=col.c;
+  document.getElementById('nanoDetId').textContent=p.id;
+  document.getElementById('nanoDetFull').textContent=p.name;
+  document.getElementById('nanoFuncs').innerHTML=p.funcs.map(function(f){return '<span class="nano-func-chip" style="background:'+col.bg+';color:'+col.c+';border-color:'+col.border+'">'+f+'</span>';}).join('');
+  document.getElementById('nanoInfoGrid').innerHTML=
+    '<div class="nano-info-cell"><span class="nano-info-label">Type</span><span class="nano-info-value" style="color:'+col.c+'">'+p.type+'</span></div>'+
+    '<div class="nano-info-cell"><span class="nano-info-label">Voltage</span><span class="nano-info-value">'+p.volt+'</span></div>'+
+    '<div class="nano-info-cell"><span class="nano-info-label">Max Current</span><span class="nano-info-value">'+p.curr+'</span></div>'+
+    '<div class="nano-info-cell"><span class="nano-info-label">Board</span><span class="nano-info-value" style="color:#4a90d9;">Arduino Nano</span></div>';
+  var alts=ALT[p.id]||[],altSec=document.getElementById('nanoAltSection');
+  if(alts.length>0){altSec.style.display='block';document.getElementById('nanoAltChips').innerHTML=alts.map(function(a){return '<span class="nano-alt-chip">'+a+'</span>';}).join('');}
+  else{altSec.style.display='none';}
+  document.getElementById('nanoNote').innerHTML='<span class="nano-note-icon">&#128161;</span>'+p.note;
+}
+
+document.getElementById('nanoListCnt').textContent=PINS.length;
+buildBtns();
+
+function updateList(){
+  var pins=PINS.filter(function(p){return pinMatchesFilter(p);});
+  document.getElementById('nanoRows').innerHTML=pins.map(function(p){
+    var tk=p.type.split(',')[0].trim(),col=cl(tk),on=selId===p.id;
+    return '<div class="nano-prow'+(on?' on':'')+'" data-id="'+p.id+'"><div class="nano-pbadge" style="background:'+col.bg+';color:'+col.c+';border:1px solid '+col.border+'">'+p.lbl+'</div><div class="nano-pname">'+p.name+'</div><span class="nano-ptag" style="background:'+col.bg+';color:'+col.c+'">'+p.type+'</span></div>';
+  }).join('');
+  document.getElementById('nanoListCnt').textContent=pins.length+(pins.length<PINS.length?' / '+PINS.length:'');
+  var rows=document.querySelectorAll('.nano-prow');
+  for(var i=0;i<rows.length;i++){rows[i].addEventListener('click',(function(r){return function(){pickPin(r.dataset.id);};})(rows[i]));}
+}
+updateList();
+
+(function(){
+  var types=[];PINS.forEach(function(p){var k=p.type.split(',')[0].trim();if(types.indexOf(k)<0)types.push(k);});
+  document.getElementById('nanoLegend').innerHTML=types.map(function(t){var c=cl(t);return '<div class="nano-leg"><span class="nano-ldot" style="background:'+c.c+'"></span>'+t+'</div>';}).join('');
+})();
+
+function nanoToggleList(){
+  listOpen=!listOpen;
+  document.getElementById('nanoPinList').className='nano-pinlist'+(listOpen?' open':'');
+  document.getElementById('nanoToggleIcon').innerHTML=listOpen?'&#9650; HIDE':'&#9660; SHOW ALL';
+}
+window.nanoToggleList=nanoToggleList;
+
+var ttEl=document.getElementById('nanoTT');
+function showTT(p,e){
+  var tk=p.type.split(',')[0].trim(),col=cl(tk);
+  ttEl.innerHTML='<span class="ttn" style="color:'+col.c+'">'+p.id+' &mdash; '+p.name+'</span><span class="ttnote">'+p.funcs.join(' &middot; ')+' | '+p.volt+' | '+p.curr+'</span>';
+  ttEl.className='nano-tt show';moveTT(e);
+}
+function moveTT(e){ttEl.style.left=(e.clientX+14)+'px';ttEl.style.top=(e.clientY-10)+'px';}
+function hideTT(){ttEl.className='nano-tt';}
+
+})();
+//]]>
+</script>
+<!--══════════════════ END NANO PINOUT ══════════════════-->
+
+<!--User Guide & About Section - Arduino Nano Version with Links-->
+<div class="separator" style="display: none;"><img alt="arduino nano explorer" border="0" data-original-height="640" data-original-width="890" height="144" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh3c0YdvbtBjFmFgai7YB1uujnjqG1Khdj7ZhcwHTo7fMg6KrF83ildID_o1fWgvlQI8JEj9qkt6jp33_AKkWuNVF0RPHDdq7K-Wfm_fA4sOKR0nv_knitSaqz_cqNUvsl8qOXG_IJeJbSSZLsD6GMTjSRZUU5fhdXr-998QEsh2jo-1zQhJVAen0cpTEBC/s1600/arduino%20nano%20board%20explorer.png" title="arduino nano explorer" width="200" /></div><div><br /></div><h2>🖥️ How to Use the Arduino Nano Pinout Tool</h2><h3>1. <strong>Explore the Interactive Pinout</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">Hover or click on each pin in the diagram.</span></p></li><li><p><span style="white-space-collapse: preserve;">The tool will display the <strong>function of that pin</strong> (digital, analog, PWM, power, communication).</span></p></li><li><p><span style="white-space-collapse: preserve;">This helps you quickly identify which pins to use for sensors, modules, or outputs.</span></p></li></ul><h3>2. <strong>Check Board Components</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">The page lists the <strong>ATmega328P microcontroller</strong>, voltage regulator, oscillator, and other parts.</span></p></li><li><p><span style="white-space-collapse: preserve;">Use this info to understand how the Nano handles power and timing.</span></p></li></ul><h3>3. <strong>Understand Communication Interfaces</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">The tool highlights <strong>UART (TX/RX), SPI, and I2C pins</strong>.</span></p></li><li><p><span style="white-space-collapse: preserve;">This is useful when connecting displays, modules, or multiple sensors.</span></p></li></ul><h3>4. <strong>Use Power Pins Safely</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">The diagram shows <strong>5V, 3.3V, VIN, and GND pins</strong>.</span></p></li><li><p><span style="white-space-collapse: preserve;">Match your external modules to the correct voltage to avoid damage.</span></p></li></ul><h3>5. <strong>Cross-Reference While Building</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">Keep the tool open while wiring circuits.</span></p></li><li><p><span style="white-space-collapse: preserve;">Instead of flipping through datasheets, you can instantly check pin roles.</span></p></li></ul><h3>6. <strong>Educational Use</strong></h3><ul><li><p><span style="white-space-collapse: preserve;">Great for teaching: students can click pins and see their purpose.</span></p></li><li><p><span style="white-space-collapse: preserve;">Helps beginners visualize how the Arduino Nano is structured.</span></p></li></ul><div></div><h2>✅ Why It’s Useful</h2><ul><li><p><span style="white-space-collapse: preserve;">Saves time compared to reading datasheets.</span></p></li><li><p><span style="white-space-collapse: preserve;">Interactive and beginner friendly.</span></p></li><li><p><span style="white-space-collapse: preserve;">Helps avoid wiring mistakes.</span></p></li><li><p><span style="white-space-collapse: preserve;">Good alternative datasheet visual reference.</span></p></li></ul><h4 style="text-align: left;"><span style="white-space-collapse: preserve;">Video Guide</span></h4><div><div class="separator" style="clear: both; text-align: center;"><iframe allowfullscreen="" class="BLOG_video_class" height="411" src="https://www.youtube.com/embed/Aq0UHxhsZN0" width="495" youtube-src-id="Aq0UHxhsZN0"></iframe></div><br /></div><div><span style="white-space-collapse: preserve;"><br /></span></div><div></div><span style="white-space-collapse: preserve;">👉 In short: treat this tool as your </span><strong style="white-space-collapse: preserve;">interactive Arduino Nano map</strong><span style="white-space-collapse: preserve;">. Use it while prototyping, teaching, or documenting projects to quickly confirm pin functions and board specs.</span><div><span style="white-space-collapse: preserve;"><br /></span></div><div><span style="white-space-collapse: preserve;"><p style="white-space-collapse: collapse;"><span style="white-space-collapse: preserve;"><strong>Related Web Tools for Other Arduino Boards</strong></span></p><ul style="white-space-collapse: collapse;"><li><p><span style="white-space-collapse: preserve;"><a href="https://www.icexplorer.online/2026/03/arduino-uno.html">Arduino Uno Pinout Explorer</a></span></p></li><li><p><span style="white-space-collapse: preserve;"><a href="https://www.icexplorer.online/2026/03/arduino-nano.html">Arduino Nano Pinout Explorer</a></span></p></li><li><p><span style="white-space-collapse: preserve;"><a href="https://www.icexplorer.online/2026/03/arduino-mega-2560.html">Arduino Mega 2560 Pinout Explorer</a></span></p></li></ul></span></div>

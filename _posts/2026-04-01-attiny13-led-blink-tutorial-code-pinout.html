@@ -1,0 +1,111 @@
+---
+layout: post
+title: "ATtiny13 LED Blink Tutorial: Code, Pinout, and Proteus Simulation Guide"
+date: 2026-04-01 17:47:00 +0000
+description: "Getting started with microcontroller programming can feel overwhelming at first, but with the right tools it quickly becomes an exciting and rewarding"
+---
+<p><img alt="ATtiny13 LED Blink Simulation in Proteus: A Beginner's Guide to AVR Programming" loading="lazy" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjm0ry6MbD8fMf4Dw1kN_8uHk6G0xkHERbFujvFiohufvm03da1NiJ3FaSyA3s5ZjVh9BVXHI3zTK4ycyEpycVEPSynSbXsXNn-ygr787Z_wB98K82AdC8bjcA8OITJKtqulwtOOaG21t-2yTWvfMdmPDERi3B_qmtjo2f0HsMbt1zYC1J-fOn1jLFhkJAp/s1600/attiny13%20proteus%20tutorial.png" style="display: none;" /></p><p><span style="white-space-collapse: preserve;">Getting started with microcontroller programming can feel overwhelming at first, but with the right tools it quickly becomes an exciting and rewarding experience. One of the best ways for beginners to dive in is by simulating a simple LED blink project. The ATtiny13 is a tiny but yet capable AVR chip, and with Proteus simulation software and, makes the learning easier.</span></p><p><span style="white-space-collapse: preserve;">Here, you’ll set up your first project, write the code, and run a simulation to see the LED blink—all inside a safe virtual environment. Along the way, we’ll look at the ATtiny13’s pinout and show how even small steps like this lay the foundation for more advanced DIY electronics projects.</span></p>
+
+<h3>Understanding the ATtiny13 Microcontroller: A Tiny Giant</h3>
+<p>The ATtiny13 is a member of Microchip's popular AVR family of microcontrollers, known for their efficiency and ease of use. Despite its small footprint, often available in an 8-pin DIP package, it packs a punch with 1KB of in-system programmable Flash memory, 64 bytes of SRAM, and 64 bytes of EEPROM. It features an 8-bit RISC architecture, up to 20 MHz clock speed, and various peripherals like an ADC, timers, and an analog comparator. This makes the <a href="https://www.chipexplorer.net/2026/03/attiny13-microcontroller-guide-to.html">ATtiny13 Microcontroller</a> an excellent choice for projects where space and power consumption are critical. If you're looking for slightly more features, you might also explore the <a href="https://www.chipexplorer.net/2026/03/attiny45-comprehensive-guide-to.html">ATtiny45 Microcontroller</a>, which offers more memory and I/O pins, or even larger AVRs like the <a href="https://www.icexplorer.online/2026/03/atmega32.html">atmega32</a> or the ubiquitous <a href="https://www.icexplorer.online/2026/03/atmega328p.html">atmega328p</a> found in Arduino boards.</p>
+
+<p>Before we delve into programming, it's crucial to understand the <a href="https://www.icexplorer.online/2026/03/attiny13.html">attiny13</a> IC pinout. For the common DIP package, the pins are as follows:</p>
+<ul>
+    <li><strong>Pin 1 (PB5/ADC0/PCINT5/RESET):</strong> Multi-functional pin, often used as RESET.</li>
+    <li><strong>Pin 2 (PB3/ADC3/PCINT3/CLKI/OC1B):</strong> General Purpose I/O, ADC input.</li>
+    <li><strong>Pin 3 (PB4/ADC2/PCINT4/OC1B/SCK):</strong> General Purpose I/O, ADC input.</li>
+    <li><strong>Pin 4 (GND):</strong> Ground connection.</li>
+    <li><strong>Pin 5 (PB0/MOSI/AIN0/OC0A/PCINT0):</strong> General Purpose I/O, often used for SPI MOSI.</li>
+    <li><strong>Pin 6 (PB1/MISO/AIN1/OC0B/PCINT1):</strong> General Purpose I/O, often used for SPI MISO.</li>
+    <li><strong>Pin 7 (PB2/SCK/ADC1/T0/PCINT2):</strong> General Purpose I/O, often used for SPI SCK.</li>
+    <li><strong>Pin 8 (VCC):</strong> Power supply (typically 1.8V to 5.5V).</li>
+</ul>
+<p>For our LED blink project, we'll primarily be concerned with one of the General Purpose I/O pins, such as PB0 (Pin 5), to control our LED.</p>
+<figure><img alt="ATtiny13 LED Blink Simulation in Proteus: A Beginner's Guide to AVR Programming - 2" loading="lazy" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgm2n1suwSoIdHUkdw7z2gB6ROrr4UKxjtMVjLX96kBoNfjzwpK7DswDc6bOUgIExiuJirzl1Wxa0rFd7org7fRfkdqkHJMiQnTg6pG6gdkfiVHo1mm_9AwN44Pbewbg_LvOMObAr3PK0rXpIvyfZ6qtee7daVvqzUIh14QX3deJ0NBvdgJSYaTbsQ0iRr1/s16000/Arduino%20and%20ATtiny13%20ISP%20interfacing.png" /></figure>
+
+
+<h3>Getting Started with Proteus Simulation</h3>
+<p>How to simulate ATtiny13 LED blink in Proteus? Proteus ISIS is an industry-standard software suite for schematic capture, simulation, and PCB layout. It's an invaluable tool for testing microcontroller code and circuit designs virtually before committing to physical hardware. To begin our Proteus ATtiny13 tutorial, you'll need Proteus installed. Here's a quick overview of the steps:</p>
+<ol>
+    <li><strong>Launch Proteus ISIS:</strong> Open the schematic capture environment.</li>
+    <li><strong>Pick Components:</strong> From the 'P' (Pick devices) button, search for <code>ATtiny13</code>, <code>LED-RED</code> (or any color), and <code>RES</code> (resistor).</li>
+    <li><strong>Place Components:</strong> Place the ATtiny13 on the schematic. Add an LED and a current-limiting resistor (e.g., 220-330 ohms) to one of the ATtiny13's PORTB pins (e.g., PB0/Pin 5). Connect the other end of the resistor to the LED anode, and the LED cathode to ground.</li>
+    <li><strong>Power and Ground:</strong> Add 'POWER' and 'GROUND' terminals from the 'Terminals Mode' to the respective VCC and GND pins of the ATtiny13.</li>
+</ol>
+
+<p>Once you've assembled your circuit, it should look something like this:</p><div class="separator" style="clear: both; text-align: center;"><a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg7hyphenhyphen1SGu4iS47vSLwHCdPCLCcN9X-A1zDQ1K1A-zW7Y20l5JzxtJYLMxD0GU27mw8bViyq-kgYkwMIdq6LmiOK4h9hYswJW1zrXwvNG0P9aEzLN6iCTskO7Gpjn71pAP-8_6Dp5yJYGIKWXbKhLdo8i8uOdc_ZK6PLfNg2TnBnwfI-Zoz24QZ4pz-Lirsv/s776/attiny13%20video.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img alt="Attiny13 led blink circuit diagram" border="0" data-original-height="468" data-original-width="776" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg7hyphenhyphen1SGu4iS47vSLwHCdPCLCcN9X-A1zDQ1K1A-zW7Y20l5JzxtJYLMxD0GU27mw8bViyq-kgYkwMIdq6LmiOK4h9hYswJW1zrXwvNG0P9aEzLN6iCTskO7Gpjn71pAP-8_6Dp5yJYGIKWXbKhLdo8i8uOdc_ZK6PLfNg2TnBnwfI-Zoz24QZ4pz-Lirsv/s16000/attiny13%20video.png" title="Attiny13 led blink circuit diagram" /></a></div>
+
+<h3>ATtiny13 LED Blink Code Explained</h3>
+<p>How to program ATtiny13 for LED blink? The heart of any microcontroller project is its firmware. For the ATtiny13, we'll use C language, compiled with the AVR-GCC toolchain. This ATtiny13 LED Blink Code is a classic "Hello World" for embedded systems, demonstrating basic I/O control. Our goal is to make an LED connected to PB0 blink on and off with a half-second delay.</p>
+
+<p>Here's the code we'll use:</p>
+<pre><code>#include &lt;inttypes.h&gt;
+#include &lt;avr/io.h&gt;
+#include &lt;util/delay.h&gt;
+
+int main(void)
+{
+    // Set PB0 (pin 5 on ATtiny13 DIP) as output
+    DDRB |= (1 &lt;&lt; PB0);
+
+    while (1)
+    {
+        // Turn LED on
+        PORTB |= (1 &lt;&lt; PB0);
+        _delay_ms(500);
+
+        // Turn LED off
+        PORTB &amp;= ~(1 &lt;&lt; PB0);
+        _delay_ms(500);
+    }
+
+    return 0;
+}</code></pre>
+
+<p>Let's break down this ATtiny13 LED Blink Code:</p>
+<ul>
+    <li><code>#include &lt;avr/io.h&gt;</code>: This header provides definitions for the ATtiny13's I/O registers (like <code>DDRB</code> and <code>PORTB</code>).</li>
+    <li><code>#include &lt;util/delay.h&gt;</code>: Essential for using the <code>_delay_ms()</code> function, which pauses execution for a specified number of milliseconds.</li>
+    <li><code>DDRB |= (1 &lt;&lt; PB0);</code>: This line configures Pin PB0 (Physical Pin 5) as an output. <code>DDRB</code> is the Data Direction Register for Port B. Setting a bit in <code>DDRB</code> to '1' makes the corresponding pin an output.</li>
+    <li><code>PORTB |= (1 &lt;&lt; PB0);</code>: This line sets the PB0 pin HIGH, turning the LED on. <code>PORTB</code> is the Port B Data Register, controlling the output state of pins configured as outputs.</li>
+    <li><code>PORTB &amp;= ~(1 &lt;&lt; PB0);</code>: This line clears the PB0 pin, setting it LOW and turning the LED off. The <code>~</code> operator inverts the bitmask, effectively clearing the specified bit.</li>
+    <li><code>_delay_ms(500);</code>: Pauses the program for 500 milliseconds (half a second).</li>
+    <li><code>while (1)</code>: Creates an infinite loop, ensuring the LED continues to blink indefinitely.</li>
+</ul>
+
+<h3>Programming the ATtiny13: A Beginner's Guide</h3>
+<p>For a beginner's guide to ATtiny13 programming, the process generally involves writing the C code, compiling it into a HEX file, and then loading that HEX file onto the microcontroller. While Proteus handles the loading internally for simulation, understanding the full workflow is beneficial:</p>
+<ol>
+    <li><strong>Setup Development Environment:</strong> Install AVR-GCC, AVRDUDE, and a suitable IDE (like Atmel Studio or VS Code with extensions).</li>
+    <li><strong>Compile the Code:</strong> Use AVR-GCC to compile your <code>.c</code> file into a <code>.hex</code> file. For example, using a makefile or command line:
+        <pre><code>avr-gcc -mmcu=attiny13 -Os -Wall -o blink.elf blink.c
+avr-objcopy -j .text -j .data -O ihex blink.elf blink.hex</code></pre>
+        <p>Remember to define the F_CPU macro (e.g., <code>#define F_CPU 1200000UL</code>) at the top of your C file for accurate delay calculations if you're using the internal 1.2MHz oscillator, or adjust it to your desired clock frequency.</p>
+<figure><img alt="ATtiny13 LED Blink Simulation in Proteus: A Beginner's Guide to AVR Programming - 3" loading="lazy" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjZZm7r-jXqoP3u8_xDTyL2Abl9sePCErCzkEGjcFj2C58inc4dxuRNQ3OeKA3lYwfJphEFxU32NZ1mBlt5fv303kVsHH4V30Ht0vcf2KDeyY8S3W0SxaAk-oVDpwlcpg_fpFkdmU9C_uJT_44B4-YVlRJTS4IFx3JgCOYJKOkmyTeNhiREMkzXgLSOqJBy/s776/attiny13%20video.png" /></figure>
+
+    </li><li><strong>Load HEX into Proteus:</strong> In your Proteus schematic, double-click the ATtiny13 IC. In the properties dialog, browse to your compiled <code>blink.hex</code> file under 'Program File'. Ensure the 'Processor Clock Frequency' matches your <code>F_CPU</code> definition (e.g., 1.2MHz or 9.6MHz for internal oscillator).</li>
+    <li><strong>Run Simulation:</strong> Click the 'Play' button in Proteus. You should see your LED blinking!</li>
+</ol>
+
+<h3>Crafting a Low Power LED Flasher with ATtiny13</h3>
+<p>How to make a low power LED flasher with ATtiny13? The ATtiny13 is ideal for battery-powered applications due to its low power consumption. While our current blink code uses <code>_delay_ms()</code>, which keeps the CPU active, for true low-power operation, you'd typically utilize the microcontroller's sleep modes and timers. Instead of active delays, you could configure a timer to generate an interrupt after a certain period, waking the ATtiny13 only when it's time to toggle the LED. This drastically reduces current draw. For instance, you could configure Timer/Counter0 in normal mode with a prescaler, and use its overflow interrupt to toggle the LED, allowing the CPU to sleep in between toggles. This makes the <a href="https://www.icexplorer.online/2026/03/attiny45.html">attiny45</a> and <a href="https://www.icexplorer.online/2026/03/attiny13.html">ATtiny13</a> excellent choices for long-lasting, battery-operated devices.</p>
+
+<h3>Exploring the ATtiny13 IC Pinout: A Detailed Look</h3>
+<p>What is the ATtiny13 pinout? Beyond the basic I/O for blinking an LED, the <a attiny13.html="" href="https://www.icexplorer.
+&lt;h3&gt;Related Articles&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=" https:="" rel="noopener noreferrer" target="_blank" www.chipexplorer.net="">ATtiny13 IC pinout explorer</a>, a free web tool can help you in planning of microcontroller pins.</p><div class="separator" style="clear: both; text-align: center;"><a href="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgxqqIa_D96HBmNbDVIKFTqhvAir1iwtITedyggGkYWJ-Cdcy6M2WttL-6qPVRgfjxPr7LPL6qUOK7MqxJkyUdqIIKI8lcjoNrt-gKHWQi0std9ovMu6k-WjOq6Hv-v2MvBU_8Tihi4R3AeUnpnwrkDWhuN_Ts_PjPfLhRI_drnHAGnYyf-oomWoyHczhqK/s908/attiny%20explorer.png" imageanchor="1" style="margin-left: 1em; margin-right: 1em;"><img alt="attiny13 IC pinout explorer web tool" border="0" data-original-height="569" data-original-width="908" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgxqqIa_D96HBmNbDVIKFTqhvAir1iwtITedyggGkYWJ-Cdcy6M2WttL-6qPVRgfjxPr7LPL6qUOK7MqxJkyUdqIIKI8lcjoNrt-gKHWQi0std9ovMu6k-WjOq6Hv-v2MvBU_8Tihi4R3AeUnpnwrkDWhuN_Ts_PjPfLhRI_drnHAGnYyf-oomWoyHczhqK/s16000/attiny%20explorer.png" title="attiny13 IC pinout explorer web tool" /></a></div><br /><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "ATtiny13 LED Blink Simulation in Proteus: A Beginner's Guide to AVR Programming",
+  "description": "Embarking on the journey of microcontroller programming can seem daunting, but with the right tools and guidance, it becomes an incredibly rewarding experi",
+  "keywords": "ATtiny13 LED Blink Simulation Proteus",
+  "timeRequired": "1 min read",
+  "datePublished": "2026-04-01T17:30:20.246Z",
+  "dateModified": "2026-04-01T17:30:20.246Z",
+  "publisher": {
+    "@type": "Organization",
+    "name": "ee-diary",
+    "url": "https://ee-diary.net"
+  }
+}</script>
