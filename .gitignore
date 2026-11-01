@@ -32,3 +32,6 @@ assets/js/dist
 Thumbs.db
 blog-export.xml
 _import_staging/
+convert_blogger.py
+download_images.py
+check_urls.py
