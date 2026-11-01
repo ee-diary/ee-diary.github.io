@@ -6,7 +6,76 @@ title: "Contact Us"
 permalink: /p/contact-us.html
 ---
 <p>Email:<b>info.ee.diary@gmail.com</b></p>
-<br />
-<p>Contact Us:</p>
-<b>{contactForm}</b>
+<p>Have a suggestion for a new IC, found a bug, or want to get in touch? Send a message below.</p>
 
+<form action="https://api.web3forms.com/submit" method="POST" class="contact-form">
+  <input type="hidden" name="access_key" value="f1244451-c770-4ac7-8d32-890d5552de7d">
+  <input type="hidden" name="subject" value="New message from IC Explorer">
+  <input type="checkbox" name="botcheck" style="display:none" tabindex="-1" autocomplete="off">
+
+  <label for="cf-name">Name</label>
+  <input id="cf-name" type="text" name="name" required>
+
+  <label for="cf-email">Email</label>
+  <input id="cf-email" type="email" name="email" required>
+
+  <label for="cf-message">Message</label>
+  <textarea id="cf-message" name="message" rows="6" required></textarea>
+
+  <button type="submit">Send message</button>
+</form>
+<p id="cf-status" role="status"></p>
+
+<style>
+  .contact-form {
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .contact-form input[type='text'],
+  .contact-form input[type='email'],
+  .contact-form textarea {
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--main-border-color, #ccc);
+    border-radius: 6px;
+    background: var(--card-bg, #fff);
+    color: var(--text-color, #222);
+    font: inherit;
+  }
+  .contact-form button {
+    align-self: flex-start;
+    padding: 0.6rem 1.4rem;
+    border: 0;
+    border-radius: 6px;
+    background: var(--link-color, #2a6fdb);
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+  }
+</style>
+
+<script>
+  document.querySelector('.contact-form').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    var form = e.target,
+      status = document.getElementById('cf-status');
+    status.textContent = 'Sending...';
+    try {
+      var res = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(Object.fromEntries(new FormData(form))),
+      });
+      var data = await res.json();
+      if (data.success) {
+        status.textContent = 'Thanks, your message was sent.';
+        form.reset();
+      } else {
+        status.textContent = 'Something went wrong. Please try again later.';
+      }
+    } catch (err) {
+      status.textContent = 'Network error. Please try again later.';
+    }
+  });
+</script>

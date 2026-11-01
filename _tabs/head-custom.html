@@ -1,0 +1,18 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!window.hljs) return;
+    document.querySelectorAll('article .content pre code, article .content pre.prettyprint').forEach(function (el) {
+      if (el.closest('.highlighter-rouge, .highlight')) return;
+      var text = el.textContent;
+      var m = (el.className || '').match(/language-(\w+)/);
+      var res =
+        m && hljs.getLanguage(m[1])
+          ? hljs.highlight(text, { language: m[1] })
+          : hljs.highlightAuto(text, ['cpp', 'c', 'python', 'bash', 'javascript', 'json', 'xml', 'ini']);
+      el.innerHTML = res.value;
+      el.classList.add('hljs');
+    });
+  });
+</script>
