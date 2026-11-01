@@ -1,0 +1,1101 @@
+---
+layout: page
+title: "Web Oscilloscope — IC Explorer"
+permalink: /p/web-oscilloscope-ic-explorer.html
+---
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #010409;
+    --surface: #0d1117;
+    --surface2: #161b22;
+    --border: #21262d;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --accent3: #f78166;
+    --accent4: #d2a8ff;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --scope-bg: #010c03;
+    --scope-grid: #0d2910;
+    --scope-line: #39d353;
+    --scope-line2: #58a6ff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    padding: 24px 16px;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .osc-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .osc-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #0d2910, #1a3a1a);
+    border: 1px solid var(--accent2);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+
+  .osc-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--accent2);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .osc-subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .status-pill {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent3);
+    transition: all 0.3s;
+  }
+  .status-dot.active {
+    background: var(--accent2);
+    box-shadow: 0 0 8px var(--accent2);
+    animation: pulse 1.2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* ── Main Layout ── */
+  .osc-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 16px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .osc-layout { grid-template-columns: 1fr; }
+  }
+
+  /* ── Scope Display ── */
+  .scope-section { display: flex; flex-direction: column; gap: 12px; }
+
+  .scope-wrap {
+    position: relative;
+    background: var(--scope-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 40px rgba(57,211,83,0.04);
+  }
+
+  .scope-wrap canvas {
+    display: block;
+    width: 100%;
+    height: 320px;
+  }
+
+  .scope-top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(1,12,3,0.8);
+    border-bottom: 1px solid rgba(57,211,83,0.1);
+    pointer-events: none;
+  }
+
+  .scope-ch-label {
+    font-size: 10px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .ch1 { color: var(--scope-line); }
+  .ch2 { color: var(--scope-line2); }
+
+  .scope-info {
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    gap: 12px;
+  }
+
+  /* ── Source Tabs ── */
+  .source-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .source-tab {
+    flex: 1;
+    padding: 8px 6px;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .source-tab.active {
+    background: var(--surface2);
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    box-shadow: 0 0 10px rgba(88,166,255,0.1);
+  }
+  .source-tab:hover:not(.active) { color: var(--text); background: var(--surface2); }
+
+  /* ── Measurements ── */
+  .measurements {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+
+  @media (max-width: 500px) {
+    .measurements { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .measure-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    transition: border-color 0.2s;
+  }
+  .measure-box:hover { border-color: var(--accent2); }
+
+  .measure-label {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 4px;
+  }
+
+  .measure-val {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent2);
+    font-family: 'Rajdhani', sans-serif;
+    line-height: 1;
+  }
+
+  /* ── Timebase ── */
+  .timebase-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tb-label {
+    font-size: 10px;
+    color: var(--muted);
+    width: 65px;
+    flex-shrink: 0;
+  }
+
+  .tb-btns {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .tb-btn {
+    flex: 1;
+    padding: 5px 2px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+  }
+  .tb-btn:hover { color: var(--text); }
+  .tb-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(88,166,255,0.08); }
+
+  /* ── Right Panel ── */
+  .controls-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .panel-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+  }
+
+  .panel-title {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .panel-title-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent2);
+  }
+
+  .control-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .control-row:last-child { margin-bottom: 0; }
+
+  .ctrl-label {
+    font-size: 10px;
+    color: var(--muted);
+    width: 65px;
+    flex-shrink: 0;
+  }
+
+  .ctrl-val {
+    font-size: 11px;
+    color: var(--accent);
+    width: 45px;
+    text-align: right;
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+
+  input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    box-shadow: 0 0 6px rgba(88,166,255,0.4);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+  }
+
+  select {
+    flex: 1;
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 5px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    outline: none;
+    cursor: pointer;
+  }
+  select:focus { border-color: var(--accent); }
+
+  /* ── Buttons ── */
+  .btn-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .btn {
+    padding: 9px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface2);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: #1f6feb; border-color: #1f6feb; color: white; }
+  .btn.primary:hover { background: #388bfd; border-color: #388bfd; }
+  .btn.success { border-color: var(--accent2); color: var(--accent2); background: rgba(63,185,80,0.08); }
+  .btn.danger { border-color: var(--accent3); color: var(--accent3); background: rgba(247,129,102,0.08); }
+  .btn.warn { border-color: #e3b341; color: #e3b341; background: rgba(227,179,65,0.08); }
+  .btn-full { grid-column: 1 / -1; }
+
+  /* ── Serial Panel ── */
+  .serial-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    padding: 6px 8px;
+    background: var(--surface2);
+    border-radius: 5px;
+    border: 1px solid var(--border);
+  }
+
+  .serial-log {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 8px;
+    height: 100px;
+    overflow-y: auto;
+    font-size: 10px;
+    color: var(--accent2);
+    margin-bottom: 10px;
+    line-height: 1.6;
+  }
+
+  .serial-log::-webkit-scrollbar { width: 4px; }
+  .serial-log::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .serial-log .log-entry { color: var(--muted); }
+  .serial-log .log-data { color: var(--accent2); }
+  .serial-log .log-err { color: var(--accent3); }
+
+  /* ── Browser warning ── */
+  .browser-warn {
+    background: rgba(227,179,65,0.08);
+    border: 1px solid rgba(227,179,65,0.3);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: #e3b341;
+    margin-bottom: 10px;
+    display: none;
+  }
+
+  /* ── Hidden panels ── */
+  .panel-content { display: none; }
+  .panel-content.visible { display: block; }
+
+  /* ── About section ── */
+  .about-section {
+    max-width: 1100px;
+    margin: 24px auto 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+
+  .about-section h2 {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 18px;
+    color: var(--accent);
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+  }
+
+  .about-section p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 10px;
+  }
+
+  .arduino-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 11px;
+    color: var(--accent2);
+    margin-top: 12px;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.6;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    border: 1px solid;
+    margin-right: 4px;
+    margin-bottom: 6px;
+  }
+  .tag-green { color: var(--accent2); border-color: var(--accent2); }
+  .tag-blue { color: var(--accent); border-color: var(--accent); }
+  .tag-orange { color: #f0883e; border-color: #f0883e; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="osc-header" style="max-width:1100px; margin:0 auto 20px;">
+  <div class="osc-icon">📟</div>
+  <div>
+    <div class="osc-title">Web Oscilloscope</div>
+    <div class="osc-subtitle">Signal Generator · Microphone · USB Serial</div>
+  </div>
+  <div class="status-pill">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">Idle</span>
+  </div>
+</div>
+
+<!-- Main Layout -->
+<div class="osc-layout">
+
+  <!-- Left: Scope + Measurements -->
+  <div class="scope-section">
+
+    <!-- Source Tabs -->
+    <div class="source-tabs">
+      <button class="source-tab active" onclick="setSource('generator')" id="tab-generator">⚡ Generator</button>
+      <button class="source-tab" onclick="setSource('mic')" id="tab-mic">🎙 Microphone</button>
+      <button class="source-tab" onclick="setSource('serial')" id="tab-serial">🔌 USB Serial</button>
+    </div>
+
+    <!-- Scope Canvas -->
+    <div class="scope-wrap">
+      <canvas id="scopeCanvas"></canvas>
+      <div class="scope-top-bar">
+        <div class="scope-ch-label">
+          <span class="ch1" id="chLabel">■ CH1 · GENERATOR</span>
+        </div>
+        <div class="scope-info">
+          <span id="tbLabel">TB: 1x</span>
+          <span id="trigLabel">TRIG: 0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timebase -->
+    <div class="timebase-row">
+      <span class="tb-label">Timebase</span>
+      <div class="tb-btns">
+        <div class="tb-btn" onclick="setTimebase(0.125,this)">0.1x</div>
+        <div class="tb-btn" onclick="setTimebase(0.25,this)">0.25x</div>
+        <div class="tb-btn active" onclick="setTimebase(0.5,this)">0.5x</div>
+        <div class="tb-btn" onclick="setTimebase(1,this)">1x</div>
+        <div class="tb-btn" onclick="setTimebase(2,this)">2x</div>
+        <div class="tb-btn" onclick="setTimebase(4,this)">4x</div>
+      </div>
+    </div>
+
+    <!-- Measurements -->
+    <div class="measurements">
+      <div class="measure-box">
+        <div class="measure-label">Vpp</div>
+        <div class="measure-val" id="mVpp">--</div>
+      </div>
+      <div class="measure-box">
+        <div class="measure-label">Frequency</div>
+        <div class="measure-val" id="mFreq">--</div>
+      </div>
+      <div class="measure-box">
+        <div class="measure-label">RMS</div>
+        <div class="measure-val" id="mRms">--</div>
+      </div>
+      <div class="measure-box">
+        <div class="measure-label">DC Offset</div>
+        <div class="measure-val" id="mDc">--</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Right: Controls Panel -->
+  <div class="controls-panel">
+
+    <!-- Play Controls -->
+    <div class="panel-box">
+      <div class="panel-title"><div class="panel-title-dot"></div> Transport</div>
+      <div class="btn-grid">
+        <button class="btn primary btn-full" id="playBtn" onclick="togglePlay()">▶ Start</button>
+        <button class="btn" id="freezeBtn" onclick="toggleFreeze()">⏸ Freeze</button>
+        <button class="btn danger" onclick="resetAll()">↺ Reset</button>
+      </div>
+    </div>
+
+    <!-- Generator Controls -->
+    <div class="panel-box" id="generatorPanel">
+      <div class="panel-title"><div class="panel-title-dot"></div> Signal Generator</div>
+      <div class="control-row">
+        <span class="ctrl-label">Waveform</span>
+        <select id="OscSelect" onchange="changeWaveform()">
+          <option value="sine">Sine</option>
+          <option value="square">Square</option>
+          <option value="sawtooth">Sawtooth</option>
+          <option value="triangle">Triangle</option>
+        </select>
+      </div>
+      <div class="control-row">
+        <span class="ctrl-label">Amplitude</span>
+        <input type="range" id="AmplitudeSlider" min="0.01" max="1" value="0.3" step="0.01" oninput="changeAmp()">
+        <span class="ctrl-val" id="AmplitudeLabel">0.30</span>
+      </div>
+      <div class="control-row">
+        <span class="ctrl-label">Frequency</span>
+        <input type="range" id="FrequencySlider" min="1" max="2000" value="440" oninput="changeFreq()">
+        <span class="ctrl-val" id="FrequencyLabel">440Hz</span>
+      </div>
+      <div class="control-row">
+        <span class="ctrl-label">Trigger</span>
+        <input type="range" id="TriggerSlider" min="-1" max="1" value="0" step="0.01" oninput="changeTrigger()">
+        <span class="ctrl-val" id="TriggerLabel">0.00</span>
+      </div>
+    </div>
+
+    <!-- Mic Panel -->
+    <div class="panel-box" id="micPanel" style="display:none;">
+      <div class="panel-title"><div class="panel-title-dot" style="background:var(--accent4)"></div> Microphone</div>
+      <p style="font-size:11px; color:var(--muted); margin-bottom:10px; line-height:1.6;">
+        Uses your device microphone to capture live audio signals. Browser will ask for permission.
+      </p>
+      <div class="control-row">
+        <span class="ctrl-label">Trigger</span>
+        <input type="range" id="TriggerSlider2" min="-1" max="1" value="0" step="0.01" oninput="changeTrigger2()">
+        <span class="ctrl-val" id="TriggerLabel2">0.00</span>
+      </div>
+    </div>
+
+    <!-- Serial Panel -->
+    <div class="panel-box" id="serialPanel" style="display:none;">
+      <div class="panel-title"><div class="panel-title-dot" style="background:var(--accent3)"></div> USB Serial</div>
+
+      <div class="browser-warn" id="browserWarn">
+        ⚠ Web Serial requires Chrome or Edge browser.
+      </div>
+
+      <div class="serial-status">
+        <div class="status-dot" id="serialDot"></div>
+        <span id="serialStatusText">Not connected</span>
+      </div>
+
+      <div class="serial-log" id="serialLog">
+        <div class="log-entry">» Waiting for connection...</div>
+      </div>
+
+      <div class="control-row">
+        <span class="ctrl-label">Baud Rate</span>
+        <select id="baudRate">
+          <option value="9600">9600</option>
+          <option value="19200">19200</option>
+          <option value="57600">57600</option>
+          <option value="115200" selected>115200</option>
+        </select>
+      </div>
+
+      <div class="control-row">
+        <span class="ctrl-label">Scale</span>
+        <input type="range" id="SerialScaleSlider" min="1" max="1023" value="512" step="1" oninput="changeSerialScale()">
+        <span class="ctrl-val" id="SerialScaleLabel">512</span>
+      </div>
+
+      <div class="btn-grid" style="margin-top:8px;">
+        <button class="btn success" onclick="connectSerial()">🔌 Connect</button>
+        <button class="btn danger" onclick="disconnectSerial()">✕ Disconnect</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- About Section -->
+<div class="about-section">
+  <h2>About Web Oscilloscope</h2>
+
+  <div style="margin-bottom:12px;">
+    <span class="tag tag-green">Signal Generator</span>
+    <span class="tag tag-blue">Microphone Input</span>
+    <span class="tag tag-orange">USB Serial / Arduino</span>
+  </div>
+
+  <p>
+    A browser-based oscilloscope with three input sources. No installation required — works entirely in your browser using Web Audio API and Web Serial API. Perfect for electronics engineers, students, and IC testing.
+  </p>
+
+  <p>
+    <strong style="color:var(--text);">Signal Generator</strong> — Built-in sine, square, sawtooth and triangle wave generator with adjustable frequency (1–2000Hz) and amplitude. Use the trigger slider to stabilize the waveform display.
+  </p>
+
+  <p>
+    <strong style="color:var(--text);">Microphone</strong> — Captures live audio from your device microphone for real-time waveform visualization and frequency analysis.
+  </p>
+
+  <p>
+    <strong style="color:var(--text);">USB Serial (Arduino)</strong> — Connect an Arduino or any microcontroller via USB. The oscilloscope reads analog values sent over serial and plots them in real time. Requires Chrome or Edge browser.
+  </p>
+
+  <p style="color:var(--accent); margin-top:4px;">Arduino Sketch — paste this into your Arduino IDE and upload:</p>
+  <div class="arduino-code">// Web Oscilloscope - Arduino Sketch
+// Connect your IC/sensor output to analog pin A0
+
+void setup() {
+  Serial.begin(115200);  // Match baud rate in oscilloscope
+}
+
+void loop() {
+  int val = analogRead(A0);  // Read 0–1023
+  Serial.println(val);       // Send to browser
+  delayMicroseconds(200);    // ~5000 samples/sec
+}
+
+// For multiple channels (future):
+// Serial.print(analogRead(A0)); Serial.print(",");
+// Serial.println(analogRead(A1));</div>
+</div>
+
+<script>
+// ─── State ─────────────────────────────────────────────────────
+let audioCtx, osc, amp, analyser, micStream, micSource;
+let isPlaying = false, isFrozen = false, isSerialConnected = false;
+let currentSource = 'generator';
+let serialPort, serialReader, serialBuffer = [];
+let timebaseScale = 0.5;
+let triggerLevel = 0;
+let serialScale = 512;
+let animFrameId;
+
+// ─── Canvas ─────────────────────────────────────────────────────
+const canvas = document.getElementById('scopeCanvas');
+const c = canvas.getContext('2d');
+let dpr = window.devicePixelRatio || 1;
+
+function resizeCanvas() {
+  dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  if (!isPlaying) drawIdle();
+}
+
+window.addEventListener('resize', resizeCanvas);
+window.addEventListener('load', resizeCanvas);
+setTimeout(resizeCanvas, 100);
+
+// ─── Audio Init ──────────────────────────────────────────────────
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    amp = new GainNode(audioCtx, { gain: 0.3 });
+    analyser = new AnalyserNode(audioCtx, { fftSize: 4096, smoothingTimeConstant: 0.5 });
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+// ─── Source Switching ────────────────────────────────────────────
+function setSource(src) {
+  if (isPlaying) stopAll();
+  currentSource = src;
+
+  ['generator','mic','serial'].forEach(s => {
+    document.getElementById('tab-' + s).classList.toggle('active', s === src);
+  });
+
+  document.getElementById('generatorPanel').style.display = src === 'generator' ? 'block' : 'none';
+  document.getElementById('micPanel').style.display = src === 'mic' ? 'block' : 'none';
+  document.getElementById('serialPanel').style.display = src === 'serial' ? 'block' : 'none';
+
+  const labels = { generator: '■ CH1 · GENERATOR', mic: '■ CH1 · MICROPHONE', serial: '■ CH1 · USB SERIAL' };
+  document.getElementById('chLabel').textContent = labels[src];
+  document.getElementById('chLabel').style.color = src === 'serial' ? 'var(--scope-line2)' : 'var(--scope-line)';
+
+  if (src === 'serial' && !('serial' in navigator)) {
+    document.getElementById('browserWarn').style.display = 'block';
+  }
+}
+
+// ─── Play / Stop ─────────────────────────────────────────────────
+function togglePlay() {
+  isPlaying ? stopAll() : startSource();
+}
+
+function startSource() {
+  initAudio();
+  if (currentSource === 'generator') startGenerator();
+  else if (currentSource === 'mic') startMic();
+  else if (currentSource === 'serial') { if (!isSerialConnected) { alert('Connect USB Serial first!'); return; } }
+
+  isPlaying = true;
+  isFrozen = false;
+  document.getElementById('playBtn').textContent = '⏹ Stop';
+  document.getElementById('playBtn').className = 'btn danger btn-full';
+  document.getElementById('statusDot').classList.add('active');
+  document.getElementById('statusText').textContent = 'Running';
+
+  if (currentSource !== 'serial') draw();
+  else drawSerialLoop();
+}
+
+function stopAll() {
+  isPlaying = false;
+  isFrozen = false;
+  if (animFrameId) cancelAnimationFrame(animFrameId);
+  if (osc) { try { osc.stop(); } catch(e){} osc = null; }
+  if (micStream) { micStream.getTracks().forEach(t => t.stop()); micStream = null; }
+  if (micSource) { try { micSource.disconnect(); } catch(e){} micSource = null; }
+
+  document.getElementById('playBtn').textContent = '▶ Start';
+  document.getElementById('playBtn').className = 'btn primary btn-full';
+  document.getElementById('freezeBtn').textContent = '⏸ Freeze';
+  document.getElementById('statusDot').classList.remove('active');
+  document.getElementById('statusText').textContent = 'Idle';
+  drawIdle();
+}
+
+// ─── Generator ────────────────────────────────────────────────────
+function startGenerator() {
+  osc = audioCtx.createOscillator();
+  osc.type = document.getElementById('OscSelect').value;
+  osc.frequency.value = parseFloat(document.getElementById('FrequencySlider').value);
+  amp.gain.value = parseFloat(document.getElementById('AmplitudeSlider').value);
+  osc.connect(amp);
+  amp.connect(analyser);
+  osc.start();
+}
+
+function changeWaveform() { if (osc) osc.type = document.getElementById('OscSelect').value; }
+
+function changeAmp() {
+  const v = document.getElementById('AmplitudeSlider').value;
+  document.getElementById('AmplitudeLabel').textContent = parseFloat(v).toFixed(2);
+  if (amp) amp.gain.value = parseFloat(v);
+}
+
+function changeFreq() {
+  const v = document.getElementById('FrequencySlider').value;
+  document.getElementById('FrequencyLabel').textContent = v + 'Hz';
+  if (osc) osc.frequency.value = parseFloat(v);
+}
+
+function changeTrigger() {
+  const v = document.getElementById('TriggerSlider').value;
+  triggerLevel = parseFloat(v);
+  document.getElementById('TriggerLabel').textContent = parseFloat(v).toFixed(2);
+  document.getElementById('trigLabel').textContent = 'TRIG: ' + parseFloat(v).toFixed(2);
+}
+
+function changeTrigger2() {
+  const v = document.getElementById('TriggerSlider2').value;
+  triggerLevel = parseFloat(v);
+  document.getElementById('TriggerLabel2').textContent = parseFloat(v).toFixed(2);
+  document.getElementById('trigLabel').textContent = 'TRIG: ' + parseFloat(v).toFixed(2);
+}
+
+function changeSerialScale() {
+  serialScale = parseInt(document.getElementById('SerialScaleSlider').value);
+  document.getElementById('SerialScaleLabel').textContent = serialScale;
+}
+
+// ─── Microphone ───────────────────────────────────────────────────
+async function startMic() {
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    micSource = audioCtx.createMediaStreamSource(micStream);
+    micSource.connect(analyser);
+  } catch(e) {
+    alert('Microphone access denied: ' + e.message);
+    isPlaying = false;
+  }
+}
+
+// ─── USB Serial ───────────────────────────────────────────────────
+async function connectSerial() {
+  if (!('serial' in navigator)) {
+    alert('Web Serial API not supported.\nPlease use Google Chrome or Microsoft Edge.');
+    return;
+  }
+  try {
+    serialPort = await navigator.serial.requestPort();
+    const baud = parseInt(document.getElementById('baudRate').value);
+    await serialPort.open({ baudRate: baud });
+    isSerialConnected = true;
+    document.getElementById('serialStatusText').textContent = '● Connected · ' + baud + ' baud';
+    document.getElementById('serialDot').classList.add('active');
+    logSerial('Connected at ' + baud + ' baud', 'entry');
+    readSerialData();
+  } catch(e) {
+    logSerial('Error: ' + e.message, 'err');
+  }
+}
+
+async function disconnectSerial() {
+  isSerialConnected = false;
+  if (serialReader) { try { await serialReader.cancel(); } catch(e){} }
+  if (serialPort) { try { await serialPort.close(); } catch(e){} }
+  document.getElementById('serialStatusText').textContent = 'Disconnected';
+  document.getElementById('serialDot').classList.remove('active');
+  logSerial('Disconnected.', 'entry');
+  if (isPlaying) stopAll();
+}
+
+async function readSerialData() {
+  const decoder = new TextDecoderStream();
+  serialPort.readable.pipeTo(decoder.writable);
+  serialReader = decoder.readable.getReader();
+  let lineBuffer = '';
+  let dataCount = 0;
+
+  while (isSerialConnected) {
+    try {
+      const { value, done } = await serialReader.read();
+      if (done) break;
+      lineBuffer += value;
+      const lines = lineBuffer.split('\n');
+      lineBuffer = lines.pop();
+
+      for (const line of lines) {
+        const raw = parseFloat(line.trim());
+        if (!isNaN(raw)) {
+          const normalized = (raw / serialScale) - 1;
+          serialBuffer.push(normalized);
+          if (serialBuffer.length > 4096) serialBuffer.shift();
+          dataCount++;
+          if (dataCount % 50 === 0) {
+            logSerial('A0: ' + raw.toFixed(0) + ' → ' + normalized.toFixed(3) + 'V', 'data');
+          }
+        }
+      }
+    } catch(e) {
+      logSerial('Read error: ' + e.message, 'err');
+      break;
+    }
+  }
+}
+
+function logSerial(msg, type) {
+  const log = document.getElementById('serialLog');
+  const div = document.createElement('div');
+  div.className = 'log-' + (type || 'entry');
+  div.textContent = '» ' + msg;
+  log.appendChild(div);
+  if (log.children.length > 30) log.removeChild(log.firstChild);
+  log.scrollTop = log.scrollHeight;
+}
+
+function drawSerialLoop() {
+  if (!isPlaying || isFrozen) return;
+  animFrameId = requestAnimationFrame(drawSerialLoop);
+  drawSerial();
+}
+
+// ─── Drawing ──────────────────────────────────────────────────────
+function setTimebase(scale, el) {
+  timebaseScale = scale;
+  document.querySelectorAll('.tb-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tbLabel').textContent = 'TB: ' + scale + 'x';
+}
+
+function toggleFreeze() {
+  isFrozen = !isFrozen;
+  document.getElementById('freezeBtn').textContent = isFrozen ? '▶ Resume' : '⏸ Freeze';
+  document.getElementById('statusText').textContent = isFrozen ? 'Frozen' : 'Running';
+  if (!isFrozen && isPlaying) {
+    if (currentSource === 'serial') drawSerialLoop();
+    else draw();
+  }
+}
+
+function drawGrid(W, H) {
+  const cols = 10, rows = 8;
+  c.strokeStyle = 'rgba(13,41,16,0.9)';
+  c.lineWidth = 0.5;
+  for (let i = 0; i <= cols; i++) {
+    c.beginPath();
+    c.moveTo(i * W / cols, 0);
+    c.lineTo(i * W / cols, H);
+    c.stroke();
+  }
+  for (let i = 0; i <= rows; i++) {
+    c.beginPath();
+    c.moveTo(0, i * H / rows);
+    c.lineTo(W, i * H / rows);
+    c.stroke();
+  }
+  // Center crosshairs
+  c.strokeStyle = 'rgba(57,211,83,0.15)';
+  c.lineWidth = 1;
+  c.beginPath(); c.moveTo(W/2, 0); c.lineTo(W/2, H); c.stroke();
+  c.beginPath(); c.moveTo(0, H/2); c.lineTo(W, H/2); c.stroke();
+}
+
+function drawIdle() {
+  resizeCanvas();
+  const W = canvas.width, H = canvas.height;
+  c.clearRect(0, 0, W, H);
+  drawGrid(W, H);
+  c.strokeStyle = 'rgba(57,211,83,0.15)';
+  c.lineWidth = 1;
+  c.beginPath(); c.moveTo(0, H/2); c.lineTo(W, H/2); c.stroke();
+}
+
+function draw() {
+  if (!isPlaying || isFrozen) return;
+  animFrameId = requestAnimationFrame(draw);
+
+  const W = canvas.width, H = canvas.height;
+  c.clearRect(0, 0, W, H);
+  drawGrid(W, H);
+  if (!analyser) return;
+
+  const bufLen = analyser.frequencyBinCount;
+  const dataArr = new Uint8Array(bufLen);
+  analyser.getByteTimeDomainData(dataArr);
+  const data = Array.from(dataArr, v => (v / 128) - 1);
+
+  const sampleCount = Math.floor(bufLen * timebaseScale);
+  const startIdx = findTrigger(data, sampleCount);
+  const slice = [];
+  for (let i = 0; i < sampleCount; i++) slice.push(data[(startIdx + i) % data.length]);
+
+  // Waveform
+  c.strokeStyle = '#39d353';
+  c.lineWidth = 1.5 * dpr;
+  c.shadowBlur = 6 * dpr;
+  c.shadowColor = 'rgba(57,211,83,0.5)';
+  c.beginPath();
+  for (let i = 0; i < slice.length; i++) {
+    const x = (i / slice.length) * W;
+    const y = H / 2 - (slice[i] * H * 0.42);
+    i === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+  }
+  c.stroke();
+  c.shadowBlur = 0;
+
+  // Trigger line
+  c.strokeStyle = 'rgba(247,129,102,0.4)';
+  c.lineWidth = 1 * dpr;
+  c.setLineDash([5 * dpr, 5 * dpr]);
+  const ty = H / 2 - (triggerLevel * H * 0.42);
+  c.beginPath(); c.moveTo(0, ty); c.lineTo(W, ty); c.stroke();
+  c.setLineDash([]);
+
+  updateMeasurements(slice);
+}
+
+function drawSerial() {
+  const W = canvas.width, H = canvas.height;
+  c.clearRect(0, 0, W, H);
+  drawGrid(W, H);
+
+  const count = Math.floor(512 * timebaseScale);
+  const data = serialBuffer.slice(-count);
+  if (data.length < 2) return;
+
+  c.strokeStyle = '#58a6ff';
+  c.lineWidth = 1.5 * dpr;
+  c.shadowBlur = 6 * dpr;
+  c.shadowColor = 'rgba(88,166,255,0.5)';
+  c.beginPath();
+  for (let i = 0; i < data.length; i++) {
+    const x = (i / data.length) * W;
+    const y = H / 2 - (data[i] * H * 0.42);
+    i === 0 ? c.moveTo(x, y) : c.lineTo(x, y);
+  }
+  c.stroke();
+  c.shadowBlur = 0;
+  updateMeasurements(data);
+}
+
+function findTrigger(data, count) {
+  for (let i = 1; i < data.length - count; i++) {
+    if (data[i - 1] < triggerLevel && data[i] >= triggerLevel) return i;
+  }
+  return 0;
+}
+
+function updateMeasurements(data) {
+  if (!data || data.length < 2) return;
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const vpp = (max - min);
+  const dc = data.reduce((s, v) => s + v, 0) / data.length;
+  const rms = Math.sqrt(data.reduce((s, v) => s + v * v, 0) / data.length);
+
+  let crossings = 0;
+  for (let i = 1; i < data.length; i++) {
+    if (data[i - 1] < triggerLevel && data[i] >= triggerLevel) crossings++;
+  }
+  const sampleRate = audioCtx ? audioCtx.sampleRate : 44100;
+  const duration = data.length / sampleRate;
+  const freq = crossings > 0 ? crossings / duration : 0;
+
+  document.getElementById('mVpp').textContent = vpp.toFixed(3) + 'V';
+  document.getElementById('mFreq').textContent = freq > 1000 ? (freq/1000).toFixed(2)+'kHz' : freq > 0 ? freq.toFixed(1)+'Hz' : '--';
+  document.getElementById('mRms').textContent = rms.toFixed(4) + 'V';
+  document.getElementById('mDc').textContent = dc.toFixed(4) + 'V';
+}
+
+function resetAll() {
+  stopAll();
+  serialBuffer = [];
+  triggerLevel = 0;
+  document.getElementById('TriggerSlider').value = 0;
+  document.getElementById('TriggerLabel').textContent = '0.00';
+  document.getElementById('trigLabel').textContent = 'TRIG: 0.00';
+  ['mVpp','mFreq','mRms','mDc'].forEach(id => document.getElementById(id).textContent = '--');
+  drawIdle();
+}
+
+// Init
+setSource('generator');
+setTimeout(drawIdle, 200);
+</script>
+

@@ -1,0 +1,38 @@
+---
+layout: page
+title: "Circuit Simulator - Free Online Web Tool"
+permalink: /p/circuit-simulator-free-online-web-tool.html
+---
+<!-- The Button -->
+<button onclick="openFullscreen()" style="padding: 10px 20px; font-size: 16px; margin-bottom: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px;">
+    &#x26F6; Go Full Screen
+</button>
+
+<!-- The Simulator Container -->
+<div style="width: 100%; height: 600px;">
+    <iframe 
+        id="circuit-simulator-frame"
+        src="https://ee-diary.github.io/cktwebsim/circuitjs.html" 
+        width="100%" 
+        height="100%" 
+        frameborder="0" 
+        allowfullscreen="true"
+        webkitallowfullscreen="true"
+        mozallowfullscreen="true">
+    </iframe>
+</div>
+
+<!-- The Script to Make it Work -->
+<script>
+function openFullscreen() {
+  var elem = document.getElementById("circuit-simulator-frame");
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.webkitRequestFullscreen) { /* Safari */
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { /* IE11 */
+    elem.msRequestFullscreen();
+  }
+}
+</script>
+
