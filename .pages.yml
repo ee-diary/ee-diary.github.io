@@ -1,0 +1,30 @@
+media:
+  input: assets/img/posts
+  output: /assets/img/posts
+
+content:
+  - name: posts
+    label: Posts
+    type: collection
+    path: _posts
+    filename: "{year}-{month}-{day}-{primary}.md"
+    view:
+      fields: [title, date]
+    fields:
+      - { name: title, label: Title, type: string }
+      - { name: date, label: Date, type: date, options: { time: true } }
+      - { name: categories, label: Categories, type: string, list: true }
+      - { name: tags, label: Tags, type: string, list: true }
+      - { name: description, label: Description, type: text }
+      - { name: math, label: "Uses LaTeX/MathJax", type: boolean, default: false }
+      - { name: body, label: Content, type: rich-text }
+
+  - name: pages
+    label: Pages
+    type: collection
+    path: _tabs
+    fields:
+      - { name: title, type: string }
+      - { name: icon, type: string }
+      - { name: order, type: number }
+      - { name: body, type: rich-text }
