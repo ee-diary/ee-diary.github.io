@@ -11,7 +11,7 @@ description: The IR2104 is a high-voltage, high-speed power MOSFET and IGBT
   configurations. It features built-in dead-time control, under-voltage lockout
   protection, and a wide supply voltage range, making it ideal for motor drives,
   power supplies, and other high-performance switching applications.
-math: true
+math: false
 ---
 The IR2104 Gate Driver IC Spice model is available for free download, allowing hobbyists and engineers to simulate circuits before building them. 
 
