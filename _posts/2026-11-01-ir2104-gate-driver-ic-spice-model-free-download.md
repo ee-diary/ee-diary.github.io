@@ -15,6 +15,8 @@ math: false
 ---
 The IR2104 Gate Driver IC Spice model is available for free download, allowing hobbyists and engineers to simulate circuits before building them. 
 
+<a href="[https://www.example.com">Your](https://www.example.com">Your) Anchor Text Here</a>
+
 This IC is particularly useful for designing Arduino-based synchronous DC-DC converters, including efficient buck converters. By using the IR2104, you can drive MOSFETs in a half-bridge configuration, enabling precise control and improved performance in low-voltage power supply projects.
 
 ![](/assets/img/posts/images/Arduinobuckconverterfeedback.svg)
