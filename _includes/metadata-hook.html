@@ -1,18 +1,22 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    if (!window.hljs) return;
-    document.querySelectorAll('article .content pre code, article .content pre.prettyprint').forEach(function (el) {
-      if (el.closest('.highlighter-rouge, .highlight')) return;
-      var text = el.textContent;
-      var m = (el.className || '').match(/language-(\w+)/);
-      var res =
-        m && hljs.getLanguage(m[1])
-          ? hljs.highlight(text, { language: m[1] })
-          : hljs.highlightAuto(text, ['cpp', 'c', 'python', 'bash', 'javascript', 'json', 'xml', 'ini']);
-      el.innerHTML = res.value;
-      el.classList.add('hljs');
-    });
+document.addEventListener('DOMContentLoaded', function () {
+  if (!window.hljs) return;
+  document.querySelectorAll('article .content pre').forEach(function (pre) {
+    if (pre.closest('.highlighter-rouge, .highlight')) return;
+    var kids = pre.children;
+    var code = (kids.length === 1 && kids[0].tagName === 'CODE') ? kids[0] : null;
+    if (kids.length > 0 && !code) return;   // skip <pre> blocks holding other markup (widgets)
+    var el = code || pre;
+    var text = el.textContent;
+    if (!text.trim()) return;
+    var lang = pre.getAttribute('lang') || ((el.className || '').match(/language-(\w+)/) || [])[1];
+    var res = (lang && hljs.getLanguage(lang))
+      ? hljs.highlight(text, { language: lang })
+      : hljs.highlightAuto(text, ['cpp', 'c', 'python', 'bash', 'javascript', 'json', 'xml', 'ini']);
+    el.innerHTML = res.value;
+    el.classList.add('hljs');
   });
+});
 </script>
