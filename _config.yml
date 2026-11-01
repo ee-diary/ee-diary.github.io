@@ -9,7 +9,7 @@ theme: jekyll-theme-chirpy
 lang: en
 
 # Change to your timezone › https://zones.arilyn.cc
-timezone:Asia/Kathmandu
+timezone: Asia/Kathmandu
 
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # ↓ --------------------------
@@ -18,7 +18,7 @@ title: IC Explorer # the main title
 
 tagline: Explore ICs, pinouts, simulation models & PCB design # it will display as the subtitle
 
-description: Explore integrated circuits with pinouts, datasheet breakdowns, PCB design tips, circuit simulations and free downloadable project files.>- # used by seo meta and the atom feed
+description: "Explore integrated circuits with pinouts, datasheet breakdowns, PCB design tips, circuit simulations and free downloadable project files." # used by seo meta and the atom feed
   
 
 # Fill in the protocol & hostname for your site.
@@ -27,9 +27,6 @@ url: "https://ee-diary.github.io"
 
 github:
   username: ee-diary # change to your GitHub username
-
-twitter:
-  username: twitter_username # change to your Twitter username
 
 social:
   # Change to your full name.
