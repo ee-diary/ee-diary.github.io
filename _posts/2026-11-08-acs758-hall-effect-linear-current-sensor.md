@@ -13,19 +13,6 @@ description: Explore the ACS758LCB-050B-PFF-T pinout, specifications, and
 math: false
 ---
 ---
-title: "ACS758 ±50A Hall-Effect Current Sensor Pinout Explorer"
-date: 2026-11-08 07:09:00 +0000
-description: "Explore the ACS758LCB-050B-PFF-T pinout, specifications, and typical current-sensing connections with the interactive IC Explorer."
-categories:
-  - sensor
-tags:
-  - ACS758
-  - current-sensor
-  - Allegro
-  - IC-Explorer
-math: false
----
-
 The **ACS758LCB-050B-PFF-T** is a bidirectional Hall-effect current sensor for measuring AC or DC current. This popular ±50 A version has a typical sensitivity of 40 mV/A at a 5 V supply and an output near 2.5 V when no current flows. The measured current passes through the sensor’s isolated primary conductor; the VIOUT pin provides an analog signal for a suitable ADC.
 
 > **Pinout display note:** The explorer below is a functional pinout visualization. The ACS758 uses a CB-PFF package with a high-current conductor, not a physical DIP-5 package. Check the manufacturer datasheet for package dimensions, pin identification, limits, and design requirements.
