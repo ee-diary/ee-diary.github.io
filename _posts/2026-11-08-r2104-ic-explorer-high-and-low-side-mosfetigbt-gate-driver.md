@@ -14,7 +14,6 @@ description: Explore the IR2104 DIP-8 pinout, key specifications, and typical
 math: false
 ---
 
-
 <!-- Load shared styling and the IR2104 pin configuration -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ee-diary/ic-explorer-assets@main/core/ic-explorer-core.css">
 <script src="https://cdn.jsdelivr.net/gh/ee-diary/ic-explorer-assets@main/configs/interface/ir2104-config.js"></script>
