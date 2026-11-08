@@ -127,27 +127,11 @@ math: false
 </div>
 ```
 
-
-
-&nbsp;
-
-&nbsp;
-
-&nbsp;
-
-&nbsp;
-
-&nbsp;
-
-&nbsp;
-
-&nbsp;
-
-&nbsp;
+## ACS758
 
 The ACS758LCB-050B-PFF-T is a bidirectional Hall-effect current sensor for measuring AC or DC current. This popular ±50 A version has a typical sensitivity of 40 mV/A at a 5 V supply and an output near 2.5 V when no current flows. The measured current passes through the sensor’s isolated primary conductor; the VIOUT pin provides an analog signal for a suitable ADC.
 
-## ACS758LCB-050B-PFF-T quick facts
+### ACS758LCB-050B-PFF-T Quick Facts
 
 - Current range: ±50 A
 - Sensitivity: 40 mV/A
@@ -156,6 +140,8 @@ The ACS758LCB-050B-PFF-T is a bidirectional Hall-effect current sensor for measu
 - Output: analog voltage proportional to current
 
 This is the most common ACS758 variant used on CJMCU-758 and MCU-758 breakout boards.
+
+### Applications
 
 The ACS758 is often used in:
 
