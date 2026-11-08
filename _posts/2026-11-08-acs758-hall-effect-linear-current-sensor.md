@@ -12,6 +12,15 @@ description: Explore the ACS758LCB-050B-PFF-T pinout, specifications, and
   typical current-sensing connections with the interactive IC Explorer.
 math: false
 ---
+---
+
+
+
+IC Interactive IC Explorer
+
+IC
+
+```
 <div class="aw-mtabs">
   <div class="aw-mtab on" data-mt="pin">PIN EXPLORER</div>
   <div class="aw-mtab" data-mt="design">DESIGN FILES</div>
