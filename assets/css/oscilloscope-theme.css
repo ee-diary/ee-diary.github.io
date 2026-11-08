@@ -7,18 +7,23 @@
   --scope-muted: #63717d;
 
   --scope-screen: #071018;
+  --scope-screen-grid: rgb(130 170 190 / 14%);
+  --scope-screen-text: #dce8ee;
+
   --scope-blue: #168ed0;
   --scope-yellow: #dfb52d;
   --scope-green: #22a36a;
   --scope-orange: #e47731;
+  --scope-red: #d94b4b;
 
   --scope-shadow: 0 6px 22px rgb(34 48 60 / 12%);
+  --scope-radius: 10px;
 }
 
-/* Site background and default text */
+/* Global page background and text */
 html,
 body {
-  background: var(--scope-body);
+  background: var(--scope-body) !important;
   color: var(--scope-text);
 }
 
@@ -26,9 +31,15 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
+/* Keep Chirpy's existing page layout; adjust only its surfaces */
+#main-wrapper,
+#main-wrapper > .container {
+  background: transparent !important;
+}
+
 /* Chirpy top bar */
 #topbar-wrapper {
-  background: linear-gradient(#fff, #e1e6e9);
+  background: linear-gradient(#fff, #e1e6e9) !important;
   border-bottom: 1px solid var(--scope-border);
 }
 
@@ -40,7 +51,8 @@ body {
 
 /* Chirpy navigation sidebar */
 #sidebar {
-  background: #dfe4e7;
+  color: var(--scope-text);
+  background: #dfe4e7 !important;
   border-right: 1px solid var(--scope-border);
 }
 
@@ -53,15 +65,19 @@ body {
   color: #075f91;
 }
 
-/* Main page area */
-#main-wrapper,
-#main-wrapper > .container {
-  background: transparent;
+/* Article and page titles */
+article,
+article .content {
+  color: var(--scope-text);
 }
 
-/* Article and page cards */
-article {
-  color: var(--scope-text);
+.post-title,
+.page-title,
+article .content h1,
+article .content h2,
+article .content h3,
+article .content h4 {
+  color: #1d3445;
 }
 
 article .content {
@@ -71,54 +87,183 @@ article .content {
 
 article .content h2,
 article .content h3 {
-  color: #1d3445;
   margin-top: 2rem;
 }
 
-/* Tables and code */
+/* Post metadata and muted text */
+.post-meta,
+article .content .text-muted {
+  color: var(--scope-muted) !important;
+}
+
+/* Links */
+article .content a,
+#toc-wrapper a {
+  color: #087eae;
+}
+
+article .content a:hover,
+#toc-wrapper a:hover {
+  color: #075f91;
+}
+
+/* Tables */
 article .content table {
+  color: var(--scope-text);
   background: var(--scope-surface);
   border-color: var(--scope-border);
 }
 
+article .content table th {
+  color: #1d3445;
+  background: #e7ebee;
+}
+
+article .content table td,
+article .content table th {
+  border-color: var(--scope-border);
+}
+
+/* Dark oscilloscope-style code displays */
 article .content pre,
 article .content .highlight {
-  background: var(--scope-screen);
+  color: var(--scope-screen-text);
+  background: var(--scope-screen) !important;
   border: 1px solid #293945;
   border-radius: 8px;
 }
 
-article .content code {
-  color: #075f91;
+article .content pre code {
+  color: inherit;
+  background: transparent;
 }
 
-/* Table of contents */
+article .content code:not(pre code) {
+  color: #075f91;
+  background: #e2e9ed;
+  border-radius: 4px;
+  padding: 0.1em 0.3em;
+}
+
+/* Chirpy table of contents */
 #toc-wrapper {
   color: var(--scope-muted);
 }
 
-/* IC Explorer instrument frame */
+#toc-wrapper a {
+  color: #344452;
+}
+
+/* Buttons and form controls */
+article .content .btn,
+article .content button,
+article .content input,
+article .content select,
+article .content textarea {
+  border-color: var(--scope-border);
+}
+
+article .content .btn-primary {
+  color: #fff;
+  background: var(--scope-blue);
+  border-color: var(--scope-blue);
+}
+
+/* IC Explorer instrument frame.
+   These rules apply only when the markup uses class="ic-workbench". */
+.ic-workbench {
+  color: var(--scope-text);
+}
+
 .ic-workbench .scope-panel,
-.ic-workbench .scope-sidebar {
-  background: var(--scope-body);
+.ic-workbench .scope-sidebar,
+.ic-workbench .control-module {
+  color: var(--scope-text);
+  background: var(--scope-surface);
   border: 1px solid var(--scope-border);
-  border-radius: 10px;
+  border-radius: var(--scope-radius);
   box-shadow: var(--scope-shadow);
 }
 
 /* Dark display area inside the instrument */
-.ic-workbench .scope-screen {
-  color: #dce8ee;
+.ic-workbench .scope-screen,
+.ic-workbench .serial-terminal {
+  color: var(--scope-screen-text);
   background-color: var(--scope-screen);
-  background-image:
-    linear-gradient(rgb(130 170 190 / 14%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(130 170 190 / 14%) 1px, transparent 1px);
-  background-size: 24px 24px;
   border: 1px solid #293945;
   border-radius: 6px;
 }
 
-/* Mobile spacing */
+.ic-workbench .scope-screen {
+  background-image:
+    linear-gradient(var(--scope-screen-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--scope-screen-grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* IC Explorer viewer tabs */
+.ic-workbench .scope-tab {
+  color: var(--scope-text);
+  background: linear-gradient(#fff, #dce1e5);
+  border: 1px solid var(--scope-border);
+  border-radius: 6px;
+  padding: 9px 13px;
+  font: 600 12px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+.ic-workbench .scope-tab[aria-selected="true"] {
+  color: #07537c;
+  background: #d8effa;
+  border-color: var(--scope-blue);
+  box-shadow: inset 0 -3px var(--scope-blue);
+}
+
+.ic-workbench .scope-tab[data-accent="yellow"] {
+  border-bottom: 3px solid var(--scope-yellow);
+}
+
+.ic-workbench .scope-tab[data-accent="green"] {
+  border-bottom: 3px solid var(--scope-green);
+}
+
+.ic-workbench .scope-tab[data-accent="orange"] {
+  border-bottom: 3px solid var(--scope-orange);
+}
+
+/* IC Explorer control buttons */
+.ic-workbench .control-button {
+  color: #fff;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.ic-workbench .control-button.blue {
+  background: var(--scope-blue);
+}
+
+.ic-workbench .control-button.green {
+  background: var(--scope-green);
+}
+
+.ic-workbench .control-button.yellow {
+  color: #26313b;
+  background: var(--scope-yellow);
+}
+
+.ic-workbench .control-button.orange {
+  background: var(--scope-orange);
+}
+
+/* Serial terminal text */
+.ic-workbench .serial-terminal {
+  font: 12px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+/* Mobile text sizing */
 @media (max-width: 768px) {
   article .content {
     font-size: 0.97rem;
