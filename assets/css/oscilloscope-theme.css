@@ -1,104 +1,126 @@
 :root {
-  /* Instrument chassis */
-  --scope-body: #e8ebee;
+  --scope-body: #e7ebee;
   --scope-surface: #f7f8f9;
-  --scope-raised: #ffffff;
-  --scope-border: #b9c1c9;
-  --scope-text: #26313b;
-  --scope-muted: #65717c;
+  --scope-white: #fff;
+  --scope-border: #b9c2ca;
+  --scope-text: #26333e;
+  --scope-muted: #63717d;
 
-  /* Display */
   --scope-screen: #071018;
-  --scope-screen-grid: rgba(130, 170, 190, .16);
-  --scope-screen-text: #dce8ee;
-
-  /* Instrument controls and signal colors */
   --scope-blue: #168ed0;
-  --scope-yellow: #e2b52b;
-  --scope-green: #24a56a;
+  --scope-yellow: #dfb52d;
+  --scope-green: #22a36a;
   --scope-orange: #e47731;
-  --scope-red: #d94b4b;
-  --scope-purple: #8659b5;
 
-  --scope-shadow: 0 8px 26px rgba(28, 42, 54, .16);
-  --scope-radius: 10px;
+  --scope-shadow: 0 6px 22px rgb(34 48 60 / 12%);
 }
 
-/* Light instrument body */
-.ic-workbench,
-.ic-workbench .scope-panel,
-.ic-workbench .scope-sidebar {
-  color: var(--scope-text);
+/* Site background and default text */
+html,
+body {
   background: var(--scope-body);
+  color: var(--scope-text);
 }
 
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* Chirpy top bar */
+#topbar-wrapper {
+  background: linear-gradient(#fff, #e1e6e9);
+  border-bottom: 1px solid var(--scope-border);
+}
+
+#topbar,
+#topbar a,
+#topbar-title {
+  color: var(--scope-text);
+}
+
+/* Chirpy navigation sidebar */
+#sidebar {
+  background: #dfe4e7;
+  border-right: 1px solid var(--scope-border);
+}
+
+#sidebar a {
+  color: #344452;
+}
+
+#sidebar a:hover,
+#sidebar a.active {
+  color: #075f91;
+}
+
+/* Main page area */
+#main-wrapper,
+#main-wrapper > .container {
+  background: transparent;
+}
+
+/* Article and page cards */
+article {
+  color: var(--scope-text);
+}
+
+article .content {
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+article .content h2,
+article .content h3 {
+  color: #1d3445;
+  margin-top: 2rem;
+}
+
+/* Tables and code */
+article .content table {
+  background: var(--scope-surface);
+  border-color: var(--scope-border);
+}
+
+article .content pre,
+article .content .highlight {
+  background: var(--scope-screen);
+  border: 1px solid #293945;
+  border-radius: 8px;
+}
+
+article .content code {
+  color: #075f91;
+}
+
+/* Table of contents */
+#toc-wrapper {
+  color: var(--scope-muted);
+}
+
+/* IC Explorer instrument frame */
 .ic-workbench .scope-panel,
 .ic-workbench .scope-sidebar {
+  background: var(--scope-body);
   border: 1px solid var(--scope-border);
-  border-radius: var(--scope-radius);
+  border-radius: 10px;
   box-shadow: var(--scope-shadow);
 }
 
-/* Dark oscilloscope display */
+/* Dark display area inside the instrument */
 .ic-workbench .scope-screen {
-  color: var(--scope-screen-text);
+  color: #dce8ee;
   background-color: var(--scope-screen);
   background-image:
-    linear-gradient(var(--scope-screen-grid) 1px, transparent 1px),
-    linear-gradient(90deg, var(--scope-screen-grid) 1px, transparent 1px);
+    linear-gradient(rgb(130 170 190 / 14%) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(130 170 190 / 14%) 1px, transparent 1px);
   background-size: 24px 24px;
   border: 1px solid #293945;
   border-radius: 6px;
 }
 
-/* Viewer tabs look like instrument buttons */
-.ic-workbench .scope-tab {
-  color: var(--scope-text);
-  background: linear-gradient(#fff, #dce1e5);
-  border: 1px solid var(--scope-border);
-  border-radius: 6px;
-  padding: 9px 13px;
-  font: 600 12px/1.2 system-ui, sans-serif;
-  cursor: pointer;
+/* Mobile spacing */
+@media (max-width: 768px) {
+  article .content {
+    font-size: 0.97rem;
+  }
 }
-
-.ic-workbench .scope-tab[aria-selected="true"] {
-  color: #07537c;
-  background: #d8effa;
-  border-color: var(--scope-blue);
-  box-shadow: inset 0 -3px var(--scope-blue);
-}
-
-.ic-workbench .scope-tab[data-accent="yellow"] { border-bottom: 3px solid var(--scope-yellow); }
-.ic-workbench .scope-tab[data-accent="green"]  { border-bottom: 3px solid var(--scope-green); }
-.ic-workbench .scope-tab[data-accent="orange"] { border-bottom: 3px solid var(--scope-orange); }
-
-/* Light control modules; terminal remains a dark display */
-.ic-workbench .control-module {
-  color: var(--scope-text);
-  background: var(--scope-surface);
-  border: 1px solid var(--scope-border);
-  border-radius: 8px;
-  padding: 12px;
-}
-
-.ic-workbench .serial-terminal {
-  color: #cfe7d7;
-  background: #071018;
-  border: 1px solid #293945;
-  border-radius: 6px;
-  font: 12px/1.55 ui-monospace, SFMono-Regular, Consolas, monospace;
-}
-
-.ic-workbench .control-button {
-  color: #fff;
-  border: 0;
-  border-radius: 6px;
-  padding: 8px 12px;
-  font-weight: 650;
-}
-
-.ic-workbench .control-button.blue   { background: var(--scope-blue); }
-.ic-workbench .control-button.green  { background: var(--scope-green); }
-.ic-workbench .control-button.yellow { color: #26313b; background: var(--scope-yellow); }
-.ic-workbench .control-button.orange { background: var(--scope-orange); }
