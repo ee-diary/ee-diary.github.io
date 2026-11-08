@@ -18,7 +18,7 @@ The **ACS758LCB-050B-PFF-T** is a bidirectional Hall-effect current sensor for m
 
 <!-- IC Explorer: shared assets and part configuration -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ee-diary/ic-explorer-assets@main/core/ic-explorer-core.css">
-<script src="https://cdn.jsdelivr.net/gh/ee-diary/ic-explorer-assets@7402f091928fc2994583f75c38ffe2707f87082a/configs/pmic/acs758-config.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ee-diary/ic-explorer-assets@main/configs/analog/acs758-config.js"></script>
 
 <!-- IC Explorer scaffold -->
 <div id="a13wrap">
