@@ -13,7 +13,6 @@ description: Explore the ACS758LCB-050B-PFF-T pinout, specifications, and
 math: false
 ---
 
-
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ee-diary/ic-explorer-assets@main/core/ic-explorer-core.css">
 <script src="https://cdn.jsdelivr.net/gh/ee-diary/ic-explorer-assets@main/configs/analog/acs758-config.js"></script>
 
