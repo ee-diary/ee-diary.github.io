@@ -63,19 +63,19 @@ The feedback pin measures a portion of the output voltage through the R1/R2 divi
 
 The output voltage waveform should settle near 5 V after the startup transient. Startup time depends on the soft-start implementation, feedback divider, compensation components, output capacitance, and load.
 
-![MP1584 PWM and output voltage signal waveform](</assets/img/posts/blog-images/MP1584 PWM and output voltage signal waveform.png>)
+![MP1584 PWM and output voltage signal waveform](</assets/img/posts/1/MP1584 PWM and output voltage signal waveform.png>)
 
 ### Switching-node waveform
 
 The switching node toggles between approximately 0 V and 12 V. The precise transition shape depends on parasitic inductance, capacitance, diode recovery, MOSFET switching speed, and PCB layout.
 
-![MP1584 PWM signal waveform](</assets/img/posts/blog-images/MP1584 PWM signal waveform.png>)
+![MP1584 PWM signal waveform](</assets/img/posts/1/MP1584 PWM signal waveform.png>)
 
 ### Fourier analysis
 
 The Fourier spectrum of the switching node contains energy at the fundamental switching frequency and its harmonics. A switching regulator therefore requires a suitably designed output filter and PCB layout to control ripple and electromagnetic interference.
 
-![Fourier Spectrum of MP1584 PWM signal](</assets/img/posts/blog-images/Fourier Spectrum of MP1584 PWM signal.png>)
+![Fourier Spectrum of MP1584 PWM signal](</assets/img/posts/1/Fourier Spectrum of MP1584 PWM signal.png>)
 
 ### PWM Switching Frequency
 
@@ -243,7 +243,7 @@ RBST   BST GND 100MEG
 
 ### MP1584 Test Circuit Schematic
 
-![](</assets/img/posts/blog-images/MP1584 test circuit diagram.png>)
+![](</assets/img/posts/1/MP1584 test circuit diagram.png>)
 
 Before constructing the converter:
 
