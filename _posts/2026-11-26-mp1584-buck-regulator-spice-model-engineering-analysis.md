@@ -41,7 +41,7 @@ The MP1584 circuit converts a higher DC input voltage into a lower, regulated ou
 
 ### MP1584 Schematic Diagram
 
-<iframe src="https://raw.githubusercontent.com/ee-diary/ee-diary.github.io/9a3cd4633dfe84544425d1d8a256d17db53be351/assets/img/posts/blog-images/">https://raw.githubusercontent.com/ee-diary/ee-diary.github.io/9a3cd4633dfe84544425d1d8a256d17db53be351/assets/img/posts/blog-images/MP1584%20buck%20converter%20circuit%20schematic.svg</iframe>
+<img class="svg-zoom" src="/assets/img/posts/1/mp1584-buck-converter-schematic.svg" alt="MP1584 buck converter schematic" data-title="MP1584 Buck Converter Schematic">
 
 ## 2. Operating Principle
 
