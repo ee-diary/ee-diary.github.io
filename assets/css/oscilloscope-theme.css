@@ -172,6 +172,33 @@ article .content code:not(pre code) {
   padding: 0.1em 0.3em;
 }
 
+/* Rouge table layers: no backgrounds/borders of their own */
+article .content div.highlighter-rouge pre,
+article .content div.highlighter-rouge code,
+article .content div.highlighter-rouge table,
+article .content div.highlighter-rouge tbody,
+article .content div.highlighter-rouge tr,
+article .content div.highlighter-rouge td,
+article .content div.highlighter-rouge .rouge-gutter,
+article .content div.highlighter-rouge .rouge-code {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+article .content div.highlighter-rouge pre {
+  color: var(--scope-screen-text);
+}
+
+/* line numbers: muted, with a thin divider */
+article .content div.highlighter-rouge .rouge-gutter pre {
+  color: #5d7487;
+}
+article .content div.highlighter-rouge .rouge-gutter {
+  border-right: 1px solid #293945 !important;
+}
+
 /* Chirpy table of contents */
 #toc-wrapper {
   color: var(--scope-muted);
