@@ -1,0 +1,106 @@
+* ============================================================================
+* MP1584 Spice Model
+* Direct Current Source Model
+* Version : 1.2
+* Author  : ee-diary.net
+* Date    : 2026-11-26
+*
+* Change log
+*   1.0  Original behavioural model
+*   1.2  2026-11-26  Faster COMP start-up: EA current limit x10 (gm and DC gain unchanged),
+*                    COMP clamped by a current source (-0.9 V .. 1.42 V)
+*   1.1  2026-11-26  Error amp converted to a direct current source (Norton form of
+*                    the old BEA voltage source + REA 3.33MEG); soft-start ramp
+*                    shortened 1.5 ms -> 150U for quick simulations (see SOFT-START note)
+*
+* SOFT-START note: the ramp time is the PULSE rise time of V1 below.
+*   1.5M = 1.5 ms (original, realistic), 150U = 0.15 ms (quick simulation).
+* Pin order = package pin order:  
+* 1 SW, 2 EN, 3 COMP, 4 FB, 5 GND, 6 FREQ, 7 VIN, 8 BST
+* ============================================================================
+.SUBCKT MP1584 SW EN COMP FB GND FREQ VIN BST
+
+* ---------------- Oscillator: ramp current = 8.5 * (1V / RFREQ) -----------
+VBIAS  NBIAS GND DC 0 PULSE(0 1 10N 10N 1M 10 20)
+VSENS  NBIAS FREQ DC 0
+F1     GND SAW VSENS 8.5
+CSAW   SAW GND 100P
+RSAW   SAW GND 1G
+S1     SAW GND SAW GND SWRST
+* clock: CLK is pulled to 5 V through 200 ohm while the ramp is low
+S2     CLK V5CLK SAW GND SWCLK
+V10    V5CLK GND DC 5
+RCLK   CLK GND 10K
+
+* ---------------- Soft start + error amplifier (gm = 200/3.33MEG) ---------
+V1     NSS GND DC 0 PULSE(0 0.8 0 150U 150U 10 20)
+* Error amp: gm = 60 uS (same as original), output limit +/-4.3 uA (10x the original +/-0.43 uA)
+* so COMP charges 10x faster during start-up; DC gain 200 and COMP range unchanged
+BEA    GND COMP I=0.5*(abs(60E-6*(V(NSS,GND)-V(FB,GND))+4.3E-6)-abs(60E-6*(V(NSS,GND)-V(FB,GND))-4.3E-6))
+* COMP voltage limits -0.9 V ... 1.42 V (same as the original EA output range)
+BCLMP  COMP GND I=(V(COMP,GND)-0.5*(abs(V(COMP,GND)+0.9)-abs(V(COMP,GND)-1.42)+0.52))/10
+REA    COMP GND 3.33MEG
+
+* ---------------- Current sense (R_SENSE 25 mohm, gain 4.44) --------------
+RSENSE VIN DRN 25M
+BISNS  ISO GND V=0.5*(abs(4.44*(V(VIN,GND)-V(DRN,GND)))-abs(4.44*(V(VIN,GND)-V(DRN,GND))-5)+5)
+RISO   ISO NBLK 100
+RBLANK NBLK NSNS 1K
+CBLANK NSNS GND 100P
+
+* ---------------- Slope compensation: 0.85 V + 0.5 * ramp ----------------
+EAVS   NSL NOFF SAW GND 0.5
+V3     NOFF GND DC 0.85
+BSUM1  NSUM GND V=V(NSNS,GND)+V(NSL,GND)
+
+* ---------------- Peak-current comparator (gain 1E3, 0..5 V) --------------
+BPEAK  NPK GND V=0.5*(abs(1E3*(V(NSUM,GND)-V(COMP,GND)))-abs(1E3*(V(NSUM,GND)-V(COMP,GND))-5)+5)
+
+* ---------------- SR latch: two cross-coupled NOR gates -------------------
+*   NQ  = NOR(NPK , NQB)     (U3, SR_LATCH_A)
+*   NQB = NOR(NQ  , CLK)     (U4, SR_LATCH_B)
+BU3    NQR GND V=5*(0.5-0.5*(abs(4*(V(NPK,GND)-2.5)+0.5)-abs(4*(V(NPK,GND)-2.5)-0.5)))*(0.5-0.5*(abs(4*(V(NQB,GND)-2.5)+0.5)-abs(4*(V(NQB,GND)-2.5)-0.5)))
+RU3    NQR NQ 1K
+CU3    NQ GND 8.7P
+BU4    NQBR GND V=5*(0.5-0.5*(abs(4*(V(NQ,GND)-2.5)+0.5)-abs(4*(V(NQ,GND)-2.5)-0.5)))*(0.5-0.5*(abs(4*(V(CLK,GND)-2.5)+0.5)-abs(4*(V(CLK,GND)-2.5)-0.5)))
+RU4    NQBR NQB 1K
+CU4    NQB GND 8.7P
+* U5 now a non-inverting buffer: NQ high = switch ON (set by CLK, reset by TRIP)
+BU5    NON GND V=5*(0.5+0.5*(abs(4*(V(NQ,GND)-2.5)+0.5)-abs(4*(V(NQ,GND)-2.5)-0.5)))
+
+* ---------------- Enable / UVLO ------------------------------------------
+R1EN   EN NENP 3MEG
+V8     NENP GND DC 3
+V6     NUVT GND DC 3
+V7     NENT GND DC 1.35
+BUVLO  NUV GND V=0.5*(abs(100*(V(VIN,GND)-V(NUVT,GND)))-abs(100*(V(VIN,GND)-V(NUVT,GND))-5)+5)
+BENC   NEN GND V=0.5*(abs(100*(V(EN,GND)-V(NENT,GND)))-abs(100*(V(EN,GND)-V(NENT,GND))-5)+5)
+* U10 EN_UVLO_AND
+BU10   NEUR GND V=5*(0.5+0.5*(abs(4*(V(NUV,GND)-2.5)+0.5)-abs(4*(V(NUV,GND)-2.5)-0.5)))*(0.5+0.5*(abs(4*(V(NEN,GND)-2.5)+0.5)-abs(4*(V(NEN,GND)-2.5)-0.5)))
+RU10   NEUR NEU 1K
+CU10   NEU GND 7P
+* U11 DRIVE_ENABLE_AND
+BU11   NDER GND V=5*(0.5+0.5*(abs(4*(V(NEU,GND)-2.5)+0.5)-abs(4*(V(NEU,GND)-2.5)-0.5)))*(0.5+0.5*(abs(4*(V(NON,GND)-2.5)+0.5)-abs(4*(V(NON,GND)-2.5)-0.5)))
+RU11   NDER NDRV 1K
+CU11   NDRV GND 7P
+
+* ---------------- High-side switch and gate drive -------------------------
+BSUM2  NDRS GND V=V(NDRV,GND)+V(SW,GND)
+RG     NDRS NGATE 50
+RPD    NGATE SW 100K
+M1     DRN NGATE SW SW NMOSFET
+C1     SW GND 100P
+
+* ---------------- Bootstrap supply: floating 5 V source riding on SW -------
+* No voltage source / diode: BST is charged by a current source toward SW+5 V
+* (ideal diode + 5 ohm, written with abs()). SW+5 is computed, not a circuit node.
+BCHG   GND BST I=0.5*((V(SW,GND)+5-V(BST,GND))+abs(V(SW,GND)+5-V(BST,GND)))/5
+RBST   BST GND 100MEG
+
+* ---------------- Models --------------------------------------------------
+.MODEL SWRST SW(VT=0.55 VH=0.45 RON=200 ROFF=1G)
+.MODEL SWCLK SW(VT=0.55 VH=0.45 RON=200 ROFF=1G)
+.MODEL NMOSFET NMOS(VTO=2 KP=2.2 RD=0.02)
+.MODEL DIODE D(IS=2.52N RS=0.1 CJO=4P N=1.75 M=0.4)
+
+.ENDS MP1584

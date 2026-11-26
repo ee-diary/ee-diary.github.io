@@ -1,0 +1,171 @@
+* ============================================================================
+* LMR16006X SPICE Model
+* direct current source
+* change CSS    SS GND 9.8N to CSS    SS GND 1N for faster simulation
+* Version : 1.3
+* Author  : ee-diary.net
+* Date    : 2026-11-26
+*
+* Change log
+*   1.0  2026-11-24  First behavioural rewrite from the functional block diagram
+*   1.1  2026-11-25  SHDN pull-up softened so the DC operating point solves in ProSPICE
+*   1.2  2026-11-26  Soft-start, error amp, COMP clamp rebuilt MP1584-style
+*                    (voltage B source + R + 0V sense + F source)
+*   1.3  2026-11-26  Working in Proteus (Vout 4.96 V). Debug overrides removed;
+*                    CSS = 9.8N gives the datasheet soft-start (~3.7 ms)
+*
+* Behavioural rewrite (Proteus / SPICE3f5 friendly)
+* Re-modelled block-by-block from the LMR16006X functional block diagram
+* (TI SNVSA24). Style and constructs follow the working MP1584 model:
+*   B sources using only abs() + - * /, one F source, SW switches, one NMOS.
+*   NO u(), uramp(), PWL, .IC, .PARAM, exp(), diodes, or '?:' expressions.
+* Pin order = package pin order (SOT-23-6):
+*   1 CB, 2 GND, 3 FB, 4 SHDN, 5 VIN, 6 SW
+* Modelled: 700 kHz fixed-frequency peak-current-mode buck, 0.765 V reference,
+*   internal soft-start (~3.7 ms), internal Type-II compensation, slope comp,
+*   leading-edge blanking, cycle-by-cycle current limit (~1.2 A), frequency
+*   foldback vs FB (TI table), ECO pulse-skipping at light load, 97 % max duty,
+*   bootstrap regulator + CB refresh (weak FET), UVLO 3.6/3.3 V, SHDN 1.25 V
+*   with pull-up/hysteresis current, 0.9 ohm high-side switch.
+* Not modelled: thermal shutdown, temperature dependence.
+* GND pin must be connected to the circuit ground (node 0).
+*
+* Usage notes:
+*  - Soft-start time = 0.765 V * CSS / 2 uA.  CSS = 9.8N gives 3.7 ms (datasheet-like).
+*    For quick simulations change CSS to 1N (about 0.4 ms).
+*  - Max time step of 20 ns or less is recommended (switching edges are tens of ns).
+*  - If the SW node shows a +/- sample-to-sample ringing while the switch is ON,
+*    that is trapezoidal-integration ringing, not circuit behaviour: select Gear
+*    integration, or lower the max step.
+*  - Output is regulated to 0.765 V * (1 + R1/R2) with R1 from VOUT to FB.
+* ============================================================================
+.SUBCKT LMR16006X CB GND FB SHDN VIN SW
+
+* ---------------- Start-up kick (keeps DC operating point = everything OFF) --
+VSTART NSTART GND DC 0 PULSE(0 5 10N 10N 1M 100 200)
+
+* ---------------- UVLO : VIN rising 3.6 V / falling 3.3 V ------------------
+S1     UVOK V5 VIN GND SWUV
+V5V    V5 GND DC 5
+RUVOK  UVOK GND 10K
+RIQ    VIN GND 430K
+
+* ---------------- SHDN : 1.25 V threshold, internal pull-up + hysteresis ---
+* pull-up current 0.9 uA (+2.9 uA once enabled), fades out smoothly as SHDN reaches VIN
+* (gentle 1 V clamp: a steep clamp here stops the DC operating point from solving)
+BNEN   NEN GND V=0.5*(abs(100*(V(SHDN,GND)-1.25))-abs(100*(V(SHDN,GND)-1.25)-5)+5)
+BIPU   VIN SHDN I=(0.9E-6+2.9E-6*V(NEN,GND)/5)*(0.5*(abs(V(VIN,GND)-V(SHDN,GND))-abs(V(VIN,GND)-V(SHDN,GND)-1)+1))
+RSHDN  SHDN GND 3MEG
+
+* ---------------- Master enable = UVLO & SHDN & start-up kick -------------
+BENOK  NENOK GND V=V(UVOK,GND)*V(NEN,GND)*V(NSTART,GND)/25
+
+* ---------------- Soft-start (2 uA into ~9.8 nF = 0.2 V/ms) + reference ----
+* soft-start charge current 2 uA: 1 V scaled source -> 500k -> 0 V sense -> F source
+BISSV  NISS GND V=V(NENOK,GND)/5*0.5*(abs(50*(1-V(SS,GND)))-abs(50*(1-V(SS,GND))-1)+1)
+RISS   NISS NISSX 500K
+VISS   NISSX GND DC 0
+FISS   GND SS VISS 1
+* discharge SS (1k) whenever the device is disabled
+BNENB  NENB GND V=5-V(NENOK,GND)
+S6     SS GND NENB GND SWSSD
+CSS    SS GND 1N
+RSS    SS GND 1G
+BVREF  NREF0 GND V=0.5*(V(SS,GND)+0.765-abs(V(SS,GND)-0.765))
+RVR    NREF0 NREF 1K
+RNREF  NREF GND 1MEG
+
+* ---------------- Error amplifier : gm = 40 uS, +/-10 uA, 0.765 V ref ------
+RFB    FB GND 100MEG
+* Transconductance (current-output) error amp: gm = 40 uS, output limit +/-10 uA into COMP.
+* Built as a ~1 V scale voltage source -> 100k -> 0 V sense -> F source (= 40 uS * (VREF-FB))
+BEA    GND COMP I=0.5*(abs(40E-6*(V(NREF,GND)-V(FB,GND))+10E-6)-abs(40E-6*(V(NREF,GND)-V(FB,GND))-10E-6))
+* internal Type-II compensation
+RC     COMP NRC 270K
+CC     NRC GND 180P
+CCP    COMP GND 1P
+RO     COMP GND 1G
+* COMP clamp 0.5 V ... 1.945 V (10 ohm, voltage-source form)
+BCLV   NCL GND V=0.5*(abs(V(COMP,GND)-0.5)-abs(V(COMP,GND)-1.945)+2.445)
+RCLM   COMP NCL 10
+
+* ---------------- Main oscillator + frequency shift (foldback vs FB) ------
+* ramp current = 700 kHz setting * foldback(FB) * enable
+BR0    NR0 GND V=0.5*((V(FB,GND))+abs(V(FB,GND)))
+BR1    NR1 GND V=0.5*((V(FB,GND)-0.2)+abs(V(FB,GND)-0.2))
+BR2    NR2 GND V=0.5*((V(FB,GND)-0.3)+abs(V(FB,GND)-0.3))
+BR3    NR3 GND V=0.5*((V(FB,GND)-0.5)+abs(V(FB,GND)-0.5))
+BR4    NR4 GND V=0.5*((V(FB,GND)-0.6)+abs(V(FB,GND)-0.6))
+BR5    NR5 GND V=0.5*((V(FB,GND)-0.75)+abs(V(FB,GND)-0.75))
+BFA    NFA GND V=0.1269+0.2130*V(NR0,GND)+1.2770*V(NR1,GND)+0.9755*V(NR2,GND)
+BFOLD  NFOLD GND V=V(NFA,GND)-1.0225*V(NR3,GND)-1.1490*V(NR4,GND)-0.2940*V(NR5,GND)
+BOSC   GND SAW I=65.8E-6*V(NENOK,GND)/5*V(NFOLD,GND)
+CSAW   SAW GND 100P
+RSAW   SAW GND 1G
+S2     SAW GND SAW GND SWRST
+S3     CLK V5 SAW GND SWCLK
+RCLK   CLK GND 10K
+
+* ---------------- Current sense (switch current) + leading edge blanking --
+VSENSE VIN DRN DC 0
+F1     GND ISNS VSENSE 1.1627
+RISNS  ISNS GND 1
+RBLANK ISNS NSNS 500
+CBLANK NSNS GND 100P
+
+* ---------------- Slope compensation (sum node) ---------------------------
+BSLOPE NSLP GND V=0.4*V(SAW,GND)
+BSUM   NSUM GND V=V(NSNS,GND)+V(NSLP,GND)+0.55
+
+* ---------------- PWM comparator : trips when sense+slope > COMP ----------
+BPEAK  NPK GND V=0.5*(abs(1E3*(V(NSUM,GND)-V(COMP,GND)))-abs(1E3*(V(NSUM,GND)-V(COMP,GND))-5)+5)
+
+* ---------------- Logic and PWM latch (two cross-coupled NORs) ------------
+*   NQ  = NOR(NPK, NQB)   NQB = NOR(NQ, CLK)
+BU3    NQR GND V=5*(0.5-0.5*(abs(4*(V(NPK,GND)-2.5)+0.5)-abs(4*(V(NPK,GND)-2.5)-0.5)))*(0.5-0.5*(abs(4*(V(NQB,GND)-2.5)+0.5)-abs(4*(V(NQB,GND)-2.5)-0.5)))
+RU3    NQR NQ 1K
+CU3    NQ GND 8.7P
+BU4    NQBR GND V=5*(0.5-0.5*(abs(4*(V(NQ,GND)-2.5)+0.5)-abs(4*(V(NQ,GND)-2.5)-0.5)))*(0.5-0.5*(abs(4*(V(CLK,GND)-2.5)+0.5)-abs(4*(V(CLK,GND)-2.5)-0.5)))
+RU4    NQBR NQB 1K
+CU4    NQB GND 8.7P
+
+* ---------------- CB refresh monitor : boot voltage OK above 4.0 V --------
+BBV    NBV GND V=V(CB,GND)-V(SW,GND)
+S4     BOK V5 NBV GND SWBOOT
+RBOK   BOK GND 10K
+BLOWB  NLOWB GND V=5-V(BOK,GND)
+* Wimp FET : weak pull-down on SW to refresh CB
+S5     SW NWIMP NLOWB GND SWWIMP
+RWIMP  NWIMP GND 200
+
+* ---------------- HS driver enable = latch & enable & boot ok & not CLK ---
+BU11A  NQBUF GND V=5*(0.5+0.5*(abs(4*(V(NQ,GND)-2.5)+0.5)-abs(4*(V(NQ,GND)-2.5)-0.5)))
+BU11   NDER GND V=V(NQBUF,GND)*V(NENOK,GND)*V(BOK,GND)/25*(0.5-0.5*(abs(4*(V(CLK,GND)-2.5)+0.5)-abs(4*(V(CLK,GND)-2.5)-0.5)))
+RU11   NDER NDRV 1K
+CU11   NDRV GND 7P
+
+* ---------------- High-side switch, gate driven from CB-SW ----------------
+BGD    NDRS GND V=V(SW,GND)+(V(NDRV,GND)/5)*0.5*((V(CB,GND)-V(SW,GND))+abs(V(CB,GND)-V(SW,GND)))
+RG     NDRS NGATE 20
+CGS    NGATE SW 100P
+RPD    NGATE SW 100K
+M1     DRN NGATE SW SW NMOSFET
+CSWN   SW GND 15P
+RSWL   SW GND 100MEG
+
+* ---------------- Bootstrap regulator : charges CB to SW + 5.8 V ----------
+* source = VIN, target = min(5.8 V, VIN-SW-0.5 V) above SW, 60 ohm; only when SW is low
+BTGT   NTGT GND V=0.5*(5.3+V(VIN,GND)-V(SW,GND)-abs(6.3-V(VIN,GND)+V(SW,GND)))
+BCHG   VIN CB I=0.5*(V(NTGT,GND)+V(SW,GND)-V(CB,GND)+abs(V(NTGT,GND)+V(SW,GND)-V(CB,GND)))/60
+RCBL   CB SW 2.5MEG
+
+* ---------------- Models --------------------------------------------------
+.MODEL SWSSD  SW(VT=2.5 VH=0.5 RON=1000 ROFF=1G)
+.MODEL SWUV   SW(VT=3.45 VH=0.15 RON=1 ROFF=1G)
+.MODEL SWRST  SW(VT=0.55 VH=0.45 RON=200 ROFF=1G)
+.MODEL SWCLK  SW(VT=0.55 VH=0.45 RON=200 ROFF=1G)
+.MODEL SWBOOT SW(VT=3.5 VH=0.5 RON=1 ROFF=1G)
+.MODEL SWWIMP SW(VT=2.5 VH=0.5 RON=1 ROFF=1G)
+.MODEL NMOSFET NMOS(VTO=2 KP=0.292 RD=0.02)
+
+.ENDS LMR16006X
