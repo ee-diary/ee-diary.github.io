@@ -3,7 +3,7 @@
   --scope-surface: #f7f8f9;
   --scope-white: #fff;
   --scope-border: #b9c2ca;
-  --scope-text: #26333e;
+  --scope-text: #000;
   --scope-muted: #63717d;
 
   --scope-screen: #071018;
@@ -322,4 +322,24 @@ article .content .btn-primary {
   article .content {
     font-size: 0.97rem;
   }
+}
+
+/* pure black text */
+.post-title,
+.page-title,
+article .content h1,
+article .content h2,
+article .content h3,
+article .content h4,
+article .content table th,
+#sidebar a,
+#topbar,
+#topbar a,
+#topbar-title {
+  color: #000;
+}
+
+#sidebar a:hover,
+#sidebar a.active {
+  color: #075f91; /* keep the blue hover/active highlight */
 }
